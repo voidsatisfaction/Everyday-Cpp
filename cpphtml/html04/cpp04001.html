@@ -1,0 +1,157 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１章 業界のスタンダード -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１章　業界のスタンダード</font>
+</center>
+<hr>
+
+<p>　いよいよ始まります第４部。先ず第１章では<font color=red>標準ライブラリ</font>についてざっと話していこうと思います。みんなでこのライブラリを使い倒してしまいましょう！</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>どんなコンパイラにでもついてくることが推奨されている標準ライブラリなるものが存在する。</li>
+<li>標準ライブラリ内の名前は std 名前空間に属している。</li>
+<li>stdio.h 等Ｃ言語のヘッダファイルは cstdio のような名前で提供される。</li>
+<li>iostream.h 等古いＣ＋＋のヘッダファイルは iostream のような名前で提供される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、皆さんはヘッダファイルを一切インクルードせずにプログラムを組んでみたことはありますか？　もちろんヘッダファイルの中身を抜き出して書き込んでもダメです。</p>
+
+<p>　え？　それじゃぁ文字も表示できないじゃないかって？　それは全くその通りで、Ｃ＋＋で iostream.h などのヘッダファイル（の中身）なしにプログラムすることはほぼ不可能と言えます。コマンドラインと main の戻り値（<a href="../html03/cpp03041.html" target="main">第３部第４１章</a>参照）を駆使して何かの計算を行うとか、そうでなければせいぜい文法のチェック程度のことしかできません。</p>
+
+<p>　このことから分かるように、Ｃ＋＋自身の機能というのは</p>
+
+<ul>
+<li>型・変数・関数・クラスの作成と管理</li>
+<li>演算</li>
+<li>制御文</li>
+<li>ポインタ</li>
+<li>テンプレート</li>
+<li>コマンドライン</li>
+<li>動的メモリ確保</li>
+<li>例外処理</li>
+</ul>
+
+<p>といった<font color=red>非常に単純な、最低限のもの</font>しかないのです。文字列を表示する機能も、ファイルを管理する機能も、全て関数やクラスという形で提供されているのです。</p>
+
+<p>　こういった関数やクラスなどを集めたもののことを<font color=red>ライブラリ</font>と呼びます。ライブラリは、既にライブラリの提供されているＣ＋＋やアセンブリ言語などを使って作られています。</p>
+
+<p>　つまり、Ｃ＋＋はライブラリがなければ、入力も出力も出来ない全く役立たずな言語になってしまうわけです。逆に言うと、<font color=red>Ｃ＋＋が役立たずではないのもこのライブラリがあるおかげ</font>なのです。</p>
+
+<hr>
+
+<p>　さて、ライブラリのおかげでＣ＋＋がパワーアップするのは構わないのですが、肝腎のライブラリがコンパイラによって異なっていると厄介です。例えば、あるコンパイラでは文字の出力は cout << で行い、別のコンパイラでは console_out という名前になっていて、さらに別のコンパイラではもっと別の機構を使っているという具合です。どうでもいいような機能であればまだしも、基本的な機能でそうなっているとすれば、別のコンパイラでも動くようにするのが非常に面倒になってしまうということは想像がつくと思います。</p>
+
+<p>　そういうわけで、Ｃ／Ｃ＋＋にはどのコンパイラでも備えていることが推奨されている関数やクラスというものがいくつも規格で定められています。それらを集めたライブラリのことを<font color=red>標準ライブラリ</font>と総称します。これには cout や sprintf といった基本的な機能が一通り備えられています。標準ライブラリ内の関数やクラスのみを使ったプログラムは、この規格に沿っているコンパイラであればどれでもコンパイルでき、正常に動作するというわけです（そう理想通りいかないこともありますが...）。</p>
+
+<p>　そして、もちろんヘッダファイルだけでは関数は使えませんので、何らかのリンクも行われます。標準ライブラリであれば多くは自動的にリンクされると思いますが、使用頻度の低いものは指定しないといけない場合もあります。</p>
+
+<p>　と、ややこしいことをいろいろ話してきましたが、ここで重要なことは<font color=red>標準ライブラリというのが用意されている</font>ということだけです。今まで使ってきた cout や sprintf などは大抵標準ライブラリ内のオブジェクトや関数で、第４部ではそういったライブラリについての話をしていこうというわけなのです。</p>
+
+<hr>
+
+<p>　しかし、規格は時代と共に変わっていき、古い規格のものとの互換性は保ってはいるものの、推奨される標準ライブラリというのが若干変わってきています。今までずっと使ってきていた stdio.h や iostream.h といったヘッダファイルはこの古い規格のもので、現在では <font color=red>cstdio</font> や <font color=red>iostream</font> といったヘッダファイルが推奨されています（２００１年７月１日現在）。</p>
+
+<p>　ではなぜこの新しいヘッダファイルを使って話してこなかったかというと、<font color=red>この中にある関数やクラスなどは std という名前空間（<a href="../html02/cpp02050.html" target="main">第２部第５０章</a>参照）に属している</font>からです。名前空間については後の方で話すつもりだったので、新しいヘッダファイルは必然的に使えなかったのです。また、名前空間のサポートされていないような古いコンパイラでも動くようにしたかったということもありました。</p>
+
+<p>　しかし、第４部ではこの新しいヘッダファイルをどんどん使っていきます。というわけで、早速 Hello プログラムでも作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Std1.cpp</font>
+<font color=blue>#include</font> <font color=red>&lt;iostream&gt;</font>  <font color=green>// .h はつけません！</font>
+
+<font color=green>// using しなければ、std::cout や
+// std::endl のように使うことになります</font>
+<font color=red>using namespace std;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"おっす！"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>おっす！</pre></td></tr>
+
+</table></center>
+
+<p>　先ず、<font color=red>iostream</font> というヘッダファイルをインクルードします。これは <font color=red>iostream.h を新しい規格に基づいて書き換えたもの</font>です。基本的な動作は以前と全く変わりませんが、<font color=red>cout や endl などは std という名前空間に属しています</font>。つまり、このままであれば cout は std::cout と、endl は std::endl と使うことになるわけです。こんな感じですね。</p>
+
+<pre><font color=red>std::</font>cout &lt;&lt; <font color=darkcyan>"おっす！"</font> &lt;&lt; <font color=red>std::</font>endl;</pre>
+
+<p>　しかし、この１文だけならともかく、沢山になると std:: をつけるのが面倒になるので using してしまいましょう。<font color=red>using namespace &lt;名前空間名&gt;; と書くとその名前空間名を省略できるようになる</font>のでしたね。</p>
+
+<pre><font color=red>using namespace std;</font></pre>
+
+<p>　これで std:: が省略できるようになったので、あとは今まで通りプログラムを書いていけばいいだけです。</p>
+
+<pre><font color=red>cout</font> &lt;&lt; <font color=darkcyan>"おっす！"</font> &lt;&lt; <font color=red>endl</font>;</pre>
+
+<p>　つまり、<font color=red>新しいファイルをインクルードしても、using namespace std; を書いておけば古いコードはそのまま使えてしまう</font>というわけです。</p>
+
+<hr>
+
+<p>　では最後に、標準ライブラリ用のヘッダファイル、標準ヘッダファイルについてザッと話しましょう。</p>
+
+<p>　標準ヘッダファイルは大きく次の３つに分けることができます。</p>
+
+<ol>
+<li>sprintf などのような<font color=red>Ｃ言語</font>でも使えるものを <font color=red>std 名前空間内に入れたもの</font></li>
+<li>cout のような<font color=red>古いＣ＋＋</font>でも使えるものを新しい規格に基づいて書き換えたもの</li>
+<li>新しい規格のもとで<font color=red>追加</font>されたもの</li>
+</ol>
+
+<p>　１．のヘッダファイルには cstdio, cstdlib, cstring, ctime などがあります。この名前は<font color=red>古い名前の上に c をつけて .h を取り除いた形</font>になっています。</p>
+
+<p>　２．のヘッダファイルには iostream などがあります。この名前は基本的には<font color=red>古い名前の .h を取り除いた形</font>になっています。</p>
+
+<p>　しかし、中には例外もあります。例えば、ＶＣ＋＋の古いヘッダファイルの拡張子を除いた名前は８文字以下にされているので（ＭＳ−ＤＯＳ用に書かれたソースとの互換性のためでしょう）、strstream という長い名前のクラスの定義の入ったヘッダファイルの名前は strstrea.h のように m だけ切れてしまっています。新しい規格ではもう気にしなくなったらしく、これは strstream のように m もちゃんと付いた形になります。stdexcept.h → exception というのもあります。</p>
+
+<p>　３．のヘッダファイルには algorithm, functional, vector, string などがあります。主にはテンプレートから構成されていて、それらは<font color=red>ＳＴＬ（Standard Template Library : 標準テンプレートライブラリ）</font>と呼ばれています。<font color=red>第４部でメインに話すのはこのＳＴＬについてです。</font></p>
+
+<p>　このように、<font color=red>現在の規格の標準ヘッダファイルには .h はつけられていません</font>。あとはＣ言語用のヘッダファイルには c を先頭に付けるということさえ忘れなければいいわけですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>どんなコンパイラにでもついてくることが推奨されている標準ライブラリなるものが存在する。</li>
+<li>標準ライブラリ内の名前は std 名前空間に属している。</li>
+<li>stdio.h 等Ｃ言語のヘッダファイルは cstdio のような名前で提供される。</li>
+<li>iostream.h 等古いＣ＋＋のヘッダファイルは iostream のような名前で提供される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　歴史の話をしたところで新しくＣ＋＋を知る人にとってはあまり意味がないと思うかもしれませんが、古い環境が未だに残っているようなところでプログラムする機会もまだあるかもしれないので、ちょっと心の片隅にでも止めておくといいかもしれませんね。</p>
+
+<hr>
+
+<p align=right><a href="../html02/cpp02050.html" target="main">第２部第５０章　名前空間</a> | <a href="cpp04002.html" target="main">第２章　アル・コワリズミ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.7.1</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

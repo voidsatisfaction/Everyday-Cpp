@@ -1,0 +1,103 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１０章 値の入力 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１０章　値の入力</font>
+</center>
+<hr>
+
+<p>　ただプログラムがずーと動いているのを眺めているだけでは、なんかつまらないですよね。こちらでプログラムの実行中に値を入れてやることができれば、プログラムを組むのにも張り合いが出ることでしょう。（ほんとかなー。）</p>
+
+<p>　というわけで、今回は値の入力について話していきます。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>値の入力には、その値を入れる変数が必要。</li>
+<li>値の入力は cin >> [変数]; とする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　値の入力には、<a href="cpp01002.html">第２章</a>でほんの少し言った <font color=red>cin</font> を使います。いつ出るか待っていた人も、すっかり忘れていた人もいるでしょう。</p>
+
+<p>　では、プログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Input1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a;
+
+    cout &lt;&lt; <font color=darkcyan>"何か値を入れてね &gt; "</font>;
+    cin &gt;&gt; a;
+
+    cout &lt;&lt; <font color=darkcyan>"その数を３で割った余りは" </font>
+         &lt;&lt; a % <font color=darkcyan>3</font> &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>何か値を入れてね &gt; 62
+その数を３で割った余りは 2 です。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　先ず、<font color=red>入力した値を入れておく容器を用意しておきます</font>。今回は整数値を入力するつもりなので、int 型の変数 a を用意しました。</p>
+
+<p>　そして、入力する前に説明を表示しておいて、それから以下のようにします。</p>
+
+<pre>cin &gt;&gt; a;</pre>
+
+<p>　今度は cout と矢印の向きが逆です。<font color=red>入力装置から変数に値を入れるような格好になっていますね。</font></p>
+
+<p>　実行は入力のためにここで一旦止まります。そして入力が終了すると、a にその値が入れられ、そして次の文が実行されます。</p>
+
+<p>　以前に「= がなければ値は変えられない」と言ったと思います。ですが、ここには = がないのに a の値が変えられてしまいました。これは cin &gt;&gt; の処理が別の所にあって、そこで a の値が変えられたからです。こういう場合は値の変わったことがわかりにくい場合があるので気を付けて下さい。</p>
+
+<p>　さぁ、これで入力ができるようになりました。何度か実行して、いろいろと入力してみて下さい。もし不具合が出てきたら、それは cin の仕様の甘さのせいでしょう（笑）。</p>
+
+<hr>
+
+<p>　今回はこれだけです。次回からはいよいよ本題とも言える条件分岐を説明します。その際に必要なので今回は値の入力について説明したのでした。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>値の入力には、その値を入れる変数が必要。</li>
+<li>値の入力は cin >> [変数]; とする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01009.html" target="main">第９章　グローバル変数</a> | <a href="cpp01011.html" target="main">第１１章　条件分岐</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.2.23</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

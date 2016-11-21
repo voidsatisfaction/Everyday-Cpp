@@ -1,0 +1,312 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６章 デストラクタ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６章　デストラクタ</font>
+</center>
+<hr>
+
+<p>　さて、前回の CIntArray クラスを発展させ、サイズを動的に決められるようにしてみましょう。クラスを使えば、<a href="../html01/cpp01071.html" target="main">第１部第７１章</a>でさんざん注意した<font color=red>メモリリーク</font>も比較的簡単に防ぐことができるようになります。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数の寿命が来るとデストラクタが呼ばれる。</li>
+<li>デストラクタはクラス名の前にティルダ (~) のついた名前の関数である。</li>
+<li>デストラクタには戻り値も引数もない。</li>
+<li>コンストラクタ・デストラクタの機構はメモリリークを防ぐのに便利。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のクラスを発展させて、<font color=red>「サイズを動的に決められる int 型の配列」</font>を扱うクラスを作ってみましょう。</p>
+
+<p>　サイズを動的に決められる配列については、第１部の<a href="../html01/cpp01072.html" target="main">第７２章</a>と<a href="../html01/cpp01073.html" target="main">第７３章</a>で話しました。いろいろややこしい制限があって、実際に使おうと思ってもしりごみしてしまう人も多いと思います。</p>
+
+<p>　しかし、クラスを使えばこの制限も大したことではなくなります。それについてはおいおい話していくとしまして、とりあえずクラスの骨子を見てみましょう。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// コンストラクタ</font>
+<font color=blue>public</font>:
+    CIntArray(<font color=blue>const int</font> nNumOf);
+
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> Get(<font color=blue>const int</font> index);
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value);
+
+    <font color=green>// インデックスのチェック</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index);
+};</pre></td>
+</tr></table></center>
+
+<p>　CheckIndex は ELEM(m_anum) が m_nNumOf になるだけです。Get, Set も m_anum が m_pnum になるだけです。なので、これらの実装は置いておいて、コンストラクタについて考えてみましょう。コンストラクタはどうすればいいでしょうか？</p>
+
+<center><table border=1><tr>
+<td><pre><font color=green>// コンストラクタ</font>
+CIntArray::CIntArray(<font color=blue>const int</font> nNumOf)
+{
+    m_pnum = <font color=blue>new int</font>[nNumOf];
+    <font color=blue>if</font>(m_pnum == NULL)
+       m_nNumOf = <font color=darkcyan>0</font>;
+    <font color=blue>else</font>
+    {
+        m_nNumOf = nNumOf;
+        memset(m_pnum, <font color=darkcyan>0</font>, nNumOf * <font color=blue>sizeof</font> *m_pnum);
+    }
+}</pre></td>
+</tr></table></center>
+
+<p>　コンストラクタで、指定しただけの配列を確保します。それが</p>
+
+<pre>m_pnum = new int[nNumOf];</pre>
+
+<p>ですね。こうすると、int 型の nNumOf 個の配列がメモリ上に確保され、そのアドレスが m_pnum に入れられます。そして、m_nNumOf にその要素数を入れておきます。この m_nNumOf は CheckIndex 関数でインデックスの確認のために使われます。</p>
+
+<p>　ここで、メモリの確保に失敗すると m_pnum には NULL が入れられます。そのときは m_nNumOf を０にします。そうすると、CheckIndex はつねに失敗してくれますね。</p>
+
+<p>　しかし、これだけだと<font color=red>メモリの解放がどこにもありません</font>。このままでは<font size=+2 color=red>メモリリークし放題です</font>。</p>
+
+<p>　このオブジェクトがある間はメモリを解放する必要はないですが、このオブジェクトの寿命がきたらメモリを解放する必要がありますね。となると、寿命が来る直前にいちいち解放する関数を呼ぶように注意しないといけないのでしょうか？</p>
+
+<p>　もちろん、そんなことはありません。解決方法が用意されています。</p>
+
+<p>　それは<font color=red>デストラクタ</font>というものです。何かコンストラクタと名前が似ていますね。</p>
+
+<p>　デストラクタは<font color=red>オブジェクトが寿命を迎えたときに自動的に呼ばれる特殊な関数</font>です。コンストラクタが初期化をするのに対して、デストラクタは<font color=red>後始末</font>をするわけです。</p>
+
+<p>　すなわち、<font size=+1 color=red>クラスはコンストラクタに始まりデストラクタに終わる</font>のです。</p>
+
+<p>　デストラクタは、例えば次のようになります。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// コンストラクタ・デストラクタ</font>
+<font color=blue>public</font>:
+    CIntArray(<font color=blue>const int</font> nNumOf);
+    ~CIntArray();
+
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> Get(<font color=blue>const int</font> index);
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value);
+
+    <font color=green>// インデックスのチェック</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index);
+};
+
+<font color=green>// デストラクタ</font>
+CIntArray::~CIntArray()
+{
+    <font color=blue>if</font>(m_pnum != NULL)
+        <font color=blue>delete</font> [] m_pnum;
+}
+</pre></td>
+</tr></table></center>
+
+<p>　何やらコンストラクタに似ていますね。ただ、関数名の頭に <font color=red>~</font> がついています。俗に「ニョロ」だの「から」だの適当に呼ばれるこれの正式名は「ティルダ」です。インターネットを利用している人はよく目にするでしょう。Ｃ／Ｃ＋＋言語ではＮＯＴ演算子（<a href="../html01/cpp01048.html" target="main">第１部第４８章</a>参照）としても使われます。</p>
+
+<p>　このように、デストラクタの名前は<font color=red>クラス名にティルダをつけたもの</font>です。そして、<font color=red>戻り値も引数もありません</font>。戻り値や引数があったところでどうしようもありませんしね。</p>
+
+<p>　デストラクタでメモリの解放をするようにしておくと、<font color=red>変数の寿命が来たときに自動的にメモリを解放してくれます</font>。こうしておくと、<font color=red>メモリリークからも解放される</font>のです。</p>
+
+<hr>
+
+<p>　では、CIntArray を使ったプログラムを作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th><th>プログラム３</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Dstruct1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>const int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : No."</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+CIntArray a(<font color=darkcyan>10</font>);
+
+<font color=blue>int</font> main()
+{
+    CIntArray b(<font color=darkcyan>20</font>);
+    Viss(<font color=darkcyan>1</font>);
+
+    CIntArray c(<font color=darkcyan>30</font>);
+    Viss(<font color=darkcyan>2</font>);
+
+    {
+        CIntArray d(<font color=darkcyan>40</font>);
+        Viss(<font color=darkcyan>3</font>);
+    }
+    Viss(<font color=darkcyan>4</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top rowspan=3><pre><font color=green>// IntArray.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=green>// コンストラクタ</font>
+CIntArray::CIntArray(<font color=blue>const int</font> nNumOf)
+{
+    m_pnum = <font color=blue>new int</font>[nNumOf];
+    <font color=blue>if</font>(m_pnum == NULL)
+       m_nNumOf = <font color=darkcyan>0</font>;
+    <font color=blue>else</font>
+    {
+        m_nNumOf = nNumOf;
+        memset(m_pnum, <font color=darkcyan>0</font>, nNumOf * <font color=blue>sizeof</font> *m_pnum);
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"コンストラクタが呼ばれました。"</font>
+         &lt;&lt; <font color=darkcyan>"要素数は "</font> &lt;&lt; m_nNumOf &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// デストラクタ</font>
+CIntArray::~CIntArray()
+{
+    <font color=blue>if</font>(m_pnum != NULL)
+        <font color=blue>delete</font> [] m_pnum;
+
+    cout &lt;&lt; <font color=darkcyan>"デストラクタが呼ばれました。"</font>
+         &lt;&lt; <font color=darkcyan>"要素数は "</font> &lt;&lt; m_nNumOf &lt;&lt; <font color=darkcyan>" でした。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// メンバへのアクセス関数</font>
+<font color=blue>int</font> CIntArray::Get(<font color=blue>const int</font> index)
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}
+
+<font color=blue>void</font> CIntArray::Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value)
+{
+    CheckIndex(index);
+    m_pnum[index] = value;
+}
+
+<font color=green>// インデックスのチェック</font>
+<font color=blue>void</font> CIntArray::CheckIndex(<font color=blue>const int</font> index)
+{
+    <font color=blue>if</font>((<font color=blue>unsigned int</font>)index &lt; (<font color=blue>unsigned int</font>)m_nNumOf)
+        <font color=blue>return</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"インデックスが不正です！"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"値 : "</font> &lt;&lt; index &lt;&lt; endl;
+    exit(<font color=darkcyan>1</font>);
+}</pre></td>
+</tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// IntArray.h</font>
+<font color=blue>#ifndef</font> __INTARRAY_H_INCLUDED__
+<font color=blue>#define</font> __INTARRAY_H_INCLUDED__
+
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// コンストラクタ・デストラクタ</font>
+<font color=blue>public</font>:
+    CIntArray(<font color=blue>const int</font> nNumOf);
+    ~CIntArray();
+
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> Get(<font color=blue>const int</font> index);
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value);
+
+    <font color=green>// インデックスのチェック</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index);
+};
+
+<font color=blue>#endif</font></pre></td>
+</tr>
+
+<tr><th colspan=2>実行結果</th></tr>
+
+<tr><td colspan=2><pre>コンストラクタが呼ばれました。要素数は 10 です。
+コンストラクタが呼ばれました。要素数は 20 です。
+Viss : No.1
+コンストラクタが呼ばれました。要素数は 30 です。
+Viss : No.2
+コンストラクタが呼ばれました。要素数は 40 です。
+Viss : No.3
+デストラクタが呼ばれました。要素数は 40 でした。
+Viss : No.4
+デストラクタが呼ばれました。要素数は 30 でした。
+デストラクタが呼ばれました。要素数は 20 でした。
+デストラクタが呼ばれました。要素数は 10 でした。</pre></td></tr>
+
+</table></center>
+
+<p>　グローバル変数の a が１番初めに作られ、１番最後に寿命が来ています。</p>
+
+<p>　同じブロックで作られた b と c ですが、コンストラクタの呼ばれるのは宣言の位置のようです。別に問題はありませんね。そして、デストラクタは<font color=red>後に作られた方が先に呼ばれています</font>。</p>
+
+<p>　そして、内側のブロックで作られた d ですが、Viss(3); と Viss(4); の間でデストラクタが呼ばれています。ここには } しかありませんが、ここは <font color=red>d の寿命の来る場所</font>ですね。期待通りの動作が行われていることが分かります。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数の寿命が来るとデストラクタが呼ばれる。</li>
+<li>デストラクタはクラス名の前にティルダ (~) のついた名前の関数である。</li>
+<li>デストラクタには戻り値も引数もない。</li>
+<li>コンストラクタ・デストラクタの機構はメモリリークを防ぐのに便利。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　クラスの話になるとどうもプログラムが長くなりますね。でも、テキストは普段よりもかなり少ないので、惑わされないで下さいね。</p>
+
+<hr>
+
+<p align=right><a href="cpp02005.html" target="main">第５章　隠せ！</a> | <a href="cpp02007.html" target="main">第７章　ファイルを分けよう</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

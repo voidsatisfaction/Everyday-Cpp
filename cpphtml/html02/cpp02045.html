@@ -1,0 +1,218 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４５章 えっ！？ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４５章　えっ！？</font>
+</center>
+<hr>
+
+<p>　えっ、エラー！？　そんなときに例外処理。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>throw 文で例外を投げることができる。</li>
+<li>try ブロック内で例外が発生すると catch ブロックに飛ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回から数章にわたってエラー処理について話そうと思います。エラー処理というと<a href="../html03/cpp03005.html" target="main">第３部第５章</a>の goto なんかもありますね。しかし、Ｃ＋＋にはもっと洗練されたエラー処理の方法が用意されています。</p>
+
+<p>　先ずは、第３部第５章のプログラムをもう一度見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>bool</font> Func()
+{
+    FILE *pf1 = NULL;
+    FILE *pf2 = NULL;
+    FILE *pf3 = NULL;
+    <font color=blue>bool</font> bRet = <font color=blue>false</font>;
+
+    pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf1 == NULL)
+        <font color=blue>goto</font> ON_ERROR;
+
+    pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf2 == NULL)
+        <font color=blue>goto</font> ON_ERROR;
+
+    pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(pf3 == NULL)
+        <font color=blue>goto</font> ON_ERROR;
+
+    Func2(pf1, pf2, pf3);
+    bRet = <font color=blue>true</font>;
+
+ON_ERROR:
+    <font color=blue>if</font>(pf1 != NULL)
+        fclose(pf1);
+    <font color=blue>if</font>(pf2 != NULL)
+        fclose(pf2);
+    <font color=blue>if</font>(pf3 != NULL)
+        fclose(pf3);
+
+    <font color=blue>return</font> bRet;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　「あれ？　前のと違うんじゃ」と思った方、正解です。もうちょっと綺麗な形に書き直しました。先ず最初に NULL で初期化しておき、エラー時の処理、正常時の処理、関係なく同じコードでファイルを閉じられるようにしてみました。</p>
+
+<p>　これが goto 文でのエラー処理の方法です。fopen の戻り値を確認して、エラーなら最後に飛ぶというものでした。</p>
+
+<p>　これをもうちょっと改造してみましょう。戻り値を true と false だけにするのではなく、どのファイルでエラーが発生したかも分かるようにします。つまり、エラーの発生したときはファイルの番号（１，２，３）を返し、正常終了の時は０を返そうということです。</p>
+
+<p>　どうやるかは簡単ですね。goto の前に bRet のような変数に値を入れればいいだけです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>int</font> Func()
+{
+    FILE *pf1 = NULL;
+    FILE *pf2 = NULL;
+    FILE *pf3 = NULL;
+    <font color=blue>int</font> fRet = <font color=darkcyan>0</font>;
+
+    pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf1 == NULL)
+    {
+        fRet = <font color=darkcyan>1</font>;
+        <font color=blue>goto</font> ON_ERROR;
+    }
+
+    pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf2 == NULL)
+    {
+        fRet = <font color=darkcyan>2</font>;
+        <font color=blue>goto</font> ON_ERROR;
+    }
+
+    pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(pf3 == NULL)
+    {
+        fRet = <font color=darkcyan>3</font>;
+        <font color=blue>goto</font> ON_ERROR;
+    }
+
+    Func2(pf1, pf2, pf3);
+ON_ERROR:
+    <font color=blue>if</font>(pf1 != NULL)
+        fclose(pf1);
+    <font color=blue>if</font>(pf2 != NULL)
+        fclose(pf2);
+    <font color=blue>if</font>(pf3 != NULL)
+        fclose(pf3);
+
+    <font color=blue>return</font> fRet;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　はい。これでいいですね。でも、何か if 文が大きくふくれて、鬱陶しいですね。</p>
+
+<hr>
+
+<p>　こういうとき、Ｃ＋＋の<font color=red>例外処理</font>を使えばすっきりします。例外処理とはなんなのか...それを話す前に、とりあえずどんなものか見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>int</font> Func()
+{
+    FILE *pf1 = NULL;
+    FILE *pf2 = NULL;
+    FILE *pf3 = NULL;
+    <font color=blue>int</font> fRet = <font color=darkcyan>0</font>;
+
+    <font color=red>try
+    {</font>
+        pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+        <font color=blue>if</font>(pf1 == NULL)
+            <font color=red>throw 1;</font>
+
+        pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+        <font color=blue>if</font>(pf2 == NULL)
+            <font color=red>throw 2;</font>
+
+        pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+        <font color=blue>if</font>(pf3 == NULL)
+            <font color=red>throw 3;</font>
+
+        Func2(pf1, pf2, pf3);
+    <font color=red>}
+    catch(int fError)
+    {
+        fRet = fError;
+    }</font>
+
+    <font color=blue>if</font>(pf1 != NULL)
+        fclose(pf1);
+    <font color=blue>if</font>(pf2 != NULL)
+        fclose(pf2);
+    <font color=blue>if</font>(pf3 != NULL)
+        fclose(pf3);
+
+    <font color=blue>return</font> fRet;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　赤くなったところに注目して下さい。今までに見たことのない <font color=red>try, catch, throw</font> という命令が使われています。これらが<font color=red>例外処理</font>用の命令です。</p>
+
+<p>　先ずは <font color=red>try</font> があります。その次に { } があって、その中に処理が書かれています。何か if 文みたいですが、特に条件のようなものは見あたりません。try は「試しにやってみる」という意味ですが、どういうことなのでしょうね。</p>
+
+<p>　次に、エラーが発生したときに <font color=red>throw</font> という命令を使っています。ここには、前のプログラムでは goto 文があった場所ですね。なので、<font color=red>どこかに処理が移動しそう</font>です。そして、throw は return 文のように値を１つ引き連れています。ここの値は前に fRet に代入した値と同じです。いったいどういうことなのでしょうね。</p>
+
+<p>　で、Func2 の次に <font color=red>catch</font> という命令を使っています。その次のカッコ内では <font color=red>fError という変数が宣言されています</font>。そして、fRet にその値を代入しています。fError の初期化はどうしたのでしょうか？</p>
+
+<p>　最後にはいつも通りのファイルを閉じるコードが書かれています。さぁ、どんな動作をするのか予想はつきましたか？</p>
+
+<hr>
+
+<p>　それでは答です。</p>
+
+<p>　<font color=red>throw 文は「例外」を発生させるための命令</font>です。<font color=red>この「例外」というものが try ブロック内で発生すると、catch ブロックに飛びます。</font>try ブロックとは try の後に書かれた { } 内のことで、catch ブロックとは同じく catch の後に書かれた { } 内のことです。「try」して（やってみて）、エラーがあれば「throw」して（投げて）、その例外を「catch」する（取る）わけです。</p>
+
+<p>　このとき、<font color=red>fError は throw で投げた値で初期化されます</font>。なので、fRet には throw で投げた値が代入されることになります。</p>
+
+<p>　そして、<font color=red>例外が発生しなかった場合は catch ブロックは無視されます</font>。決して fError = 0 で実行されるということは<font color=red>ありません</font>。正常な場合は try ブロックのみが実行され、catch ブロックは例外が発生したときだけ実行されるわけです。</p>
+
+<p>　これらのことを踏まえてもう一度プログラムをじっくり見てみて下さい。例外処理がどんなものか分かってくると思います。いろいろ改造して楽しんでみて下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>throw 文で例外を投げることができる。</li>
+<li>try ブロック内で例外が発生すると catch ブロックに飛ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　まだ goto を使ったものと比べて大幅にコードが減っているようには見えませんが、これはまだ例外処理の実力の半分しか使っていないからです。その実力は、次回からじっくり見ていきましょう。</p>
+
+<p>　それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02044.html" target="main">第４４章　テンポラリ</a> | <a href="cpp02046.html" target="main">第４６章　えっ！？　２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

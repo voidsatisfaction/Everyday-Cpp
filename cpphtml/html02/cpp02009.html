@@ -1,0 +1,259 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第９章 コピー -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第９章　コピー</font>
+</center>
+<hr>
+
+<p>　実は、CIntArray クラスには大きな問題点があります。関数に渡してみれば分かると思います。こういうときには、どうすればいいのでしょうか？</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>コピーコンストラクタは自分のクラス型への参照を引数にとる。</li>
+<li>コピーコンストラクタは仮引数の宣言時に呼ばれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="../html01/cpp01059.html" target="main">第１部第５９章</a>で言ったように、構造体やクラスは参照渡しをするのが普通です。ですが、値渡ししたいときもあるでしょう（参照渡し、値渡しについては<a href="../html01/cpp01034.html" target="main">第１部第３４章</a>を参照）。そして、誰かに勝手に値渡し<font color=red>されてしまう</font>ことも、自分でうっかり値渡し<font color=red>してしまう</font>こともあるでしょう。</p>
+
+<p>　では、CIntArray を値渡ししてみましょう。プログラムは、一旦 A から Z までの文字コードを配列に入れておき、それを関数 Disp で表示するというものです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// Copy1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=green>// CIntArray は IntArray.h で宣言され、
+// IntArray.cpp で実装されているとします</font>
+
+<font color=blue>void</font> Disp(CIntArray array)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; array.NumOf(); i++)
+        cout &lt;&lt; array.Get(i) &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CIntArray arrayAtoZ(<font color=darkcyan>'Z'</font> - <font color=darkcyan>'A'</font> + <font color=darkcyan>1</font>);
+    <font color=blue>int</font>       i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; arrayAtoZ.NumOf(); i++)
+        arrayAtoZ.Set(i, <font color=darkcyan>'A'</font> + i);
+    Disp(arrayAtoZ);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　おや、実行結果が書いてありませんね。そうです。<font color=red>エラー終了</font>してしまいます。</p>
+
+<p>　では、何がいけなかったのでしょうか？　それは、<font color=red>引数の仕組み</font>を考えるといいでしょう。<a href="../html01/cpp01034.html" target="main">第１部第３４章</a>の要点はこうでした。</p>
+
+<ul>
+<li>引数は、新たに変数が作られ、それに値が代入されるという仕組み。 </li>
+</ul>
+
+<p>　これです。これが原因なのです。実際に処理を追ってみるとよく分かると思います。</p>
+
+<p>　先ず、Disp 関数に入るときに仮引数 array が作られます。そして、そこに arrayAtoZ の内容がコピーされます。</p>
+
+<p>　ここで注意することは、コピーされるのは <font color=red>m_pnum と m_nNumOf の値</font>であるということです。m_nNumOf は構わないのですが、問題は m_pnum です。</p>
+
+<p>　m_pnum の値とは何でしたか？　そうです。<font color=red>new で確保したメモリの先頭アドレス</font>ですね。<font color=red>配列がコピーされるわけではないのです。</font></p>
+
+<p>　で、Disp 関数が終わります。仮引数の寿命はここまでなので、<font color=red>ここで array のデストラクタが呼ばれます</font>。すると、何と<font color=red>メモリが解放されてしまいます</font>。</p>
+
+<p>　で、Disp 関数を抜け、今度は main 関数を抜けようとします。すると、ここで arrayAtoZ のデストラクタが呼ばれます。しかし、<font color=red>もう既に m_pnum の指していたメモリは解放されています</font>。なので、delete しようとするとエラーが出てしまうのです。もちろん、delete だけでなく <font color=red>Get や Set を使ったのでもおかしくなってしまいます</font>。</p>
+
+<p>　以上が、おかしくなった経過です。</p>
+
+<hr>
+
+<p>　値渡しにするからには、<font color=red>配列がコピーされることを期待している</font>のです。そうでなければ参照渡しを使えばいいのです。では、これはどのように解決できるのでしょうか？</p>
+
+<p>　ここで、またコンストラクタの出番です。実は、<font color=red>仮引数が作られるときもコンストラクタが呼ばれる</font>のです。このコンストラクタは、コンストラクタの中でも特殊な<font color=red>コピーコンストラクタ</font>というものです。</p>
+
+<p>　コピーコンストラクタは、<font color=red>そのクラス型への参照を引数にとるコンストラクタ</font>です。例えば CIntArray なら、CIntArray(const CIntArray& rother) のようなものです。この仮引数 rother ですが、これは<font color=red>実引数への参照</font>になります。上の例では arrayAtoZ への参照になるわけです。</p>
+
+<p>　<font color=red>このコピーコンストラクタでメモリの確保を行い、配列をコピーしてやればいいのです。</font></p>
+
+<p>　しかし、上の例ではコピーコンストラクタなどを作った覚えはありません。コピーコンストラクタを作らなかった場合は普通の値渡しを行うわけです。普通の値渡しに相当するコピーコンストラクタが自動的に作られる、と言った方が正確でしょうか。</p>
+
+<p>　では、コピーコンストラクタを追加してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th><th>プログラム３</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// IntArray.h</font>
+<font color=blue>#ifndef</font> __INTARRAY_H_INCLUDED__
+<font color=blue>#define</font> __INTARRAY_H_INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// コピーコンストラクタ</font>
+<font color=blue>public</font>:
+    CIntArray(CIntArray&amp; rother);
+
+    <font color=green>// 他のメンバは省略します</font>
+};
+
+<font color=green>// インライン関数の実装も省略します</font>
+
+<font color=blue>#endif</font></pre></td>
+
+<td rowspan=3 valign=top><pre><font color=green>// Copy1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>const int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : No."</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>void</font> Disp(CIntArray array)
+{
+    Viss(<font color=darkcyan>2</font>);
+
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; array.NumOf(); i++)
+        cout &lt;&lt; array.Get(i) &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+
+    Viss(<font color=darkcyan>3</font>);
+}
+
+<font color=blue>int</font> main()
+{
+    CIntArray arrayAtoZ(<font color=darkcyan>'Z'</font> - <font color=darkcyan>'A'</font> + <font color=darkcyan>1</font>);
+    <font color=blue>int</font>       i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; arrayAtoZ.NumOf(); i++)
+        arrayAtoZ.Set(i, <font color=darkcyan>'A'</font> + i);
+
+    Viss(<font color=darkcyan>1</font>);
+    Disp(arrayAtoZ);
+    Viss(<font color=darkcyan>4</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td valign=top><pre><font color=green>// IntArray.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=green>// コピーコンストラクタ</font>
+CIntArray::CIntArray(CIntArray&amp; rother)
+{
+    <font color=blue>if</font>(rother.Success() == <font color=blue>false</font>)
+    {
+        m_pnum   = NULL;
+        m_nNumOf = <font color=darkcyan>0</font>;
+    }
+    <font color=blue>else</font>
+    {
+        m_pnum = <font color=blue>new int</font>[rother.NumOf()];
+        <font color=blue>if</font>(m_pnum == NULL)
+        {
+            m_nNumOf = <font color=darkcyan>0</font>;
+            <font color=blue>return</font>;
+        }
+
+        <font color=green>// memcpy はメモリの内容をバイト単位でコピーする関数です</font>
+        memcpy(m_pnum, rother.m_pnum, rother.SizeOf());
+        m_nNumOf = rother.m_nNumOf;
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"コピーコンストラクタが呼ばれました。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// 他の関数の実装は省略します</font></pre></td></tr>
+
+
+<tr><th colspan=2>実行結果</th></tr>
+
+<tr><td colspan=2><pre>コンストラクタが呼ばれました。要素数は 26 です。
+Viss : No.1
+コピーコンストラクタが呼ばれました。
+Viss : No.2
+65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90
+Viss : No.3
+デストラクタが呼ばれました。要素数は 26 でした。
+Viss : No.4
+デストラクタが呼ばれました。要素数は 26 でした。</pre></td></tr>
+
+</table></center>
+
+<p>　無事、エラーも出ずにプログラムを実行することができました。</p>
+
+<p>　コピーコンストラクタの呼ばれるタイミングも確認して下さい。Viss(1); と Viss(2); の間になっています。ここは<font color=red>仮引数が作られるとき</font>ですね。仮引数が作られるときにコピーコンストラクタが呼ばれていることがよく分かります。</p>
+
+<p>　そして、仮引数の寿命は Viss(3); と Viss(4); の間、つまり <font color=red>Disp 関数の終わるとき</font>に尽きています。こうやって確認のテキストを表示すると、何がどう機能しているかがよく分かりますね。</p>
+
+<hr>
+
+<p>　このコピーコンストラクタですが、もちろん<font color=red>普通のコンストラクタとしても機能します</font>。例えば、</p>
+
+<pre>CIntArray array1(100);
+int       i;
+
+for(i = 0; i &lt; array1.NumOf(); i++)
+    array1.Set(i, i * 10);
+
+CIntArray array2(array1);</pre>
+
+<p>のような感じです。array2 を作るとき、コピーコンストラクタが呼ばれますね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>コピーコンストラクタは自分のクラス型への参照を引数にとる。</li>
+<li>コピーコンストラクタは仮引数の宣言時に呼ばれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回のプログラムを眺めると、何か違和感を感じる人もいるかもしれません。いつもベタベタつけている「アレ」が足りないような気がしませんか？　「アレ」が一体何なのかを見つけてから次回を見て欲しいですね。</p>
+
+<hr>
+
+<p align=right><a href="cpp02008.html" target="main">第８章　インライン関数・再び</a> | <a href="cpp02010.html" target="main">第１０章　不動の構え</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.30</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

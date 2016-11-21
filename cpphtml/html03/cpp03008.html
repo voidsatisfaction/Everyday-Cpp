@@ -1,0 +1,184 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第８章 アドレスを返す関数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第８章　アドレスを返す関数</font>
+</center>
+<hr>
+
+<p>　前回、代入式は「代入される変数の参照を返す感じだ」と言いました。今回は、まさしく参照を返す関数について話します。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>アドレスや参照を返す関数では寿命に注意する。</li>
+<li>参照を返す関数はアドレスを返す関数と基本的には同じ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の代入式の動作を、関数を使って<a href="../htmlword/words026.html" target="words">エミュレート</a>することを考えてみましょう。例として、int 型の変数に対する += をエミュレートしてみます。</p>
+
+<p>　先ず、引数はどうしますか？　そうですね。左辺と、右辺の２つになりますね。しかし、型はどうしましょう？　これはちょっと置いておきます。</p>
+
+<p>　次に、戻り値の型はどうしますか？　代入式は左辺にある変数の代わりに使えないといけないので、<font color=red>左辺のアドレス</font>を返すようにしましょう。となると、左辺の代わりとなる引数は<font color=red>ポインタ</font>にしなければいけないことが分かるでしょう。</p>
+
+<p>　なぜかは分かりますか？　<font color=red>仮引数と実引数は別の変数だから</font>ですね。関数にそのまま渡してしまえば、そのアドレスはもう関数内からは分からなくなってしまうのでした。これがよく分からないという人は<a href="../html01/cpp01034.html" target="main">第１部第３４章</a>を読み返すことをすすめます。</p>
+
+<p>　以上のことから、+= 演算子をエミュレートした関数 AddAndAssign は次のようになります。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>int</font>* AddAndAssign(<font color=blue>int</font>* pnLeft, <font color=blue>int</font> nRight)
+{
+    *pnLeft = *pnLeft + nRight;
+    <font color=blue>return</font> pnLeft;
+}</pre></td>
+</tr></table></center>
+
+<p>　+= 演算子のエミュレートということで、+= をわざと使わないようにしました。</p>
+
+<p>　関数の動作自体は簡単で、足し算をして、「左辺」のアドレスを返しているだけです。実際にこの関数を使うときは、</p>
+
+<pre>AddAndAssign(AddAndAssign(&amp;a, b) , c);
+cout &lt;&lt; *AddAndAssign(&amp;a, b) &lt;&lt; endl;</pre>
+
+<p>のようにします。これらは</p>
+
+<pre>(a += b) += c;
+cout &lt;&lt; (a += b) &lt;&lt; endl;</pre>
+
+<p>をエミュレートしています。</p>
+
+<p>　ここで実際にやった通り、アドレスを返す関数では<font color=red>返すアドレスにある変数の種類と寿命</font>に注意します。</p>
+
+<pre>int* Func(int a)
+{
+    return &amp;a;
+}</pre>
+
+<p>や</p>
+
+<pre>int* Func()
+{
+    int a = 0;
+    return &amp;a;
+}</pre>
+
+<p>のようなことは<font size=+2 color=red>絶対にしてはいけません</font>。この理由が分からない人は<a href="../html01/cpp01068.html" target="main">第１部第６８章</a>を読んでみて下さい。それでもよく分からない人も、エラーを恐れずにいろいろ試してみて下さい。そのうちだんだん分かってくるようになるでしょう。</p>
+
+<hr>
+
+<p>　と、+= のエミュレートを行ってみましたが、* や &amp; をつけなければいけないのはちょっと不格好です。実際に += では * も &amp; もつけないのですから、ここまで真似して初めてエミュレートが完成したと言えるでしょう。</p>
+
+<p>　何か、前にもこういう悩みがありました。こういうときは何を使えばいいのでしたか？　そうですね。<font color=red>参照</font>です。</p>
+
+<p>　<a href="../html01/cpp01038.html" target="main">第１部第３８章</a>で「参照とポインタは内部的には全く同じ動作を行っている」と言いました。ということは、<font color=red>上のポインタで書いてある部分を参照に直すだけ</font>で良さそうです。</p>
+
+<p>　となると、引数の型だけでなく<font color=red>戻り値の型も参照型になります</font>。これって、きちんと動くのでしょうかね？</p>
+
+<p>　と、考えるだけではいつまでたっても推測の域を出ません。ということで、やはりプログラムを作って確かめてみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// RetRef1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font>* AddAndAssign(<font color=blue>int</font>* pnLeft, <font color=blue>int</font> nRight)
+{
+    *pnLeft = *pnLeft + nRight;
+    <font color=blue>return</font> pnLeft;
+}
+
+<font color=green>// 上の関数と引数の型が違うので
+// オーバーロードできます（<a href="../html01/cpp01064.html" target="main">第１部第６４章</a>参照）</font>
+<font color=blue>int</font>& AddAndAssign(<font color=blue>int</font>& rnLeft, <font color=blue>int</font> nRight)
+{
+    rnLeft = rnLeft + nRight;
+    <font color=blue>return</font> rnLeft;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a;
+
+    a = <font color=darkcyan>0</font>;
+    (a += <font color=darkcyan>3</font>) += <font color=darkcyan>5</font>;
+    cout &lt;&lt; <font color=darkcyan>"演算子　 : "</font> &lt;&lt; a &lt;&lt; endl;
+
+    a = <font color=darkcyan>0</font>;
+    AddAndAssign(AddAndAssign(&amp;a, <font color=darkcyan>3</font>), <font color=darkcyan>5</font>);
+    cout &lt;&lt; <font color=darkcyan>"ポインタ : "</font> &lt;&lt; a &lt;&lt; endl;
+
+    a = <font color=darkcyan>0</font>;
+    AddAndAssign(AddAndAssign(a, <font color=darkcyan>3</font>), <font color=darkcyan>5</font>);
+    cout &lt;&lt; <font color=darkcyan>"参照　　 : "</font> &lt;&lt; a &lt;&lt; endl;
+
+    a = <font color=darkcyan>8</font>;
+    cout &lt;&lt; <font color=darkcyan>"演算子　 : "</font> &lt;&lt; (a += <font color=darkcyan>2</font>) &lt;&lt; endl;
+
+    a = <font color=darkcyan>8</font>;
+    cout &lt;&lt; <font color=darkcyan>"ポインタ : "</font> &lt;&lt; *AddAndAssign(&amp;a, <font color=darkcyan>2</font>) &lt;&lt; endl;
+
+    a = <font color=darkcyan>8</font>;
+    cout &lt;&lt; <font color=darkcyan>"参照　　 : "</font> &lt;&lt; AddAndAssign(a, <font color=darkcyan>2</font>) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>演算子　 : 8
+ポインタ : 8
+参照　　 : 8
+演算子　 : 10
+ポインタ : 10
+参照　　 : 10</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　(a += 3) += 5; と cout &lt;&lt; (a += 2); で実験してみました。演算子を使ったときの結果と、ポインタを使った関数の結果と、参照を使った関数の結果、全てが同じになりました。完璧にエミュレートできてますね。</p>
+
+<p>　このように、<font color=red>参照も戻り値にすることができます</font>。その動作はポインタを使ったときのそれと<font color=red>全く同じ</font>です。違うのは文法だけです。</p>
+
+<p>　ただ、ポインタを使うと簡単に無効なアドレス、例えば NULL を渡すことができてしまいます。*(int*)NULL と書くと参照でも同じことができますが、<font size=+1 color=red>こんなことはしないで下さい</font>。これは戻り値も同じことですね。</p>
+
+<p>　このことは欠点であるときもあれば、利点であるときもあります。なので、一概にどちらがいいかは言えないでしょう。うまく使い分けて下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>アドレスや参照を返す関数では寿命に注意する。</li>
+<li>参照を返す関数はアドレスを返す関数と基本的には同じ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03007.html" target="main">第７章　代入文のリサイクル</a> | <a href="cpp03009.html" target="main">第９章　関数ポインタ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

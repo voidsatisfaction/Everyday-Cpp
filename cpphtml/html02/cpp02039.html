@@ -1,0 +1,159 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３９章 クラステンプレート３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３９章　クラステンプレート３</font>
+</center>
+<hr>
+
+<p>　今回は静的メンバを持つクラステンプレートを作ってみたいと思います。例によって意味のないクラスになりますが、ご勘弁を...。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ変数は各テンプレートインスタンス毎に作られる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、今回は静的メンバのお話です（<a href="cpp02028.html" target="main">第２８章</a>、<a href="cpp02029.html" target="main">第２９章</a>、<a href="cpp02030.html" target="main">第３０章</a>参照）。</p>
+
+<p>　静的メンバとは「そのクラスと派生クラスの実体全体で共有されるメンバ」のことでした。より簡単に言うと、<font color=red>「グローバル変数とグローバル関数のようなものを、アクセス制限できる「クラス」というものの中に閉じこめた物」</font>です。public にしてしまえば、ほとんどグローバル変数・関数と同じです。</p>
+
+<p>　そして、静的メンバ変数はいくらクラスの実体を作っても１つの実体が共有されるのでした。静的メンバ変数はこの世に１つ。それがＣ＋＋言語のルールです。（関数は静的でなくても１つですね。）</p>
+
+<hr>
+
+<p>　ここで気になるのが、<font color=red>「クラステンプレートでは静的メンバ変数はどうなるのだろうか？」</font>ということです。クラステンプレートをいくつも実体化させてもその全体で１つしかできないのか、それとも各テンプレートインスタンス（テンプレートの実体）毎に１つずつできるのか、気になるところです。</p>
+
+<p>　こういうときはどうするのでしたか？　そうです。確かめてみるのです。ということで次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// SMember5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=green>// たまには TYPE 以外の名前にしてみました</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> SOMETHING&gt;
+<font color=blue>class</font> CSomething
+{
+<font color=blue>private</font>:
+    <font color=blue>static int</font> something;
+<font color=blue>public</font>:
+    <font color=blue>static void</font> Disp();
+};
+
+<font color=green>// テンプレートの静的メンバ変数も
+// こんな感じで実体定義したのでいいのかな？
+// とやってみます</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> SOMETHING&gt;
+<font color=blue>int</font> CSomething &lt;SOMETHING&gt; ::something = <font color=darkcyan>0</font>;
+
+<font color=green>// something のアドレスの表示</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> SOMETHING&gt;
+<font color=blue>void</font> CSomething &lt;SOMETHING&gt; ::Disp()
+{
+    cout &lt;&lt; <font color=darkcyan>"アドレス : "</font> &lt;&lt; &amp;something &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=green>// 実体が一度も使われませんという警告が出ますが
+    // ここでは無視して構いません</font>
+    CSomething &lt;<font color=blue>int</font>&gt;   st1;
+    CSomething &lt;<font color=blue>char</font>&gt;  st2;
+    CSomething &lt;<font color=blue>void</font>*&gt; st3;
+    CSomething &lt;<font color=blue>int</font>&gt;   st4;
+    CSomething &lt; CSomething &lt;<font color=blue>int</font>&gt; &gt; st5;
+
+    <font color=green>// 静的メンバ関数は
+    // 別に実体を使って呼んでもいいのでしたね</font>
+    st1.Disp();
+    st2.Disp();
+    st3.Disp();
+    st4.Disp();
+    st5.Disp();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>アドレス : 0x0042ED60
+アドレス : 0x0042ED64
+アドレス : 0x0042ED68
+アドレス : 0x0042ED60
+アドレス : 0x0042ED6C</pre></td></tr>
+
+</table></center>
+
+<p>　結果を見て分かるとおり、「各テンプレートインスタンス毎に１つずつできる」というのが正解のようですね。</p>
+
+<p>　このように、クラステンプレートでは<font color=red>各テンプレートインスタンス毎に１つずつ別の静的メンバ変数が作られます</font>。</p>
+
+<p>　そして、静的メンバ変数の実体を定義するときの文法は、メンバ関数の時と同じになります。</p>
+
+<hr>
+
+<p>　よくよく考えてみれば、こういうことがあるのでこのことは当然なことです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>template</font> &lt;<font color=blue>typename</font> SOMETHING&gt;
+<font color=blue>class</font> CSomething
+{
+<font color=blue>private</font>:
+    <font color=blue>static</font> <font color=red>SOMETHING</font> something;
+<font color=blue>public</font>:
+    <font color=blue>static const</font> <font color=red>SOMETHING</font>&amp; Get();
+};
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> SOMETHING&gt;
+<font color=red>SOMETHING</font> CSomething &lt;SOMETHING&gt; ::something;
+
+<font color=green>// something の参照の取得</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> SOMETHING&gt;
+<font color=blue>const</font> <font color=red>SOMETHING</font>&amp; CSomething &lt;SOMETHING&gt; ::Get()
+{
+    <font color=blue>return</font> something;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　静的メンバでテンプレート引数を利用しています。こういう状態で全部共有されてしまうとは考えられないことですね。このことを頭に入れておけば、どうなるか悩むことはなくなるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ変数は各テンプレートインスタンス毎に作られる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次でテンプレートについては大体終わりになります。では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02038.html" target="main">第３８章　クラステンプレート２</a> | <a href="cpp02040.html" target="main">第４０章　シリアル入り</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.14</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

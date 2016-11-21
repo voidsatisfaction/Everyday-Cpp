@@ -1,0 +1,133 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 静的変数の動作確認 -</title>
+</head>
+<body bgcolor=white>
+
+<pre><font color=green>// Static1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>   <font color=green>// memset を使うためのヘッダファイルです</font>
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////</font>
+<font color=green>// アドレスが常に一定かのチェック</font>
+<font color=green>// 前章で行った方法と同じですね</font>
+
+<font color=blue>void</font> AddressCheck_Sub()
+{
+    <font color=blue>static int</font> a;
+    <font color=blue>int</font>        b;
+    cout &lt;&lt; <font color=darkcyan>"&amp;a = "</font> &lt;&lt; &amp;a &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"&amp;b = "</font> &lt;&lt; &amp;b &lt;&lt; endl;
+}
+
+<font color=blue>void</font> AddressCheck_Sub2()
+{
+    cout &lt;&lt; <font color=darkcyan>"in Sub2"</font> &lt;&lt; endl;
+    AddressCheck_Sub();
+}
+
+<font color=blue>void</font> AddressCheck()
+{
+    cout &lt;&lt; <font color=darkcyan>"アドレスが常に一定かのチェック"</font> &lt;&lt; endl;
+
+    AddressCheck_Sub();
+    AddressCheck_Sub2();
+    AddressCheck_Sub();
+}
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////</font>
+<font color=green>// 初期化が１回しかされないかのチェック</font>
+<font color=green>// 第９章でやったのと同じ方法ですね</font>
+
+<font color=blue>void</font> InitOnceCheck_Sub()
+{
+    <font color=blue>static int</font> a = <font color=darkcyan>3</font>;
+    <font color=blue>int</font>        b = <font color=darkcyan>3</font>;
+    cout &lt;&lt; <font color=darkcyan>"a = "</font> &lt;&lt; a &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; b &lt;&lt; endl;
+    a++;
+    b++;
+}
+
+<font color=blue>void</font> InitOnceCheck()
+{
+    cout &lt;&lt; endl &lt;&lt; <font color=darkcyan>"初期化が１回しかされないかのチェック"</font> &lt;&lt; endl;
+
+    InitOnceCheck_Sub();
+    InitOnceCheck_Sub();
+}
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////</font>
+<font color=green>// ０で初期化されるかのチェック</font>
+<font color=green>// 偶然０だったときのために、４個くらい変数を作って確かめます</font>
+<font color=green>// 自動変数も一緒に確認してみます</font>
+
+<font color=blue>void</font> ZeroInitCheck_Sub()
+{
+    <font color=blue>static int</font> a, b, c, d;
+    cout &lt;&lt; a &lt;&lt; <font color=darkcyan>','</font> &lt;&lt; b &lt;&lt; <font color=darkcyan>','</font> &lt;&lt; c &lt;&lt; <font color=darkcyan>','</font> &lt;&lt; d &lt;&lt; endl;
+}
+
+<font color=blue>void</font> ZeroInitCheck_Sub2()
+{
+    <font color=blue>int</font> a, b, c, d;
+    cout &lt;&lt; a &lt;&lt; <font color=darkcyan>','</font> &lt;&lt; b &lt;&lt; <font color=darkcyan>','</font> &lt;&lt; c &lt;&lt; <font color=darkcyan>','</font> &lt;&lt; d &lt;&lt; endl;
+}
+
+<font color=blue>void</font> ZeroInitCheck()
+{
+    cout &lt;&lt; endl &lt;&lt; <font color=darkcyan>"０で初期化されるかのチェック"</font> &lt;&lt; endl;
+
+    ZeroInitCheck_Sub();
+    ZeroInitCheck_Sub2();
+}
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////</font>
+<font color=green>// 値が保証されるかのチェック</font>
+
+<font color=green>// int*&amp; は、int* への参照です</font>
+<font color=blue>void</font> HoldValueCheck_Sub(<font color=blue>int</font>*&amp; pa, <font color=blue>int</font>*&amp; pb)
+{
+    <font color=blue>static int</font> a = <font color=darkcyan>9</font>;
+    <font color=blue>int</font>        b = <font color=darkcyan>9</font>;
+    pa = &amp;a;
+    pb = &amp;b;
+}
+
+<font color=green>// 大きな変数を作って、それを０で埋めます</font>
+<font color=green>// memset はメモリを指定した数値で埋める関数です</font>
+<font color=blue>void</font> HoldValueCheck_Sub2()
+{
+    <font color=blue>int</font> dummy[<font color=darkcyan>100</font>];
+    memset(dummy, <font color=darkcyan>0</font>, <font color=blue>sizeof</font> dummy);
+}
+
+<font color=blue>void</font> HoldValueCheck()
+{
+    cout &lt;&lt; endl &lt;&lt; <font color=darkcyan>"値が保証されるかのチェック"</font> &lt;&lt; endl;
+
+    <font color=blue>int</font> *pa, *pb;
+    HoldValueCheck_Sub(pa, pb);
+    HoldValueCheck_Sub2();       <font color=green>// この関数を呼んでも値は保証されているかな？</font>
+    cout &lt;&lt; <font color=darkcyan>"*pa = "</font> &lt;&lt; *pa &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"*pb = "</font> &lt;&lt; *pb &lt;&lt; endl;
+}
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////</font>
+<font color=green>// main 関数</font>
+
+<font color=blue>int</font> main()
+{
+    AddressCheck();
+    InitOnceCheck();
+    ZeroInitCheck();
+    HoldValueCheck();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}<pre>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

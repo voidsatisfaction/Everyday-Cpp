@@ -1,0 +1,146 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５１章 多重継承事始 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５１章　多重継承事始</font>
+</center>
+<hr>
+
+<p>　今までは１つのクラスに１つのクラスを継承させてきました。もっと沢山継承させることはできるのでしょうか？　今回はそこに迫ってみたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>２つ以上のクラスを継承することを多重継承と呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　全てのクラスを、ある特別なクラスから派生させるようにしたいとします。そのクラスを CFirstClass とし、次の純粋仮想関数を持つようにします。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>class</font> CFirstClass
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> <font color=blue>const char</font>* GetString() <font color=blue>const</font> = <font color=darkcyan>0</font>;
+};</pre></td></tr>
+
+</table></center>
+
+<p>　このクラスから派生させておき、関数をオーバーライドしておけば、<font color=red>そのクラスの情報を表示するのが簡単になる</font>というわけです。例えば、</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>void</font> DispInfo(<font color=blue>const</font> CFirstClass&amp; obj)
+{
+    cout &lt;&lt; <font color=darkcyan>"そのクラスの情報は "</font>
+         &lt;&lt; obj.GetString() &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+}</pre></td></tr>
+
+</table></center>
+
+<p>この関数に渡せば、<font color=red>CFirstClass から派生していればどんなクラスでも情報が表示できる</font>わけです。本当はもうちょっと便利にできる（cout &lt;&lt; obj &lt;&lt; endl;とできるようにすることができる）のですが、ここでは割愛します。</p>
+
+<hr>
+
+<p>　これで、自分の作っているクラスであれば、最基底のクラスを CFirstClass から継承するようにして GetString をオーバーライドすれば、GetString を利用できるようになります。</p>
+
+<p>　しかし、<a href="../htmlword/words032.html" target="words">ライブラリ</a>などから提供されるクラスは普通その定義を変更できません。つまり、CFirstClass を継承させてやることができません。そういう場合は新しくクラスを作ってそのクラスを継承させ、<font color=red>同時に</font> CFirstClass も継承させてやることが必要になるはずです。</p>
+
+<p>　もしくは、全てのクラスを CFirstClass から派生させることをやめ、一部のクラスだけ CFirstClass から派生するようにしたいこともあるでしょう。もしそのクラスが既に別のクラスから派生していた場合には、やはり<font color=red>同時に</font> CFirstClass からも派生させる必要があるでしょう。</p>
+
+<p>　何もこのような場合だけではありませんが、このように<font color=red>一度に複数のクラスから派生させたい</font>こともあると思います。コンポジション（内包：<a href="../html02/cpp02022.html" target="main">第２部第２２章</a>参照）の方が便利なことが多いのですが、今回のように継承した方がいいこともあります。</p>
+
+<p>　しかし、問題があります。<font color=red>一度に沢山のクラスを継承できるのでしょうか？</font>　原理的には継承できても全く問題ありませんが、Ｃ＋＋がそれをサポートしているかどうかは話が別です。</p>
+
+<p>　こういうときはどうすればいいでしょうか？　そう、実験です。とりあえずやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// MulInh1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CFirstClass
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font> = <font color=darkcyan>0</font>;
+};
+
+<font color=blue>void</font> DispInfo(<font color=blue>const</font> CFirstClass&amp; obj)
+{
+    cout &lt;&lt; <font color=darkcyan>"そのクラスの情報は“"</font>
+         &lt;&lt; obj.GetString() &lt;&lt; <font color=darkcyan>"”です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>class</font> CNinja{ <font color=blue>public</font>: <font color=blue>virtual</font> ~CNinja(); };
+<font color=blue>class</font> CJohnin : <font color=blue>public</font> CNinja<font color=red>,
+                public CFirstClass</font>  <font color=green>// こんな感じかな？</font>
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> ~CJohnin();
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font>;
+};
+
+CNinja::~CNinja(){ }
+CJohnin::~CJohnin(){ }
+
+<font color=blue>const char</font>* CJohnin::GetString() <font color=blue>const</font>
+{
+    <font color=blue>return</font> <font color=darkcyan>"上忍"</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    CJohnin johnin;
+    DispInfo(johnin);  <font color=green>// 果たして上手くいくか？</font>
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>そのクラスの情報は“上忍”です。</pre></td></tr>
+
+</table></center>
+
+<p>　上手くいきましたね。</p>
+
+<p>　このように、<a href="../htmlword/words034.html" target="words">Ｃ＋＋では</a><font color=red>一度に複数のクラスを継承させることができます</font>。これを<font color=red>多重継承</font>と呼びます。</p>
+
+<p>　上の例のように、多重継承は<font color=red>ある「機能」をクラスで統括して扱いたいとき</font>に必要なことがあります。こういう機能を付け加えたいときはこのクラスから派生して処理をオーバーライドすればいい、とうように、機械を組み立てるような感覚でクラスを作ることができるようになります。そういうことをしていると、いちどに沢山のクラスを継承する必要がでてきます。そういう場合、多重継承が役に立つわけです。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>２つ以上のクラスを継承することを多重継承と呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回。</p>
+
+<hr>
+
+<p align=right><a href="cpp03050.html" target="main">第５０章　型チェック</a> | <a href="cpp03052.html" target="main">第５２章　多重継承事始２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.12</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

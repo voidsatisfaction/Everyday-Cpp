@@ -1,0 +1,193 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４９章 破壊と創造 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４９章　破壊と創造</font>
+</center>
+<hr>
+
+<p>　前回の new オーバーロードを利用すると、面白いことができます。また、実はＶＣ＋＋の環境でも new が失敗したときに例外を投げるようにできます。今回はそういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数付き new を使って、後からコンストラクタを呼ぶことができる。</li>
+<li>new の投げる例外の型は std::bad_alloc 。</li>
+<li>_set_new_handler を使えばＶＣ＋＋でも例外を投げることができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　突然ですが、<font color=red>コンストラクタやデストラクタを直接呼んでみたこと</font>のある人はいるでしょうか？　やったことのある人も、やっとことのない人も、とりあえず次のプログラムをコンパイルしてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// New5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+     CTest(){ cout &lt;&lt;  <font color=darkcyan>"CTest"</font> &lt;&lt; endl; }
+    ~CTest(){ cout &lt;&lt; <font color=darkcyan>"~CTest"</font> &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> main()
+{
+    CTest test;
+    test.~CTest();
+    test.CTest();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　これはもちろんコンパイルエラーが発生します。しかし、よくみるとコンパイルエラーは１つです。</p>
+
+<pre>New5.cpp(15) : error C2274: 'function-style cast' : '.' 演算子の右側として不正です。</pre>
+
+<p>　１５行目は上のプログラムでいえば test.CTest(); のある行です。つまり、<font color=red>デストラクタは直接呼べる</font>のです。</p>
+
+<p>　しかし、このまま test.CTest(); を消すと test の寿命が尽きたところでもう一度デストラクタが呼ばれ、普通はおかしなことになります。そこで、是非ともコンストラクタを呼びたいわけです。</p>
+
+<p>　これには、前回の new オーバーロードが利用できます。new の仕様は、operator new の返したアドレスを使ってコンストラクタを呼ぶというものでした。つまり、<font color=red>ただアドレスを返すだけの new を作ってしまえばいい</font>わけです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// New6.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>inline void</font>* <font color=blue>operator new</font>(size_t, <font color=red>void* ptr</font>)
+{
+    <font color=red>return ptr;</font>
+}
+
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+     CTest(){ cout &lt;&lt;  <font color=darkcyan>"CTest"</font> &lt;&lt; endl; }
+    ~CTest(){ cout &lt;&lt; <font color=darkcyan>"~CTest"</font> &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> main()
+{
+    CTest test;
+    test.~CTest();
+
+    <font color=red>new(&amp;test) CTest;</font>
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>CTest
+~CTest
+CTest
+~CTest</pre></td></tr>
+
+</table></center>
+
+<p>　コンパイルすると警告が出るかもしれませんが、関係がないので無視して構いません。こうして無事にコンストラクタを呼ぶことができました。new[] にすれば、配列にも対応できます。</p>
+
+<p>　引数付きの new のことを placement（プレイスメント）形式の new といいますが、このコンストラクタを呼ぶだけの new のこともただ単に <font color=red>placement new</font> と呼びます。</p>
+
+<p>　「こんなことをすることがあるのか」という疑問もあるかも知れませんが、Windows 独特のメモリ確保（LocalAlloc や GlobalAlloc などの関数）を使った場合などにはコンストラクタが呼べないので、placement new でコンストラクタを呼ぶ必要があります。不必要と切り捨てることはできません。</p>
+
+<p>　実は、<font color=red>placement new は <font color=red>new</font> というヘッダの中に定義されています</font>。new をインクルードすれば自動的に placement new が使えるわけです。</p>
+
+<hr>
+
+<p>　この new ヘッダファイルですが、new が失敗したときに投げる例外型 <font color=red>std::bad_alloc</font> の定義も入っています。std は名前空間（<a href="../html02/cpp02050.html" target="main">第２部第５０章</a>参照）です（std 名前空間については第４部で詳しく話します）。</p>
+
+<p>　しかし、残念ながら（腹立たしいことに）ＶＣ＋＋はデフォルトで例外を投げません。std::bad_alloc を定義しているにもかかわらず投げないのは妙なことです。</p>
+
+<p>　そこで、ＶＣ＋＋では _set_new_handler という関数を使って new が失敗したときに呼ばれる関数を設定できるので、それを使って対処します。これは new.h ヘッダファイルに宣言されています。ダサい仕様ですが、今のところ我慢です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// New6.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;new.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;new&gt;</font>
+
+<font color=blue>using namespace</font> std;  <font color=green>// using しておきます</font>
+
+<font color=blue>int</font> ThrowBadAlloc(size_t)
+{
+    <font color=blue>throw</font> bad_alloc();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    _set_new_handler(ThrowBadAlloc);
+
+    <font color=blue>try</font>
+    {
+        <font color=blue>int</font>* p = <font color=blue>new int</font>[<font color=darkcyan>0xFFFFFFF</font>];
+        <font color=blue>delete</font> [] p;
+    }
+    <font color=blue>catch</font>(bad_alloc e)
+    {
+        <font color=green>// what メンバ関数でエラー文字列を取得できます</font>
+        cout &lt;&lt; e.what() &lt;&lt; endl;
+        <font color=blue>return</font> <font color=darkcyan>1</font>;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>bad allocation</pre></td></tr>
+
+</table></center>
+
+<p>　ＶＣ＋＋以外の環境ではどうかというと、gcc は最近のバージョンでは問題なく bad_alloc 例外を返します。std::set_new_handler 関数も用意されていますが、普通は使う必要ありません。</p>
+
+<p>　また、new に std::nothrow という引数を渡せば NULL を返すようになります。例えば、</p>
+
+<pre><font color=blue>int</font>* p = <font color=blue>new</font><font color=red>(std::nothrow)</font> <font color=blue>int</font>[<font color=darkcyan>0xFFFFFFF</font>];</pre>
+
+<p>こんな感じです。こうすれば new が失敗したときに NULL を返すようになります。ＶＣ＋＋もそれらしき記述がヘッダファイルに見えますが、何故か機能しません。早く完全対応してほしいものです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数付き new を使って、後からコンストラクタを呼ぶことができる。</li>
+<li>new の投げる例外の型は std::bad_alloc 。</li>
+<li>_set_new_handler を使えばＶＣ＋＋でも例外を投げることができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03048.html" target="main">第４８章　同姓同名４</a> | <a href="cpp03050.html" target="main">第５０章　型チェック</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

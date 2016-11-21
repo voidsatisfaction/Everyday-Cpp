@@ -1,0 +1,222 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１章 とにかく作ってみよう -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１章　とにかく作ってみよう</font>
+</center>
+<hr>
+
+<p>　さぁ、今回からＣ＋＋で最も大事な機能、<font size=+2 color=red>「クラス」</font>についての話になります。先ずは、小難しいことは抜きにしてクラスを使ってみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>クラスは構造体に毛の生えたようなもの。</li>
+<li>public: を付けないと外から使えない。</li>
+<li>メンバには関数も作れる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、クラスは<a href="../html01/cpp01058.html" target="main">第１部第５８章</a>でやった<font color=red>構造体</font>によく似ています。ただ、struct ではなく <font color=red>class</font> というのを使います。</p>
+
+<p>　さて、クラスは本当に構造体とよく似ています。ということで、先ずは構造体と同じように使ってみましょう。手っ取り早いので、<a href="../html01/cpp01059.html" target="main">第１部第５９章</a>のプログラムの struct を class に変えてみることにします。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Class1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> ELEM(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=red>class</font> SStudent
+{
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nJapanese;
+    <font color=blue>int</font>  nMath;
+    <font color=blue>int</font>  nEnglish;
+};
+
+<font color=blue>void</font> Disp(<font color=blue>const</font> SStudent& student)
+{
+    cout &lt;&lt; <font color=darkcyan>"名前 : "</font>   &lt;&lt; student.szName    &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"　国語 : "</font> &lt;&lt; student.nJapanese &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"数学 : "</font>   &lt;&lt; student.nMath     &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"英語 : "</font>   &lt;&lt; student.nEnglish  &lt;&lt; <font color=darkcyan>" 点"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    SStudent students[] = {
+        { <font color=darkcyan>"赤井孝"</font>,   <font color=darkcyan>73</font>, <font color=darkcyan>98</font>, <font color=darkcyan>86</font>, },
+        { <font color=darkcyan>"笠井大介</font>", <font color=darkcyan>64</font>, <font color=darkcyan>45</font>, <font color=darkcyan>40</font>, },
+        { <font color=darkcyan>"吉田叶"</font>,   <font color=darkcyan>76</font>, <font color=darkcyan>78</font>, <font color=darkcyan>69</font>, },
+    };
+    <font color=blue>int</font>      i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i < ELEM(students); i++)
+        Disp(students[i]);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>コンパイルエラー（ちょっと改変）</th></tr>
+
+<tr><td><pre>Class1.cpp(16) : error C2248: 'szName' : private メンバにアクセスできません。
+Class1.cpp(17) : 'nJapanese' : private メンバにアクセスできません。
+Class1.cpp(18) : 'nMath' : private メンバにアクセスできません。
+Class1.cpp(19) : 'nEnglish' : private メンバにアクセスできません。
+Class1.cpp(25) : 'initializing' : 'char [7]' から 'class SStudent' に変換することはできません。
+Class1.cpp(25) : 'initializing' : 'const int' から 'class SStudent' に変換することはできません。
+Class1.cpp(25) : 'initializing' : 'const int' から 'class SStudent' に変換することはできません。
+Class1.cpp(25) : 'initializing' : 'const int' から 'class SStudent' に変換することはできません。
+Class1.cpp(25) : 直前のエラーを修復できません; コンパイルを中止します。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　うわぁ、沢山エラーが出てきました。<font size=+1 color=red>構造体と似ているなんてウソじゃないか！</font></p>
+
+<p>　と、クラスと構造体は確かに似ていますが、やっぱり構造体とはちょっと違うところがあるのです。<font color=red>メンバにアクセスするためには public: というものを書かなければならないのです。</font>どこに書くかというと、メンバの宣言の前です。</p>
+
+<pre>class SStudent
+{
+<font color=red>public:</font>
+    char szName[16];
+    int  nJapanese;
+    int  nMath;
+    int  nEnglish;
+};</pre>
+
+<p>　これで無事コンパイルできるようになります。実行結果も同じになります。</p>
+
+<p>　このように、<font color=red>public:（公開された）というものを書いて初めて、メンバにアクセスできるようになる</font>のです。</p>
+
+<hr>
+
+<p>　さて、クラスには構造体で話した以上の事ができます。何と、<font size=+1 color=red>関数もメンバにできる</font>のです。実は構造体でもできるのですが、それはＣ＋＋だけの話です。Ｃ言語ではできません。</p>
+
+<p>　関数もメンバにできる、というのはいまいちピンとこないかも知れません。ということで、実際のプログラムを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Class1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> ELEM(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>class</font> SStudent
+{
+<font color=blue>public</font>:
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nJapanese;
+    <font color=blue>int</font>  nMath;
+    <font color=blue>int</font>  nEnglish;
+
+    <font color=red>void Disp();</font>
+};
+
+<font color=red>void SStudent::Disp()</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"名前 : "</font>   &lt;&lt; <font color=red>szName</font>    &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"　国語 : "</font> &lt;&lt; <font color=red>nJapanese</font> &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"数学 : "</font>   &lt;&lt; <font color=red>nMath</font>     &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"英語 : "</font>   &lt;&lt; <font color=red>nEnglish</font>  &lt;&lt; <font color=darkcyan>" 点"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    SStudent students[] = {
+        { <font color=darkcyan>"赤井孝"</font>,   <font color=darkcyan>73</font>, <font color=darkcyan>98</font>, <font color=darkcyan>86</font>, },
+        { <font color=darkcyan>"笠井大介</font>", <font color=darkcyan>64</font>, <font color=darkcyan>45</font>, <font color=darkcyan>40</font>, },
+        { <font color=darkcyan>"吉田叶"</font>,   <font color=darkcyan>76</font>, <font color=darkcyan>78</font>, <font color=darkcyan>69</font>, },
+    };
+    <font color=blue>int</font>      i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i < ELEM(students); i++)
+        <font color=red>students[i].Disp();</font>
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>名前 : 赤井孝
+　国語 : 73 点, 数学 : 98 点, 英語 : 86 点
+名前 : 笠井大介
+　国語 : 64 点, 数学 : 45 点, 英語 : 40 点
+名前 : 吉田叶
+　国語 : 76 点, 数学 : 78 点, 英語 : 69 点</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　赤い部分が上と違う部分です。先ず、クラスの宣言の中です。</p>
+
+<pre><font color=red>void Disp();</font></pre>
+
+<p>　こんなのが入ってますね。どうやら、プロトタイプ宣言のようです。そして、次はその実体の定義らしき部分があります。</p>
+
+<pre><font color=red>void SStudent::Disp()</font>
+{
+    cout &lt;&lt; "名前 : "   &lt;&lt; <font color=red>szName</font>    &lt;&lt; endl
+         &lt;&lt; "　国語 : " &lt;&lt; <font color=red>nJapanese</font> &lt;&lt; " 点, "
+            "数学 : "   &lt;&lt; <font color=red>nMath</font>     &lt;&lt; " 点, "
+            "英語 : "   &lt;&lt; <font color=red>nEnglish</font>  &lt;&lt; " 点" &lt;&lt; endl;
+}</pre>
+
+<p>　何やら関数名の前に SStudent:: というのがありますね。:: というのは<a href="../html01/cpp01068.html" target="main">第１部第６８章</a>でやったスコープ解決演算子みたいですね。</p>
+
+<p>　で、szName というメンバが、オブジェクトなしに使われています。なのにコンパイルエラーは出ず、きちんとプログラムは動いています。</p>
+
+<p>　さて、関数を使っているところではどうでしょうか？</p>
+
+<pre><font color=red>students[i].Disp();</font></pre>
+
+<p>　関数 Disp は SStudent のメンバなので、メンバ変数の時と同じように . を使ってメンバを使用しています。文法的にはあまり問題ないですが、この関数を呼ぶとどうなるんでしょうかね？</p>
+
+<p>　これらについては、次回にお話しします。どうなっているのか、次回を読む前にちょっと考えてみて下さいね。</p>
+
+<hr>
+
+<p>　今回は、これで終わりです。「あれ？　ちょっと早いんでないの？」と思うかもしれませんが、ちょっとここでクラスの文法的な意味を推理してほしいのです。まぁ、推理しなくても次回を見ることはできますが、ちょっと推理してから見てほしいですね。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>クラスは構造体に毛の生えたようなもの。</li>
+<li>public: を付けないと外から使えない。</li>
+<li>メンバには関数も作れる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="../html01/cpp01080.html" target="main">第１部第８０章　次のステップへ</a> | <a href="cpp02002.html" target="main">第２章　メンバ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.2</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

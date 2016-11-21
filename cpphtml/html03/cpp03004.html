@@ -1,0 +1,153 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４章 参照先は何もなし？ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４章　参照先は何もなし？</font>
+</center>
+<hr>
+
+<p>　ポインタ。それはアドレスを入れる変数です。その型名は、参照先の型に * をつけたものですね。では、void に * をつけるとどうなるのでしょうか。今回は、その void* に関するお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>void ポインタにはほとんどのポインタをキャストなしで代入できる。</li>
+<li>void ポインタからは直接参照できない。</li>
+<li>void ポインタから他のポインタへの代入にはキャストが必要。</li>
+<li>void ポインタは型を不問でアドレスを受け取る引数に使う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、ポインタ型は参照先の型に * をつけたものです。好奇心の強い人は <font color=red>void に * をつけるとどうなるのか</font>、と考えたことがあるかもしれません。</p>
+
+<p>　参照先の型が void ？　それって参照できるんでしょうかね？　できないとなると、こんなポインタは作れないんでしょうかね？</p>
+
+<p>　答は、やっぱりプログラムを作って確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>コンパイルエラー</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// VoidPtr1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font>   c = <font color=darkcyan>1</font>;
+    <font color=blue>int</font>    i = <font color=darkcyan>2</font>;
+    <font color=blue>double</font> d = <font color=darkcyan>3</font>;
+    <font color=blue>void</font>*  p;
+
+    p = &amp;c;
+    cout &lt;&lt; *p &lt;&lt; endl;
+
+    p = &amp;i;
+    cout &lt;&lt; *p &lt;&lt; endl;
+
+    p = &amp;d;
+    cout &lt;&lt; *p &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>
+
+
+
+
+
+
+
+
+
+
+
+VoidPtr1.cpp(12) : error C2100: 間接指定演算子 (*) の使い方が不正です。
+
+
+VoidPtr1.cpp(15) : error C2100: 間接指定演算子 (*) の使い方が不正です。
+
+
+VoidPtr1.cpp(18) : error C2100: 間接指定演算子 (*) の使い方が不正です。
+
+
+</pre></td>
+</tr>
+
+</table></center>
+
+<p>　コンパイルエラーは出ましたが、何と、ポインタの宣言とポインタへの代入についてのエラーは出ていません。</p>
+
+<p>　ということは、<font color=red>void ポインタは作れる</font>ということになります。そして、上の様子からいくと <font color=red>void ポインタへはキャストなしでいろいろなポインタを代入できる</font>みたいです。</p>
+
+<p>　しかし、<font color=red>void ポインタを使った参照は行えない</font>ようです。</p>
+
+<hr>
+
+<p>　void ポインタは、この「キャストなしでいろいろなポインタを代入できる」というのが一番の特徴です。void ポインタはまさにこのために使います。</p>
+
+<p>　しかし、参照できないのはどうしたものでしょうか。参照できないポインタなんて、その存在価値のほとんどをなくしてしまっているも同然です。</p>
+
+<p>　と、実はこの解決は非常に簡単です。<font color=red>キャスト</font>すればいいのです。</p>
+
+<pre>p = &amp;c;
+cout &lt;&lt; *<font color=red>(char*)</font>p &lt;&lt; endl;
+
+p = &amp;i;
+cout &lt;&lt; *<font color=red>(int*)</font>p &lt;&lt; endl;
+
+p = &amp;d;
+cout &lt;&lt; *<font color=red>(double*)</font>p &lt;&lt; endl;</pre>
+
+<p>　このように、<font color=red>キャストしてしまえば何の問題もなく参照できる</font>のです。</p>
+
+<p>　void ポインタから他のポインタへの代入も同じで、そのままでは代入できません。<font color=red>キャストして初めて他のポインタへ代入できるようになります。</font></p>
+
+<hr>
+
+<p>　void ポインタはよく<font color=red>引数</font>で使います。</p>
+
+<p>　アドレスを受け取るときに型を不問にしたいときがあるでしょう。例えば fwrite（<a href="../html01/cpp01055.html" target="main">第１部第５５章</a>参照）の第１引数などがそうです。</p>
+
+<p>　fwrite はファイルにデータを書き込む関数です。第１引数にはデータのアドレスを指定するのですが、この型を char* にしていると int 型の変数の内容を書き込みたいときなどに不便です。かといって、int* にしたからといってやはり char 型の変数の内容を書き込みたいときなどに不便です。</p>
+
+<p>　そこで、これを void ポインタにしておいてやると、<font color=red>キャストなしでどんな型のデータでも指定することができる</font>のです。void ポインタはこういった利用法以外にはあまり使いません。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>void ポインタにはほとんどのポインタをキャストなしで代入できる。</li>
+<li>void ポインタからは直接参照できない。</li>
+<li>void ポインタから他のポインタへの代入にはキャストが必要。</li>
+<li>void ポインタは型を不問でアドレスを受け取る引数に使う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03003.html" target="main">第３章　コンパイル済</a> | <a href="cpp03005.html" target="main">第５章　飛んでいきな</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

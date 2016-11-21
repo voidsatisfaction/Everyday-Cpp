@@ -1,0 +1,340 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３７章 速読法 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３７章　速読法</font>
+</center>
+<hr>
+
+<p>　今回からは文字列照合について話したいと思います。話が話なので長くなってしまうかもしれませんが、ご勘弁を。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ある文字列の中から目的の文字列を探すことを文字列照合と呼ぶ。</li>
+<li>strstr で文字列照合ができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は文字列照合についてのお話です。文字列照合というのは、ある文字列と目的の文字列を照らし合わせて、同じものを探すことです。簡単にいえば、文字列の検索です。メモ帳、ブラウザ、果てはＶＣ＋＋まで、文書を扱うプログラムには欠かせないものですね。</p>
+
+<p>　最初ということで、今回は特別なアルゴリズムを使わずに文字列照合を行っていきたいと思います。</p>
+
+<hr>
+
+<p>　では、文字列照合を行う方法について考えてみましょう。先ずは、検索を行う文章を用意します。</p>
+
+<center><table border=1>
+
+<tr><th>Match.txt</th></tr>
+
+<tr><td><pre>tomatu
+tomati
+tomata
+tomate
+tomato</pre></td></tr>
+
+</table></center>
+
+<p>　tomato の最後の母音を変えていっているだけです。後々のアルゴリズムの説明に便利なようにちょいと特徴づけています。この文字列を <font color=red>src</font> と呼ぶことにします。</p>
+
+<p>　では、この中から "ato" を探してみます。この文字列は <font color=red>pat</font> と呼ぶことにします。</p>
+
+<p>　先ず、src の先頭に pat がないかを確かめます。２つの文字列を並べてみましょう。</p>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat : ato</pre>
+
+<p>　src の先頭に pat があるかどうかは、<font color=red>両者の先頭から順に比べていけばいい</font>ですね。先ず、src の先頭は t で、pat の先頭は a なので、先頭からして違うことが分かります。</p>
+
+<p>　<font color=red>先頭の１つを比較しただけで</font> src の先頭に pat がないことが分かります。ということで、次は src の２番目に pat がないかを確かめます。</p>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat :  ato</pre>
+
+<p>　これもだめです。そして、これを続けていきます。</p>
+
+<pre>src : tom<font color=red>at</font>u[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat :    <font color=red>at</font>o</pre>
+
+<p>　src の４番目は pat と "at" の２文字が同じになりました。しかし、３文字目が異なるのでまだ先に進みます。</p>
+
+<pre>src : tomatu[\n]tomati[\n]tomat<font color=red>a</font>[\n]tomate[\n]tomato
+pat :                          <font color=red>a</font> to</pre>
+
+<p>　今度は "a" の１文字が同じになりました。しかし、以降が異なるので、まだ先に進みます。</p>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tom<font color=red>ato</font>
+pat :                                            <font color=red>ato</font></pre>
+
+<p>　ここにきて、ようやく "ato" の３文字の等しくなるところが現れました。</p>
+
+<p>　このようにすれば、簡単ですが文字列照合ができるわけです。pat が現れるところをしらみつぶしに探しているだけですね。</p>
+
+<hr>
+
+<p>　では、これをプログラムにしてみましょう。後のプログラムのために、再利用可能な形にしておきます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Match2.h</font>
+<font color=blue>#ifndef</font> __MATCH2_H__010414_2259_57951860__INCLUDED__
+<font color=blue>#define</font> __MATCH2_H__010414_2259_57951860__INCLUDED__
+
+<font color=green>// 文字列照合関数の型
+// 関数ポインタ（<a href="cpp03009.html" target="main">第９章</a>参照）ですね</font>
+<font color=blue>typedef int</font> (*FPMATCH)(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                       <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat);
+
+<font color=green>// 「見つかりませんでした」を表す値</font>
+<font color=blue>const int</font> MATCH_NOTFOUND = <font color=darkcyan>-1</font>;
+
+<font color=blue>void</font> Match(<font color=blue>const char</font>* pszFile, FPMATCH fpMatch);
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __MATCH2_H__010414_2259_57951860__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Match2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Match2.h"</font>
+
+<font color=blue>static int</font> Input(<font color=blue>const char</font>* src, <font color=blue>int</font> nSize, FPMATCH fpMatch);
+
+<font color=green>// ファイルの検索を行います
+// 検索するファイルは pszFile に、
+// 文字列照合関数は fpMatch に指定します</font>
+<font color=blue>void</font> Match(<font color=blue>const char</font>* pszFile, FPMATCH fpMatch)
+{
+    FILE* file = NULL;  <font color=green>// ファイル</font>
+    <font color=blue>char</font>* src  = NULL;  <font color=green>// 検索する文字列（動的）</font>
+    <font color=blue>int</font>   nSize;        <font color=green>// ファイルサイズ</font>
+
+    <font color=green>// 検索するファイルを開きます
+    // テキストモードでファイルを開くと
+    // fseek や ftell の動作がややこしくなるので、
+    // バイナリモードでファイルを開きます</font>
+    file = fopen(pszFile, <font color=darkcyan>"rb"</font>);
+    <font color=blue>if</font>(file == NULL)
+        <font color=blue>goto</font> ON_ERROR;
+
+    <font color=green>// fseek : ファイルポインタを移動する関数です
+    // この場合、ファイルの最後に移動します</font>
+    fseek(file, <font color=darkcyan>0</font>, SEEK_END);
+    <font color=green>// ftell : ファイルポインタを取得する関数です
+    // ファイルの最後に移動してファイルポインタを取得するということは
+    // ファイルサイズを取得することになります</font>
+    nSize = ftell(file);
+    <font color=green>// rewind : ファイルの先頭に戻る関数です</font>
+    rewind(file);
+
+    <font color=green>// 動的に確保</font>
+    src = <font color=blue>new char</font>[nSize + <font color=darkcyan>1</font>];
+    <font color=blue>if</font>(src == NULL)
+        <font color=blue>goto</font> ON_ERROR;
+
+    <font color=green>// 検索するファイルのデータを読み込みます</font>
+    fread(src, <font color=darkcyan>1</font>, nSize, file);
+    src[nSize] = <font color=darkcyan>0</font>;  <font color=green>// ヌルターミネータ</font>
+
+    <font color=green>// ファイルを閉じます</font>
+    fclose(file);
+    file = NULL;
+
+    <font color=green>// 検索を行います</font>
+    <font color=blue>while</font>(Input(src, nSize, fpMatch));
+
+ON_ERROR:
+    <font color=blue>if</font>(file != NULL)
+        fclose(file);
+    <font color=blue>if</font>(src != NULL)
+        <font color=blue>delete</font> [] src;
+}
+
+<font color=green>// 検索を行います
+// src には検索する文字列を、
+// nSize にはその文字列のサイズを、
+// fpMatch には文字列照合関数を指定します</font>
+<font color=blue>static int</font> Input(<font color=blue>const char</font>* src, <font color=blue>int</font> nSize, FPMATCH fpMatch)
+{
+    <font color=blue>static int</font>  nFound = MATCH_NOTFOUND;  <font color=green>// 見つかった場所</font>
+    <font color=blue>static char</font> szPrev[<font color=darkcyan>1024</font>];  <font color=green>// 前に検索した文字列</font>
+    <font color=blue>char</font> szMatch[<font color=darkcyan>1024</font>];        <font color=green>// 検索される文字列</font>
+
+    cout &lt;&lt; <font color=darkcyan>"検索する文字列を入力してください &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; szMatch;
+
+    <font color=green>// "end" の場合は終了</font>
+    <font color=blue>if</font>(strcmp(szMatch, <font color=darkcyan>"end"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+    <font color=green>// "next" の場合は次を検索</font>
+    <font color=blue>else if</font>(strcmp(szMatch, <font color=darkcyan>"next"</font>) == <font color=darkcyan>0</font>)
+    {
+        <font color=green>// 検索したことがない場合</font>
+        <font color=blue>if</font>(szPrev[<font color=darkcyan>0</font>] == <font color=darkcyan>0</font>)
+        {
+            cout &lt;&lt; <font color=darkcyan>"まだ一度も検索していません！"</font> &lt;&lt; endl;
+            <font color=blue>return true</font>;
+        }
+        <font color=green>// 前に検索に失敗していた場合は先頭から検索されます
+        // そのためにも MATCH_NOTFOUND は -1 にしてあります</font>
+        nFound = fpMatch(src, nSize, nFound + <font color=darkcyan>1</font>, szPrev);
+    }
+    <font color=green>// それ以外の場合は先頭から検索</font>
+    <font color=blue>else</font>
+    {
+        strcpy(szPrev, szMatch);
+        nFound = fpMatch(src, nSize, <font color=darkcyan>0</font>, szPrev);
+    }
+
+    <font color=green>// 見つからなかった場合</font>
+    <font color=blue>if</font>(nFound == MATCH_NOTFOUND)
+        cout &lt;&lt; <font color=darkcyan>"見つかりません"</font> &lt;&lt; endl;
+    <font color=green>// 見つかった場合</font>
+    <font color=blue>else</font>
+    {
+        cout &lt;&lt; nFound &lt;&lt; <font color=darkcyan>" バイト目に発見しました！"</font> &lt;&lt; endl;
+
+        <font color=green>// 見つかった場所と、その後１６バイトを表示します</font>
+        <font color=blue>int</font> nLimit = strlen(szPrev) + <font color=darkcyan>16</font>;
+        <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; nLimit; i++)
+        {
+            <font color=blue>char</font> letter = src[nFound + i];
+            <font color=blue>if</font>(letter == <font color=darkcyan>0</font>)
+                <font color=blue>break</font>;
+            cout &lt;&lt; letter;
+        }
+        cout &lt;&lt; endl;
+    }
+
+    <font color=blue>return true</font>;
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Match3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Match2.h"</font>
+
+<font color=blue>static int</font> SimpleMatch(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                       <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat);
+
+<font color=blue>int</font> main()
+{
+    Match(<font color=darkcyan>"Match.txt"</font>, SimpleMatch);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// 単純な文字列照合関数です
+// src には検索対象を、
+// nBufSize には src のサイズを、
+// nFirst には開始バイト数を、
+// pat には検索文字列を指定します</font>
+<font color=blue>static int</font> SimpleMatch(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                       <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat)
+{
+    <font color=green>// エラーチェック</font>
+    <font color=blue>if</font>(pat[<font color=darkcyan>0</font>] == <font color=darkcyan>0</font>        ||
+       src[nBufSize] != <font color=darkcyan>0</font> ||
+       nFirst &gt; nBufSize)
+        <font color=blue>return</font> MATCH_NOTFOUND;
+
+    <font color=green>// 開始位置をずらします</font>
+    src += nFirst;
+
+    <font color=green>// src[0] から順に照合していきます</font>
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; src[i] != <font color=darkcyan>0</font>; i++)
+    {
+        <font color=green>// src と pat の照合</font>
+        <font color=blue>int</font> j;
+        <font color=blue>for</font>(j = <font color=darkcyan>0</font>; pat[j] != <font color=darkcyan>0</font>; j++)
+            <font color=blue>if</font>(src[i + j] != pat[j])
+                <font color=blue>break</font>;
+        <font color=green>// 等しかった場合、見つかった場所を返します</font>
+        <font color=blue>if</font>(pat[j] == <font color=darkcyan>0</font>)
+            <font color=blue>return</font> i + nFirst;
+    }
+    <font color=green>// 最後まで見つかりませんでした</font>
+    <font color=blue>return</font> MATCH_NOTFOUND;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>検索する文字列を入力してください &gt; ato
+31 バイト目に発見しました！
+ato
+検索する文字列を入力してください &gt; next
+見つかりません
+検索する文字列を入力してください &gt; tomat
+0 バイト目に発見しました！
+tomatu
+tomati
+tomata
+
+検索する文字列を入力してください &gt; next
+7 バイト目に発見しました！
+tomati
+tomata
+tomate
+
+検索する文字列を入力してください &gt; tomato
+28 バイト目に発見しました！
+tomato
+検索する文字列を入力してください &gt; end</pre></td></tr>
+
+</table></center>
+
+<p>　文字列照合関数は main のある Match3.cpp にある SimpleMatch です。その他の部分は、ファイルからデータを読んで、検索文字列を入力させて、結果を表示するというだけのものです。その他の部分は本題と関係ないので、コメント以上のことは解説しません。気になる人は、沢山書いたコメントを頼りに各自読み解いていってください。</p>
+
+<p>　では、SimpleMatch を見ていきましょう。</p>
+
+<p>　最初に nBufSize と nFirst の値に不正がないか、簡単なチェックを行っています。これは特にいうことはありません。次に、nFirst だけ src を進めています。検索開始位置をずらしているだけですね。これも特にいうことはありません。</p>
+
+<p>　次が文字列照合の本体です。先ず、<font color=red>i は src 用のループ変数</font>です。src[0], src[1], src[2], ... と、pat と照合する位置を変えていきます。</p>
+
+<p>　次の <font color=red>j のループは、pat と照合するためのループ</font>です。src[i] と pat[0] から順に、src[i + 1] と pat[1] 、src[i + 2] と pat[2] 、... と、順に照合していきます。<font color=red>全部同じだった場合はループ終了時に pat[j] が０になっている</font>ので、それを検索終了の目印にします。</p>
+
+<p>　実は、文字列照合は <font color=red>strstr</font> という関数でできます（strstr がこの手法を用いている保証はないのですが、おそらくはこの手法だと思います）。strstr は、２つの引数を取ります。１つ目の文字列の中から２つ目の文字列を探し、<font color=red>その位置をポインタで返します</font>。<font color=red>見つからなかった場合は NULL を返します。</font></p>
+
+<p>　ということで、今回の検索法を生で使うことはそうはないと思います。文字列以外のデータになら使うことがあるかもしれませんね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ある文字列の中から目的の文字列を探すことを文字列照合と呼ぶ。</li>
+<li>strstr で文字列照合ができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　最後に出てきた strstr が要点になってます。実際はこっちを使ってくださいね、ということです。</p>
+
+<p>　今回の文字列照合をじっと見てみると、いろいろ無駄があることが分かります。その無駄を取り除いていく方法を次回から考えていきたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03036.html" target="main">第３６章　魔法の数</a> | <a href="cpp03038.html" target="main">第３８章　速読法２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

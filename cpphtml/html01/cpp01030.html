@@ -1,0 +1,163 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３０章 マクロの書式 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３０章　マクロの書式</font>
+</center>
+<hr>
+
+<p>　マクロは非常に便利ですが、使い方を心得ておかなければマクロ特有のバグを誘発する危険があります。それを防ぐためには、マクロのことをよく知っておく必要があるでしょう。</p>
+
+<p>　今回は、先ずマクロのいけない書き方を書いて、それから正しい表記について説明するという形式を取ってみたいと思います。</p>
+
+<hr>
+
+<p>　今回の要点はこんなところです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>マクロ名と差し込むテキストとを分けるものは「空白」。</li>
+<li>カッコの終わりもマクロ名と差し込むテキストの境界になる。</li>
+<li>演算子の優先順位を無視した書き方は厳禁。</li>
+<li>改行したい時は行の終わりに \ を付ける。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　早速１個目を見てみましょう。</p>
+
+<pre>#define FUNC (name)     void name(int x, int y)</pre>
+
+<p>　うわぁ、これはだめですね。だめですが、見つけやすいバグですね。コンパイルエラーになりますから。</p>
+
+<p>　<font color=red>マクロ名と差し込むテキストとを分けるものは「空白」です</font>。ですから、FUNC とカッコとの間をあけて書いてしまうと、例えば <font color=red>FUNC</font>(Func) は</p>
+
+<pre><font color=red>(name)     void name(int x, int y)</font>(Func)</pre>
+
+<p>という訳の分からないものになってしまいます。ですから、正しくは</p>
+
+<pre>#define FUN<font color=red>C(</font>name)      void name(int x, int y)</pre>
+
+<p>となります。</p>
+
+<p>　ただし、引数を取るタイプのもののカッコの内部でスペースを入れるのは構いません。たとえば、</p>
+
+<pre>#define FUNC( param1, param2 )    param1(param2)</pre>
+
+<p>のとき、FUNC(Func, 1); は Func(1); に正しく置き換えられます。</p>
+
+<hr>
+
+<p>　では、２個目を見てみましょう。</p>
+
+<pre>#define COORDINATE(str, x, y);    sprintf(str, "(%d, %d)", x, y);</pre>
+
+<p>　これはどうやら、sprintf を使って、２つの値を座標表記の文字列に変換しようとしているようです。</p>
+
+<p>　しかし、これはタチの悪いバグの１つにあげられます。何故かというと、ある条件の時にのみ異常動作を行うからです。</p>
+
+<p>　どこがいけないかを端的に言うと、<font color=red>セミコロンを付けているのがいけないのです</font>。引数を取る形のマクロでは、カッコの終わりもマクロ名と差し込むテキストの境界になります。つまり、例えば</p>
+
+<pre>for(i = 0; i &lt; NUM_COORDINATES; i++)
+    <font color=red>COODINATE(str, x[i], y[i])</font>;</pre>
+
+<p>は、</p>
+
+<pre>for(i = 0; i &lt; NUM_COORDINATES; i++)
+    <font color=red>;    sprintf(str, "(%d, %d)", x[i], y[i]);</font>;</pre>
+
+<p>になってしまいます。</p>
+
+<p>　; は白文と言って、１文として数えられます。なので、NUM_COORDINATES 回ぐるぐると空回りしたあげく、x[NUM_COORDINATES] という訳の分からない値を使用してしまうことになります。もう最悪です。</p>
+
+<p>　これは書き間違いによって起こったバグですが、意図的に複文をマクロにすることもあります。そのようなときは、十分に扱いを注意して下さい。<font color=red>単文か複文か忘れた、もしくはわからないときは、素直に { } で囲むのが賢明かもしれません。</font></p>
+
+<hr>
+
+<p>　では、どんどんいってみましょう。次は３個目です。</p>
+
+<pre>#define MUL(a, b)                 a * b</pre>
+
+<p>　これはまたタチの悪いものが出てきました。上と同じように、正常に動作するときもあるからです。</p>
+
+<p>　これは正しくは</p>
+
+<pre>#define MUL(a, b)                 <font color=red>((</font>a<font color=red>)</font> * <font color=red>(</font>b<font color=red>))</font></pre>
+
+<p>と書かなくてはなりません。</p>
+
+<p>　これで気付いた方もいるでしょう。つまりは、上の書き方だと</p>
+
+<pre>cout &lt;&lt; MUL(1 + 4, 2 + 8) * 3 &lt;&lt; endl;</pre>
+
+<p>としても、</p>
+
+<pre>cout &lt;&lt; 1 + 4 * 2 + 8 * 3 &lt;&lt; endl;</pre>
+
+<p>となってしまうため、正解の１５０が表示されずに３３が表示されてしまいます。ですが、下の書き方だと</p>
+
+<pre>cout &lt;&lt; ((1 + 4) * (2 + 8)) * 3 &lt;&lt; endl;</pre>
+
+<p>となって、１５０がきちんと表示されます。</p>
+
+<p>　このように、<font color=red>演算子の優先順位を無視した書き方は厳禁です</font>。見栄えが悪くなっても、カッコでゴテゴテに飾って下さい。</p>
+
+<hr>
+
+<p>　では、４個目に移りましょう。</p>
+
+<pre>#define SHOW_ALL_VALUABLES()      cout &lt;&lt; "a = " &lt;&lt; a &lt;&lt; endl
+                                       &lt;&lt; "b = " &lt;&lt; b &lt;&lt; endl
+                                       &lt;&lt; "c = " &lt;&lt; c &lt;&lt; endl</pre>
+
+<p>　これはわかりやすいバグに入りますね。コンパイル自体が通りませんから。</p>
+
+<p>　<font color=red>マクロの定義の終わりの印は改行です。</font>なので、b 以降の部分は取り残されてしまい、エラーになります。</p>
+
+<p>　改行したい時は、<font color=red>行の終わりに \ を付けます</font>。すなわち、正しくは</p>
+
+<pre>#define SHOW_ALL_VALUABLES()      cout &lt;&lt; "a = " &lt;&lt; a &lt;&lt; endl <font color=red>\</font>
+                                       &lt;&lt; "b = " &lt;&lt; b &lt;&lt; endl <font color=red>\</font>
+                                       &lt;&lt; "c = " &lt;&lt; c &lt;&lt; endl</pre>
+
+<p>となります。</p>
+
+<hr>
+
+<p>　あと、細かいことですが、マクロは通例小文字は使いません。使えはしますが、大文字なのがマクロの目印とするのが普通です。</p>
+
+<hr>
+
+<p>　とりあえず今の知識の範囲内で必要なのはここまでです。本当はもう１つ重要なのがありますが、それはそのときがきたらお話しします。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>マクロ名と差し込むテキストとを分けるものは「空白」。</li>
+<li>カッコの終わりもマクロ名と差し込むテキストの境界になる。</li>
+<li>演算子の優先順位を無視した書き方は厳禁。</li>
+<li>改行したい時は行の終わりに \ を付ける。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01029.html" target="main">第２９章　マクロの活用法</a> | <a href="cpp01031.html" target="main">第３１章　メモリとアドレス</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.31</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

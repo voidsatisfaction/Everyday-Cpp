@@ -1,0 +1,366 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４２章 私はαでありωである２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４２章　私はαでありωである２</font>
+</center>
+<hr>
+
+<p>　前回はプログラムのω（最後）についての話でした。今回はプログラムのα（最初）についての話をしたいと思います。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>プログラムに渡す文字列をコマンドラインと呼ぶ。</li>
+<li>コマンドラインは int main(int argc, char** argv) のようにして main で受け取る。</li>
+<li>system でプログラムを実行できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回、main 関数はプログラムの終わりでもあるといいました。とはいえ、やはり main 関数はプログラムの初めでもあります。プログラムの終わりにプログラムを呼んだ「何か」に値を返すことができるのなら、また、プログラムの初めにその「何か」から<font color=red>プログラムに値を渡す</font>こともできていいと思います。</p>
+
+<p>　実は、実際にプログラムに値を渡すことができます。その値は常に<font color=red>文字列</font>で渡されます。この文字列のことを<font color=red>コマンドライン</font>と呼びます。</p>
+
+<p>　ＵＮＩＸを使っている人には説明するまでのことではないと思いますが、Windows を使っている人にはちょっと例を挙げておきましょう。</p>
+
+<p>　Windows を使っている人はＤＯＳプロンプトを開いてみてください。すると次のような文字が出てきて、入力待ちになると思います。</p>
+
+<pre>C:\WINDOWS&gt;</pre>
+
+<p>これは、現在いる<a href="../htmlword/words033.html" target="words">ディレクトリ</a>です。これを、<font color=red>カレントディレクトリ</font>と呼びます。大抵 WINDOWS ディレクトリになっていると思います。そこで、<font color=red>"cd .."</font> と入力して、Enter を押してみて下さい。すると...</p>
+
+<pre>C:\WINDOWS&gt;cd ..
+
+C:\&gt;</pre>
+
+<p>このようになりますね。この "cd" というのは "Change Directory" の略で、カレントディレクトリを変更する命令です。ＵＮＩＸにも同名の命令があります（だから "cd" を例に使いました）。そして、".." は親ディレクトリを表します。ということで、C:\WINDOWS の親ディレクトリである C:\ に移動したわけです。</p>
+
+<p>　"cd" という命令に ".." というパラメータを渡しましたが、この <font color=red>".." がコマンドライン</font>なわけです。"cd" ではなく、ここに普通のプログラムを持ってくることもできるわけです。例えば、前回のプログラム kuku.exe にコマンドラインを渡すには、</p>
+
+<pre>kuku <font color=red>kuku.txt</font></pre>
+
+<p>のようにします（".exe" は省略可能です）。</p>
+
+<hr>
+
+<p>　では、今度はプログラムでコマンドラインを受け取ることを考えようと思います。</p>
+
+<p>　コマンドラインを受け取る窓口はやはり main 関数であって欲しいところですが、いままで見てきたとおり main 関数に引数はありません。では、どのようにすればいいのでしょうか？</p>
+
+<p>　では、試しに<font color=red>問答無用で main 関数に引数をつけてみましょう</font>。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Main3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main(<font color=blue>char</font>* cmdline)
+{
+    cout &lt;&lt; cmdline &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　一応ビルドはできるものの、実行してみるとエラーになります。はずれではありましたが、どうやら <font color=red>main は引数をとることができる</font>ようです。</p>
+
+<p>　答を言ってしまうと、コマンドラインを受け取る際の main の引数は次のようになります。</p>
+
+<pre>int main(<font color=red>int argc, char** argv</font>)</pre>
+
+<p>　これがどうなっているかは...実際に使って確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Main4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main(<font color=red>int argc, char** argv</font>)
+{
+    cout &lt;&lt; <font color=darkcyan>"argc : "</font> &lt;&lt; argc
+         &lt;&lt; <font color=darkcyan>", argv : "</font> &lt;&lt; argv[<font color=darkcyan>0</font>] &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　argv はポインタのポインタです。これは恐らく <font color=red>char* の配列</font>でしょう。しかし、まだ argc, argv が何者か分かってないので、その要素数がさっぱりわかりません。そこで、argv[0] だけ表示するようにしました。</p>
+
+<p>　では、このプログラムを実行してみましょう。ＵＮＩＸの人は何も問題はないと思いますが、Windows の人にはちょっと解説がいると思います。</p>
+
+<p>　先ず、ＤＯＳプロンプトから実行することもできます。また、<font color=red>ＶＣ＋＋では設定をいじることによってコマンドラインを指定することができます</font>。ＤＯＳプロンプトから実行するのは面倒なので、こっちでやりましょう。ＶＣ＋＋以外でも似たような設定があると思いますが、すみませんが全てをフォローすることはできません。各自探してみて下さい。</p>
+
+<p>　先ず、プロジェクトの設定を開きます。メニューの「プロジェクト」の中から開いても、Alt+F7 で開いても構いません。そして、「デバッグ」タブを選択します。すると、次のような画面になります。</p>
+
+<center><img src="images/0304201.gif" alt="コマンドラインの指定"></center>
+
+<p>　上の赤い丸で囲んだ<font color=red>「プログラムの引数」がコマンドラインにあたります</font>。ここにコマンドラインを指定してやればいいわけです。</p>
+
+<p>　では、上のプログラムでそれをやったときの結果を表にしてみましょう。</p>
+
+<center><table border=1>
+
+<tr>
+  <th>コマンドライン</th>
+  <th>結果</th>
+</tr>
+
+<tr>
+  <td><pre>竹藪焼けた</pre></td>
+  <td><pre>argc : 2, argv : C:\...省略...\Main4.exe</pre></td>
+</tr>
+
+<tr>
+  <td><pre>隣の客は よく柿食う客だ</pre></td>
+  <td><pre>argc : 3, argv : C:\...省略...\Main4.exe</pre></td>
+</tr>
+
+<tr>
+  <td><pre>私 負けましたわ</pre></td>
+  <td><pre>argc : 3, argv : C:\...省略...\Main4.exe</pre></td>
+</tr>
+
+<tr>
+  <td><pre>青巻紙 赤巻紙 黄巻紙</pre></td>
+  <td><pre>argc : 4, argv : C:\...省略...\Main4.exe</pre></td>
+</tr>
+
+</table></center>
+
+<p>　見れば分かるとおり、どうやら argv[0] には<font color=red>実行したプログラムのファイル名</font>が入っているようです。</p>
+
+<p>　では、argc はどうでしょうか？　よく見ると、<font color=red>パラメータの個数＋１</font>であることがわかります。ここでパラメータと呼んだのは、空白で区切られたそれぞれのことです。</p>
+
+<p>　なぜ１が足されているかは、<font color=red>argv[0] にプログラム名が入っているから</font>だと推測できます。ということは、<font color=red>argc は argv の要素数であり、コマンドラインは argv[1] 以降に入っている</font>という推測が成り立ちます。</p>
+
+<p>　そこで、今度は次のプログラムで確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Main4b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main(<font color=blue>int</font> argc, <font color=blue>char</font>** argv)
+{
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>1</font>; i &lt; argc; i++)
+        cout &lt;&lt; i &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; argv[i] &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　コマンドラインを表示するだけのプログラムです。各パラメータは改行で区切られて出力されます。コマンドラインのみを表示するように、i は０ではなく１から始めています。</p>
+
+<p>　では、上と同じように実行してみましょう。</p>
+
+<center><table border=1>
+
+<tr>
+  <th>コマンドライン</th>
+  <th>結果</th>
+</tr>
+
+<tr>
+  <td valign=top><pre>竹藪焼けた</pre></td>
+  <td valign=top><pre>竹藪焼けた</pre></td>
+</tr>
+
+<tr>
+  <td valign=top><pre>隣の客は よく柿食う客だ</pre></td>
+  <td valign=top><pre>隣の客は<br>よく柿食う客だ</pre></td>
+</tr>
+
+<tr>
+  <td valign=top><pre>私 負けましたわ</pre></td>
+  <td valign=top><pre>私<br>負けましたわ</pre></td>
+</tr>
+
+<tr>
+  <td valign=top><pre>青巻紙 赤巻紙 黄巻紙</pre></td>
+  <td valign=top><pre>青巻紙<br>赤巻紙<br>黄巻紙</pre></td>
+</tr>
+
+</table></center>
+
+<p>　予想通りの結果になりましたね。このように、<font color=red>コマンドラインは main 関数に引数を持たせることで使うことができる</font>のです。</p>
+
+<hr>
+
+<p>　では、前回のプログラムをコマンドラインを使って書き直してみましょう。kuku.exe で入力したファイル名をもう１度入力するのは無駄なので、kuku.exe にファイル名を渡すように書き換えたいと思います。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// kuku.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>int</font> main(<font color=red>int argc, char** argv</font>)
+{
+    <font color=green>// パラメータ数は１（argc は２）のみ</font>
+    <font color=blue>if</font>(<font color=red>argc != 2</font>)
+    {
+        cout &lt;&lt; <font color=darkcyan>"パラメータ数が異常です。"</font> &lt;&lt; endl;
+        <font color=blue>return</font> EXTI_FAILURE;
+    }
+
+    <font color=blue>char</font>  buffer[<font color=darkcyan>1024</font>];
+    <font color=blue>char</font>* pszFile = <font color=red>argv[1]</font>;  <font color=green>// 名前を付けておきます</font>
+
+    <font color=green>// ファイルの存在確認です</font>
+    FILE* file = fopen(pszFile, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(file != NULL)
+    {
+        fclose(file);
+        <font color=blue>return</font> EXTI_FAILURE;
+    }
+
+    <font color=green>// ファイルを開きます</font>
+    file = fopen(pszFile, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(file == NULL)
+        <font color=blue>return</font> EXTI_FAILURE;
+
+    <font color=green>// 九九表を書き込みます</font>
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>1</font>; i &lt;= <font color=darkcyan>9</font>; i++)
+    {
+        <font color=blue>for</font>(<font color=blue>int</font> j = <font color=darkcyan>1</font>; j &lt;= <font color=darkcyan>9</font>; j++)
+            <font color=blue>if</font>(fprintf(file, <font color=darkcyan>" %2d"</font>, i * j) &lt; <font color=darkcyan>0</font>)
+                <font color=blue>return</font> EXTI_FAILURE;
+        <font color=blue>if</font>(fputc(<font color=darkcyan>'\n'</font>, file) == EOF)
+            <font color=blue>return</font> EXTI_FAILURE;
+    }
+    fclose(file);
+
+    <font color=blue>return</font> EXIT_SUCCESS;
+}</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Main5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>typedef int</font> kuku_t[<font color=darkcyan>9</font>][<font color=darkcyan>9</font>];
+
+<font color=green>// 九九表の読み出し</font>
+<font color=blue>bool</font> KuKu(FILE* file, kuku_t&amp; kuku);
+<font color=green>// 表示</font>
+<font color=blue>bool</font> Disp(kuku_t&amp; kuku);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> bufFile[<font color=darkcyan>1024</font>];
+    <font color=blue>char</font> bufExec[<font color=darkcyan>1024</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"九九表のファイル名を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+
+    <font color=green>// $ を入力すると終了します</font>
+    <font color=blue>if</font>(strcmp(buffer, <font color=darkcyan>"$"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> EXIT_SUCCESS;
+
+    sprintf(bufExec, <font color=darkcyan>"kuku %s"</font>, buffer);
+    <font color=blue>if</font>(<font color=red>system</font>(bufExec) != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> EXIT_FAILURE;
+
+    FILE* file = fopen(bufFile, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(file == NULL)
+    {
+        cout &lt;&lt; <font color=darkcyan>"ファイルが開けません。"</font> &lt;&lt; endl;
+        <font color=blue>return</font> EXIT_FAILURE;
+    }
+
+    kuku_t kuku;
+    <font color=blue>if</font>(!KuKu(file, kuku))
+    {
+        cout &lt;&lt; <font color=darkcyan>"ファイルエラー。"</font> &lt;&lt; endl;
+        <font color=blue>return</font> EXIT_FAILURE;
+    }
+
+    <font color=blue>while</font>(Disp(kuku));
+
+    <font color=blue>return</font> EXIT_SUCCESS;
+}
+
+<font color=green>// 以下は前と同じ</font></pre></td></tr>
+
+</table></center>
+
+<p>　ファイル名の入力が１回になったことを除けば、動作は前と同じです。</p>
+
+<p>　kuku.cpp では、<font color=red>先ずパラメータの個数を確かめています</font>。コマンドラインを扱うときはおそらくいつもすることになると思います。</p>
+
+<p>　で、分かりやすくするために、argv[1] を一旦 pszFile という変数に入れます。で、あとは九九表を作るだけです。</p>
+
+<p>　そして、問題は<font color=red>プログラム内でどうやってコマンドラインを指定して kuku を実行するか</font>です。前回散々環境依存だ、環境依存だといいましたが、プログラムを実行する機種依存しない関数も存在します。それが <font color=red>system</font> です。</p>
+
+<p>　ただこの関数、戻り値は環境依存します。system は「コマンドプロセッサ」と称されるものを使ってプログラムを実行します。ＤＯＳでは command.com 、ＵＮＩＸでは /bin/sh などです。system の戻り値はこのコマンドプロセッサの終了コードになります。このコマンドプロセッサが環境によって異なるので、終了コードも必然的に環境依存するというわけです。ということで、前回は使いませんでした。</p>
+
+<p>　この system 関数の使い方は簡単です。"cd .." や "kuku kuku.txt" のような<font color=red>文字列を渡せば、その通り実行してくれます</font>。その system に渡す文字列を作るために、sprintf を使っているわけです。可変個引数（<a href="cpp03016.html" target="main">第１６章</a>参照）をとる system を作ってみると便利かもしれません。その際、<font color=red>va_list を引数にとる sprintf である vsprintf を使うといいでしょう</font>。</p>
+
+<p>　で、あとは前回と同じです。コマンドラインの使い方はこんなもんですね。</p>
+
+<hr>
+
+<p>　最後に補足です。</p>
+
+<p>　先ず、argv についてです。argv の中には argv[0] にプログラム名が、argv[1] 〜 argv[argc - 1] にパラメータが入っているわけですが、実は <font color=red>argv[argc]</font> にもある値が入っています。それは <font color=red>NULL</font> です。つまり、</p>
+
+<pre><font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>1</font>; <font color=red>argv[i] != NULL</font>; i++)</pre>
+
+<p>というループが使えます。</p>
+
+<p>　そして、次に空白を持つパラメータを指定する方法についてです。パラメータは空白で分けるようになっているので、これでは空白の入ったパラメータが指定できません。その時は <font color=red>" " で囲んでやればＯＫ</font>です。</p>
+
+<pre>kuku "kuku kuku.txt"</pre>
+
+<p>　ＵＮＩＸでは ' ' も使えます。ただし、" " と ' ' には若干違いがあります。そこら辺はＵＮＩＸの話になってしまうので割愛します。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>プログラムに渡す文字列をコマンドラインと呼ぶ。</li>
+<li>コマンドラインは int main(int argc, char** argv) のようにして main で受け取る。</li>
+<li>system でプログラムを実行できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03041.html" target="main">第４１章　私はαでありωである</a> | <a href="cpp03043.html" target="main">第４３章　切り捨て御免</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.22</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

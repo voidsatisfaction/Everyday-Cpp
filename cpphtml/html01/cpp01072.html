@@ -1,0 +1,125 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７２章 借りたら返す２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７２章　借りたら返す２</font>
+</center>
+<hr>
+
+<p>　メモリの動的確保の基本は前回の通りです。しかし、配列を確保するときはちょっと書式が変わってきます。今回は、その配列の確保の仕方について話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列の動的確保は new &lt;型&gt;[&lt;要素数&gt;] でできる。</li>
+<li>アドレスはやはり &lt;型&gt; へのポインタで受ける。</li>
+<li>要素数は式でも指定できる。</li>
+<li>解放は delete [] &lt;アドレス&gt;; で行う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回言った通り、今回は配列を動的に確保してみたいと思います。</p>
+
+<p>　new の書式は実に簡単です。<font color=red>型の後に [&lt;要素数&gt;] を付け加えればいいだけ</font>です。これは、あまり問題はありませんね。</p>
+
+<p>　さて、問題はこれをどんなポインタで受ければいいかです。前回の話からいくと配列へのポインタでしょうか？　配列へのポインタとはどんなものなんでしょうかね。</p>
+
+<p>　実は、この答は今までやってきたことを思い返せば、簡単に分かるものなのです。さぁ、配列を関数に渡すときにはどうしたでしょうか？　そうです。それと全く同じ事なのです。<font color=red>配列でも &lt;型&gt; へのポインタで受ければいいのです。</font></p>
+
+<p>　例えば new int[100] を int* array で受けたとすると、array[index] とすれば index 番目の要素が扱えるわけです。紙の上に図でも書けば、よく分かると思います。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// New2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<center><font color=red>... <a href="cpp01057.html" target="main">第５７章</a>にある ...
+... StoreFibo と DispFibo の定義を ...
+... ここにコピーして下さい ...</font></center>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>* array;
+    <font color=blue>int</font>  nSize;
+
+    cout &lt;&lt; <font color=darkcyan>"どこまで計算しますか？ "</font> &lt;&lt; flush;
+    cin &gt;&gt; nSize;
+
+    array = <font color=blue>new int</font>[nSize];
+    <font color=blue>if</font>(array == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    StoreFibo(array, nSize);
+    DispFibo(array, nSize);
+
+    <font color=blue>delete</font> [] array;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>どこまで計算しますか？ 15
+1 1 2 3 5 8 13 21 34 55 89 144 233 377 610</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　<a href="cpp01057.html" target="main">第５７章</a>でやったフィボナッチ数列ですね。長くなるので StoreFibo と DispFibo は自分で第５７章からコピーして下さい。</p>
+
+<p>　前は１０個の要素の配列を作って、それを使って計算、表示するようにしていました。しかし、今度はどこまで計算するかをたずね、その分だけ配列を作り、そしてその配列を使って計算、表示するようにしました。</p>
+
+<p>　このように、<font color=red>new の [ ] の中には変数も入れられます</font>。実際には変数だけでなく、あらゆる式が入れられます。</p>
+
+<p>　で、無事フィボナッチ数列を計算でき、表示もできました。エラーも出ず、何も問題はありませんでした。さて、メモリも使い終えたので、このメモリを解放するとしましょう...と、あれ？　delete と array の間に何か変なものがありますね。</p>
+
+<p>　よく見ると、配列の要素を示すときのカッコのようです。このように、<font size=+3 color=red>配列を確保したときは、delete の後に [ ] を付ける</font>のです。これは決まりです。もし [ ] を付けなれば、何が起こるか分かりません。逆に、配列でないものを delete [] で解放しても、何が起こるか分かりません。</p>
+
+<p>　<font size=+2 color=red>delete と delete [] はきちんと使い分けて下さい。</font></p>
+
+<p>　ちなみに、[ と ] の間は別にいくら空けても構いません。空けたければ空けて下さい。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。最近長いのが続いたので、たまにはこれくらい短いのもいいでしょう。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列の動的確保は new &lt;型&gt;[&lt;要素数&gt;] でできる。</li>
+<li>アドレスはやはり &lt;型&gt; へのポインタで受ける。</li>
+<li>要素数は式でも指定できる。</li>
+<li>配列の解放は delete [] &lt;アドレス&gt;; で行う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01071.html" target="main">第７１章　借りたら返す</a> | <a href="cpp01073.html" target="main">第７３章　借りたら返す３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.29</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

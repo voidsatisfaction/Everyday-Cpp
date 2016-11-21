@@ -1,0 +1,137 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２５章 たのしいソート２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２５章　たのしいソート２</font>
+</center>
+<hr>
+
+<p>　今回もソートです。バブルソートを発展させて、別のアルゴリズムを考えてみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>小さなデータを先頭に持っていくことを繰り返すソート方法を選択法と呼ぶ。</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のバブルソートでは、最大のものを探しつつ同時に交換も行っていました。が、今回はこれを<font color=red>分けて</font>みたいと思います。そして、今回は最小のものを最初に持っていくようにします。</p>
+
+<p>　つまり、<font color=red>先ず最小のものを探し、それを最初のものと交換する</font>ということになります。次は、それを除いた範囲で最小のものを探し、それを最初から２番目のものと交換します。</p>
+
+<p>　図にすると、こんな感じです。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0302501.gif" width=500 height=400 alt="比較と交換を分離したソートアルゴリズム"></td></tr>
+
+<tr><th>図．１　比較と交換を分離したソートアルゴリズム</th></tr>
+
+</table></center>
+
+<p>　こうすると、<font color=red>交換の回数がぐっと減ります</font>。交換はなかなかに時間のかかりそうな処理なので、それが減るのは心強いですね。</p>
+
+<p>　このように、最小のものを最初に持っていくようなソート法を、<font color=red>選択法</font>と呼びます。</p>
+
+<p>　では、プログラムを作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Sort2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortData.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortSub.h"</font>
+
+<font color=green>// 選択法</font>
+<font color=blue>void</font> SelectSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> iLoop;    <font color=green>// （データの個数−１）回回すための変数</font>
+    <font color=blue>int</font> iSearch;  <font color=green>// 一番小さいのを探すときのループ変数</font>
+    <font color=blue>int</font> iMin;     <font color=green>// 一番小さいデータのインデックス</font>
+    <font color=blue>int</font> nMin;     <font color=green>// 現在の最小データ</font>
+
+    <font color=green>// （データの個数−１）回回す</font>
+    <font color=blue>for</font>(iLoop = <font color=darkcyan>0</font>; iLoop &lt; nNumOf - <font color=darkcyan>1</font>; iLoop++)
+    {
+        <font color=green>// 初期値の代入</font>
+        iMin = iLoop;
+        nMin = pnData[iLoop];
+
+        <font color=green>// 一番小さいデータを探す</font>
+        <font color=blue>for</font>(iSearch = iLoop + <font color=darkcyan>1</font>; iSearch &lt; nNumOf; iSearch++)
+        {
+            <font color=green>// より小さいデータがあると、iMin と nMin を更新する</font>
+            <font color=blue>if</font>(pnData[iSearch] &lt; nMin)
+            {
+                iMin = iSearch;
+                nMin = pnData[iSearch];
+            }
+        }
+
+        <font color=green>// データの移動</font>
+        Swap(pnData[iMin], pnData[iLoop]);
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    SelectSort(g_anData, g_nNumOf);
+    DispArray(g_anData, g_nNumOf);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>  1,   1,   4,   6,   9,   9,  10,  11,  13,  14,
+ 15,  16,  23,  25,  28,  29,  31,  33,  34,  39,
+ 39,  40,  40,  41,  42,  44,  48,  51,  51,  53,
+ 54,  55,  56,  63,  67,  68,  73,  73,  76,  77,
+ 78,  79,  79,  87,  89,  99,  99, 101, 101, 103,
+110, 112, 116, 117, 117, 118, 124, 128, 136, 137,
+137, 138, 148, 150, 152, 155, 157, 160, 161, 164,
+166, 167, 168, 169, 173, 173, 174, 175, 185, 186,
+188, 192, 199, 203, 213, 215, 222, 228, 228, 229,
+231, 235, 239, 240, 240, 242, 249, 249, 254, 255,</pre></td></tr>
+
+</table></center>
+
+<p>　はい、きちんとソートできましたね。</p>
+
+<p>　交換の回数が少ない分、選択法はバブルソートよりも高速です。選択法も作るのは簡単なので、自作するときは選択法を使った方がいいかもしれませんね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>一番小さいデータを前に持っていくことを繰り返すソート方法を選択法と呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03024.html" target="main">第２４章　たのしいソート</a> | <a href="cpp03026.html" target="main">第２６章　たのしいソート３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.13</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

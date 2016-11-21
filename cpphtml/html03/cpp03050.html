@@ -1,0 +1,244 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５０章 型チェック -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５０章　型チェック</font>
+</center>
+<hr>
+
+<p>　今回は、アップキャストをした場合元の型を知るにはどうすればいいかということについて話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>typeid 演算子で型情報を取得できる。</li>
+<li>型情報は type_info クラスへの参照として取得できる。</li>
+<li>name で型名を、raw_name で内部表現を取得できる。(VC++)</li>
+<li>name で型の内部表現を取得できる。(gcc)</li>
+<li>ポインタの型はそのまま取得されてしまう。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　忍者がいます。忍者にもいろいろな人がいます。いろいろな階級の人がいます。ある階級の忍者しか入れないような場所もあるでしょう。</p>
+
+<p>　忍者を CNinja クラスにして、上忍クラス CJohnin 、中忍クラス CChuhnin 、下忍クラス CGenin を派生するとします。そして、上忍しか入れない謎の場所を CSecret クラスとします。</p>
+
+<p>　では、CSecret に入れるかどうかの判定はどのクラスでするのがベストでしょうか？　もし CSecret の様な場所がいくつもあるとすれば、<font color=red>CSecret の中で判定する</font>とよさそうだと分かります。場所を増やすたびに CJohnin 等のクラスを変えるというのも、何かおかしな気がします。（注：絶対この仕様がいいとは言えないかもしれません。）</p>
+
+<p>　ここで問題があります。判定関数はどういう風に作ればいいのでしょうか？</p>
+
+<p>　引数は CJohnin, CChuhnin, CGenin の全てのオブジェクトを渡せる必要があります。つまり、CNinja への const 参照にするといいでしょう。そして、あとはこの参照からどの階級の人かを判定すればいいわけですが、どうすればいいんでしょうね？</p>
+
+<p>　つまり、参照からどの階級の人かを取得できればいいわけです。仮想関数を使って何か値を返すようにし、その値で判定するという方法がとれるでしょう。</p>
+
+<p>　しかし、折角もともとの型が違うのですから、そのことを利用してどうにかできないものでしょうか。</p>
+
+<p>　そういうときのために、Ｃ＋＋では<font color=red>型の情報を取得する演算子</font>が用意されています。それが <font color=red>typeid</font> です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Typeid1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=red>&lt;typeinfo.h&gt;</font>
+
+<font color=green>// int を bool に変換</font>
+<font color=blue>inline bool</font> IntToBool(<font color=blue>int</font> a){ <font color=blue>return</font> a != <font color=darkcyan>0</font>; }
+
+<font color=green>// 忍者クラス</font>
+<font color=blue>class</font> CNinja                  { <font color=blue>public</font>: <font color=blue>virtual</font> ~ CNinja(); };
+<font color=blue>class</font> CJohnin : <font color=blue>public</font> CNinja { <font color=blue>public</font>: <font color=blue>virtual</font> ~CJohnin(); };
+<font color=blue>class</font> CChunin : <font color=blue>public</font> CNinja { <font color=blue>public</font>: <font color=blue>virtual</font> ~CChunin(); };
+<font color=blue>class</font> CGenin  : <font color=blue>public</font> CNinja { <font color=blue>public</font>: <font color=blue>virtual</font> ~ CGenin(); };
+
+ CNinja::~ CNinja() { }
+CJohnin::~CJohnin() { }
+CChunin::~CChunin() { }
+ CGenin::~ CGenin() { }
+
+<font color=green>// 場所クラス（抽象クラス）
+// これから派生しておけば、場所を系統的に扱えます</font>
+<font color=blue>class</font> CPlace
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> ~CPlace();
+    <font color=blue>virtual bool</font> CanEnter(<font color=blue>const</font> CNinja&amp; ninja) = <font color=darkcyan>0</font>;
+};
+
+<font color=green>// 謎の場所クラス</font>
+<font color=blue>class</font> CSecret : <font color=blue>public</font> CPlace
+{
+<font color=blue>public</font>:
+    <font color=blue>bool</font> CanEnter(<font color=blue>const</font> CNinja&amp; ninja);
+};
+
+CPlace::~CPlace()
+{
+}
+
+<font color=green>// 入れるかどうかの判定</font>
+<font color=blue>bool</font> CSecret::CanEnter(<font color=blue>const</font> CNinja&amp; ninja)
+{
+    <font color=blue>return</font> IntToBool(<font color=red>typeid(ninja) == typeid(CJohnin)</font>);
+}
+
+<font color=blue>int</font> main()
+{
+    CSecret secret;
+    CJohnin johnin;
+    CChunin chunin;
+    CGenin  genin;
+
+    <font color=blue>const char</font>* str[] = {
+        <font color=darkcyan>"入れません。"</font>,
+        <font color=darkcyan>"入れます。"</font>,
+    };
+
+    cout &lt;&lt; <font color=darkcyan>"上忍は"</font> &lt;&lt; str[secret.CanEnter(johnin)] &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"中忍は"</font> &lt;&lt; str[secret.CanEnter(chunin)] &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"下忍は"</font> &lt;&lt; str[secret.CanEnter( genin)] &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>上忍は入れます。
+中忍は入れません。
+下忍は入れません。</pre></td></tr>
+
+</table></center>
+
+<p>　これをＶＣ＋＋でコンパイルするには、dynamic_cast のときと同じように<font color=red>ランタイムタイプ情報（ＲＴＴＩ）を有効にする</font>必要があります（<a href="../html02/cpp02042.html" target="main">第２部第４２章</a>参照）。また、dynamic_cast の制限と同じく、正しく動かすには<font color=red>仮想関数が必ず１つは必要</font>です。</p>
+
+<p>　見てもらえれば分かるように、CanEnter 関数で入れるかどうかの判定を行っています。その判定文は</p>
+
+<pre><font color=blue>return</font> IntToBool(<font color=red>typeid(ninja) == typeid(CJohnin)</font>);</pre>
+
+<p>です。<font color=red>typeid(ninja) で ninja の本来の型の情報を取得することができます。</font>これを CJohnin の型情報を比べて等しければ true で（入れて）、等しくなければ flase になります（入れません）。感覚的に分かりやすくていいですね。</p>
+
+<p>　IntToBool というのは、単に int を bool に変換する関数です。<font color=red>型情報の比較の結果は int で返ってくる</font>ので、bool に直してやっているだけです。bool へのキャストは警告が出るのでいちいちこうやっています。</p>
+
+<hr>
+
+<p>　上のプログラムにはまだよく分からないところがあると思います。そうです。型情報、型情報と抽象的に言っていますが、<font color=red>型情報とは具体的にどういうものなのか</font>ということです。</p>
+
+<p>　型情報は実は <font color=red>type_info クラスへの const 参照</font>として得られます。そのため、type_info クラスの定義のある typeinfo ヘッダファイルが必要になります。<font color=red>上の比較も、type_info::operator== で行っています。</font>この戻り値は何故か int になっていて、それで bool で返すのに IntToBool のようなことをしているわけです。</p>
+
+<p>　では、型情報を type_info クラスへの const 参照で受けて、何かやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Typeid2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;typeinfo.h&gt;</font>
+
+<font color=green>// 忍者クラス</font>
+<font color=blue>class</font> CNinja                 { <font color=blue>public</font>: <font color=blue>virtual</font> ~CNinja(); };
+<font color=blue>class</font> CGenin : <font color=blue>public</font> CNinja { <font color=blue>public</font>: <font color=blue>virtual</font> ~CGenin(); };
+
+CNinja::~CNinja() { }
+CGenin::~CGenin() { }
+CGenin::~CGenin() { }
+
+<font color=blue>void</font> DispType(<font color=blue>const</font> CNinja* pNinja)
+{
+    cout &lt;&lt; <font color=darkcyan>"pNinja の型名は "</font>
+         &lt;&lt; <font color=blue>typeid</font>(pNinja).name() &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"*pNinja の型名は "</font>
+         &lt;&lt; <font color=blue>typeid</font>(*pNinja).name() &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CGenin genin;
+
+    cout &lt;&lt; <font color=darkcyan>"int の型名は "</font>
+         &lt;&lt; <font color=blue>typeid</font>(<font color=blue>int</font>).name() &lt;&lt; <font color=darkcyan>" です。"</font>&lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"type_info の内部名は "</font>
+         &lt;&lt; <font color=blue>typeid</font>(type_info).raw_name() &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"main の型の内部名は "</font>
+         &lt;&lt; <font color=blue>typeid</font>(main).raw_name() &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    DispType(&amp;genin);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>int の型名は int です。
+type_info の内部名は .?AVtype_info@@ です。
+main の型の内部名は .P6AHXZ です。
+pNinja の型名は class CNinja const * です。
+*pNinja の型名は class CGenin です。</pre></td></tr>
+
+</table></center>
+
+<p>　type_info は == と != の比較の他に、<font color=red>型名を文字列として取得する</font>ことができます。そのため関数が <font color=red>name と raw_name</font> です。</p>
+
+<p>　name はそのまま型名を表示しますが、raw_name は<a href="cpp03047.html" target="main">第４７章</a>で話したのと似たような<font color=red>型の内部表現</font>を返します。raw は「生（なま）の」という意味なので、生の名前を返すというわけです。関数名の内部表現と同じく型の内部表現も一意であることが保証されているので、２つの型名が同じかどうかはこの raw_name を比較するのが安全です。</p>
+
+<p>　type_info は参照として受け取り、しかも代入演算子、コピーコンストラクタは public にありません。型情報を保存しておいて後で比較するという場合には、この内部表現を保存しておけばいいわけです。</p>
+
+<p>　まだ注意することがありますね。DispType には CGenin へのアドレスを渡しているわけですが、pNinja の型は const CNinja* になっています。つまり、<font color=red>ポインタの状態ではポインタの型をそのまま取得する</font>ことになります。*pNinja というように、<font color=red>参照して初めて本当の型を知ることができる</font>のです。</p>
+
+<hr>
+
+<p>　補足しますが、ポリモーフックな（仮想関数を持った）クラスへの参照の型判定には、メンバに埋め込まれた情報が使われます。つまり、おかしなものを入れると例外が投げられます。</p>
+
+<p>　例えば、上の DispType に NULL を渡すとどうなるか考えてみましょう。pNinja の型は上に書いたとおり const CNinja* になるでしょう。しかし、*pNinja というのは NULL を使って参照しているわけで、メンバに埋め込まれた情報とやらを使うことはできません。つまり、型を特定することができません。この場合は <font color=red>bad_typeid 型の例外が投げられます</font>。エラーメッセージは bad_alloc と同じく what 関数で取得できます。</p>
+
+<p>　bad_alloc も bad_typeid も exception というクラスから派生しています。つまり、catch(exception&amp; e) を使えば両方とも取得することができます。what は exception クラスの仮想関数なので、エラーメッセージも表示することができます。</p>
+
+<p>　dynamic_cast も参照へ代入する際には bad_cast 例外が投げられる場合がありますが、これもやはり exception から派生しています。<font color=red>Ｃ＋＋が言語仕様として投げる例外は全て exception クラスから派生しています。</font></p>
+
+<hr>
+
+<p>　最後にもう１つ補足ですが、gcc では <font color=red>type_info::operator== の戻り値は bool です</font>。IntToBool は必要ありません。そして、raw_name は存在せず、<font color=red>name がそのまま内部表現を返します</font>。他の開発環境でも何か違いがあるかも知れませんね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>typeid 演算子で型情報を取得できる。</li>
+<li>型情報は type_info クラスへの参照として取得できる。</li>
+<li>name で型名を、raw_name で内部表現を取得できる。(VC++)</li>
+<li>name で型の内部表現を取得できる。(gcc)</li>
+<li>ポインタの型はそのまま取得されてしまう。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　５１章からはいよいよ多重継承について話していきたいと思います。それでは。</p>
+
+<hr>
+
+<p><font size=-1>P.S.）　もう機種依存の話は嫌です（汗）。gcc は頻繁にヴァージョンアップするので最新の規格に対応してくれていますが、VC++6.0 は結構前に出たのでいろいろまずいところがあるんです。例えば、VC++ はメンバ関数テンプレートのサポートがまだされていません。次のヴァージョン VisualStudio.Net が正式公開されたらちゃんと対応してくれていることを祈っておきましょう。（２００１年５月６日 記ス）</font></p>
+
+<hr>
+
+<p align=right><a href="cpp03049.html" target="main">第４９章　破壊と創造</a> | <a href="cpp03051.html" target="main">第５１章　多重継承事始</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

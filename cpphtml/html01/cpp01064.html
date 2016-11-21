@@ -1,0 +1,180 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６４章 同姓同名 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６４章　同姓同名</font>
+</center>
+<hr>
+
+<p>　珍しい名前でなければ、同姓同名の人というのは結構いるものです。同姓同名といっても、外見が似ていなければ簡単に見分けが付きますよね。関数も、名前が同じでも外見が似ていなければ見分けが付くはずです。というわけで、今回は名前の同じ関数についてのお話です。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数が違えば同じ名前の関数が作れる。</li>
+<li>戻り値が違うだけでは同じ名前の関数は作れない。</li>
+<li>同じ名前の違う関数を作ることをオーバーロードという。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、絶対値を求める関数を作りたいと思います。しかし、コンピューターには厄介な問題があります。それは整数と小数の問題です。これらで別々の関数を作る必要があります。</p>
+
+<p>　整数を引数に取るときには、long 型を使えば問題なさそうです。char であっても short であっても int であっても、引数の型を long にしておけば<font color=red>勝手に型を変換してくれる</font>からです。char, short, int で表現できる数値は必ず long でも表現できるからです。</p>
+
+<p>　同じように、小数を引数に取るときは double 型を使えば問題なさそうです。</p>
+
+<p>　で、次のようになりました。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr>
+<td><pre><font color=blue>long</font> AbsInt(<font color=blue>long</font> a)
+{
+    <font color=blue>return</font> a &lt; <font color=darkcyan>0</font> ? -a : a;
+}
+
+<font color=blue>double</font> AbsFloat(<font color=blue>double</font> a)
+{
+    <font color=blue>return</font> a &lt; <font color=darkcyan>0</font> ? -a : a;
+}</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　同じ機能だというのに、関数名に違いがありますね。<font color=red>同じ機能なのなら、関数名が同じでも別に構わないでしょう。</font>しかし、そんなことはできるのでしょうか？</p>
+
+<p>　次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Ovload1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=green>// 絶対値を求める</font>
+<font color=blue>long</font> Abs(<font color=blue>long</font> a)
+{
+    <font color=blue>return</font> a &lt; <font color=darkcyan>0</font> ? -a : a;
+}
+
+<font color=blue>double</font> Abs(<font color=blue>double</font> a)
+{
+    <font color=blue>return</font> a &lt; <font color=darkcyan>0</font> ? -a : a;
+}
+
+<font color=green>// 入力</font>
+<font color=blue>int</font> Input(<font color=blue>int</font>&amp; nInt, <font color=blue>double</font>&amp; nDouble)
+{
+    cout &lt;&lt; <font color=darkcyan>"整数値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; nInt;
+    <font color=blue>if</font>(nInt == <font color=darkcyan>1</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"小数値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; nDouble;
+    <font color=blue>return</font> <font color=darkcyan>1</font>;
+}
+
+<font color=green>// 絶対値の表示</font>
+<font color=blue>void</font> DispAbs(<font color=blue>int</font> nInt, <font color=blue>double</font> nDouble)
+{
+    cout &lt;&lt; nInt    &lt;&lt; <font color=darkcyan>" の絶対値は "</font> &lt;&lt; Abs(nInt)    &lt;&lt; <font color=darkcyan>"で、"</font> &lt;&lt; endl
+         &lt;&lt; nDouble &lt;&lt; <font color=darkcyan>" の絶対値は "</font> &lt;&lt; Abs(nDouble) &lt;&lt; <font color=darkcyan>"です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>    nInt;
+    <font color=blue>double</font> nDouble;
+
+    <font color=blue>while</font>(Input(nInt, nDouble))
+        DispAbs(nInt, nDouble);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>整数値を入力して下さい &gt; -126
+小数値を入力して下さい &gt; 0.23
+-126 の絶対値は 126 で、
+0.23 の絶対値は 0.23 です。
+整数値を入力して下さい &gt; 319
+小数値を入力して下さい &gt; -0.2
+319 の絶対値は 319 で、
+-0.2 の絶対値は 0.2 です。
+整数値を入力して下さい &gt; 1</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　どうやら、うまくいったようです。何でもやってみるものですね。</p>
+
+<p>　このように、<font color=red>同じ名前の違う関数を作ることをオーバーロードと呼びます</font>。</p>
+
+<hr>
+
+<p>　さて、同姓同名で、しかも外見などの特徴が似ている人が２人いたとします。この２人を区別することはできるでしょうか？　かなり難しいと思います。人間ならいろいろ特徴があるので何とか区別がつくと思いますが、これが関数となったらどうでしょうか？</p>
+
+<p>　関数の外見的な特徴といえば、戻り値の型、引数の型、個数、順番くらいです。これらが全て同じ関数を２つ定義しようとしても、この２つを外見から区別することはできませんね。</p>
+
+<pre>int Func(){ return 0; }
+int Func(){ return 1; }</pre>
+
+<p>　という関数があったとします。しかし、Func(); と関数を呼んだところで、このどちらが呼ばれたのか全く区別できません。なので、<font color=red>全く同じ戻り値の型、引数の型、個数、順番をもつ関数を２つ定義することはできません</font>。これはオーバーロードではなく、単なる二重定義ですね。</p>
+
+<p>　さて、オーバーロードの制限はもうちょっとあります。実は、戻り値の型が違っていても、引数の型が全て同じであればオーバーロードできません。</p>
+
+<pre>int Func(){ return 0; }
+double Func(){ return 1; }</pre>
+
+<p>　という関数があったとします。戻り値の型が違いますが、Func(); と関数を呼んだところで、このどちらが呼ばれたのか全く区別できませんね。</p>
+
+<p>　このように、<font color=red>戻り値の型はオーバーロードできるかどうかに影響を与えない</font>のです。</p>
+
+<p>　まとめると、<font color=red>引数の型、個数、順番の同じ関数を２つ定義することはできない</font>ということになります。</p>
+
+<hr>
+
+<p>　あと１つだけ注意ですが、<font color=red>Ｃ言語ではオーバーロードはできません</font>。できるのはＣ＋＋だけです。Ｃ／Ｃ＋＋の両方で使うようなプログラムでは、オーバーロードをしてはいけません。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数が違えば同じ名前の関数が作れる。</li>
+<li>同じ名前の違う関数を作ることをオーバーロードという。</li>
+<li>戻り値が違うだけでは同じ名前の関数は作れない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も関数に関するお話です。では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01063.html" target="main">第６３章　参照するな</a> | <a href="cpp01065.html" target="main">第６５章　ナマケモノ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.29</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

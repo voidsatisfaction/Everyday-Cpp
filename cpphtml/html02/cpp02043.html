@@ -1,0 +1,153 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４３章 心の友よ！ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４３章　心の友よ！</font>
+</center>
+<hr>
+
+<p>　お前のものは俺のもの。俺のものも俺のもの。今回はそういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>グローバルでも演算子をオーバーロードできる。</li>
+<li>フレンドの関係にあれば、アクセス指定を無視できる。</li>
+<li>フレンドには、クラスも関数も指定できる。</li>
+<li>フレンド指定は一方通行。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　あるクラスにとても密接に関係する関数やクラスを作ったとします。こういう場合、どうしても protected メンバや private メンバにアクセスしたくなる場合が出てくることがあります。なるべくこのようなことはやりたくはないのですが、どうしようもないことがあります。</p>
+
+<p>　例えば、演算子のオーバーロードを考えてみましょう。分数を扱うクラス fraction を例に考えます。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>class</font> fraction
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_nNumer;  <font color=green>// 分子 (numerator)</font>
+    <font color=blue>int</font> m_nDenom;  <font color=green>// 分母 (denominator)</font>
+
+<font color=blue>public</font>:
+    fraction(<font color=blue>int</font> nNumer = <font color=darkcyan>0</font>, <font color=blue>int</font> nDenom = <font color=darkcyan>1</font>)
+        { m_nNumer = nNumer; m_nDenom = nDenom; }
+    <font color=blue>operator int</font>()
+        { <font color=blue>return</font> m_nNumer / m_nDenom; }
+};</pre></td></tr>
+
+</table></center>
+
+<p>　複雑になると分かりにくいので、かなり手抜きです。値は、割った結果を int で取得することしかできません。</p>
+
+<p>　では、int から fraction を引くことを考えましょう。ここで注意することは fraction から int を引くのではないというところです。fraction から int を引くのなら</p>
+
+<center><table border=1>
+
+<tr><td><pre>fraction fraction::<font color=blue>operator</font>-(<font color=blue>int</font> nSub)
+{
+    fraction ret(m_nNumer - m_nDenom * nSub, m_nDenom);
+    <font color=blue>return</font> ret;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　で構いません。この逆を行うには、</p>
+
+<pre>fraction <font color=blue>operator</font>-(<font color=blue>int</font> nNum, fraction frcSub);</pre>
+
+<p>といった形の<font color=red>グローバル関数</font>を使う必要があります。左項がクラスでない場合は、こういう風にする必要があります。</p>
+
+<p>　では作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre>fraction <font color=blue>operator</font>-(<font color=blue>int</font> nNum, fraction frcSub)
+{
+    fraction ret(frcSub.m_nDenom * nNum - frcSub.m_nNumer, frcSub.m_nDenom);
+    <font color=blue>return</font> ret;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　...と、こうしたいわけですが、<font color=red>この関数は fraction のメンバ関数ではないので private メンバである m_nNumer と m_nDenom は使えません</font>。このクラスなら m_nNumer や m_nDenom を公開する関数を作っても別に構わないのですが、そうしてしまうと話が進まないのでやりません（汗）。（いい例が思いつかなかったもので...。）</p>
+
+<p>　ではどうするかというと、<font color=red>この関数でも private メンバにアクセスできるようにします</font>。どうやればいいのかというと、<font color=red>この関数とお友達になってしまえばいい</font>のです。友達になら、少々プライベートなことも教えてくれるというわけです。</p>
+
+<p>　で、「お友達になる」には「今日からキミも友達だ！」と宣言する必要があります。その命令が <font color=red>friend</font> です。まんまですね。こんな風に使います。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>class</font> fraction
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_nNumer;  <font color=green>// 分子 (numerator)</font>
+    <font color=blue>int</font> m_nDenom;  <font color=green>// 分母 (denominator)</font>
+
+<font color=blue>public</font>:
+    fraction(<font color=blue>int</font> nNumer = <font color=darkcyan>0</font>, <font color=blue>int</font> nDenom = <font color=darkcyan>1</font>)
+        { m_nNumer = nNumer; m_nDenom = nDenom; }
+    <font color=blue>operator int</font>()
+        { <font color=blue>return</font> m_nNumer / m_nDenom; }
+
+    <font color=red>friend fraction operator-(int nNum, fraction frcSub);</font>
+};</pre></td></tr>
+
+</table></center>
+
+<p>　赤で書かれた部分が追加された部分です。このように書くと、<font color=red>friend の次に書かれた関数の中から fraction の protected, private メンバを使うことができるようになります</font>。この機構のことをそのまま<font color=red>フレンド</font>と呼びます。そして、フレンドに指定された関数のことを<font color=red>フレンド関数</font>と呼びます。</p>
+
+<p>　これで無事引き算ができるようになりました。</p>
+
+<hr>
+
+<p>　フレンドに指定できるのは関数だけではありません。<font color=red>クラスも指定することができます。</font>フレンドに指定されたクラスは、やはり<font color=red>フレンドクラス</font>と呼びます。フレンドクラスからは、やはり指定元のクラスの protected, private メンバを使うことができます。</p>
+
+<p>　しかし、フレンドクラスの protected, private メンバを、<font color=red>指定元のクラスから使うことはできません</font>。Ｃ＋＋の友情は一方通行なのです。そういう風にしたければ、相互にフレンド指定を行う必要があるのです。</p>
+
+<p>　また、フレンドに指定された関数やクラスは、別に宣言、実装を行う必要があります。friend 文はあくまでフレンドの指定を行うための文であり、プロトタイプ宣言などにはならないのです。</p>
+
+<p>　そして、<font color=red>friend 文の前に指定する関数やクラスの宣言がなくても構いません</font>。後に書いたのでもいいということです。このあたりはＣ＋＋にしては異質の仕様に思われるかも知れませんね。クラスを指定するときは friend class CTest; のように、class も書く必要があります。</p>
+
+<p>　但し、メンバ関数をフレンド指定するときだけは例外的に先に宣言が必要です。注意して下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>グローバルでも演算子をオーバーロードできる。</li>
+<li>フレンドの関係にあれば、アクセス指定を無視できる。</li>
+<li>フレンドには、クラスも関数も指定できる。</li>
+<li>フレンド指定は一方通行。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　フレンドは強力ですが、使いどころを間違えるとアクセス指定の意味を無くしてしまうことになります。十分注意して使うようにしましょう。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02042.html" target="main">第４２章　ダウンキャスト</a> | <a href="cpp02044.html" target="main">第４４章　テンポラリ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.23</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

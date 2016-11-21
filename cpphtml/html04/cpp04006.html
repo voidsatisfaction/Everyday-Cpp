@@ -1,0 +1,118 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６章 コンテナ２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６章　コンテナ２</font>
+</center>
+<hr>
+
+<p>　今回はコンテナをアルゴリズムを使って操作してみます。前回のプログラムと比べながらやってみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>基本的なイテレータの型は &lt;コンテナの型&gt;::iterator である。</li>
+<li>begin で先頭のイテレータを、end で末尾のイテレータを取得できる。</li>
+<li>逆順のイテレータは rbegin と rend で取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のプログラムで、for を使って vector の要素を 0 で埋めたり、1 で埋めたりしました。しかし、埋めるといえば<a href="cpp04003.html" target="main">第３章</a>で使った fill アルゴリズムが用意されていました。どうにかして vector をアルゴリズムを使って操作したいのですが、どうすればよいのでしょうか？</p>
+
+<p>　先ず、vector は動的配列です。ということは中身は配列なので、&v.front() のように先頭ポインタを取得してアルゴリズムを適用してやれば何とかなりそうです。</p>
+
+<p>　しかし、実は<font color=red>vector が純粋な配列であるという保証はありません</font>。vector の性質上それで問題ないように見えますが、それは仕様として定められていないのです。例えば、サイズが大きくなるとあるサイズで分断してメモリを確保するようになっていたとしても、誰も文句は言えないのです。</p>
+
+<p>　となると、<a href="cpp04004.html" target="main">第４章</a>で話した<font color=red>イテレータを使わなければならない</font>ことになりますね。各コンテナに対するイテレータは既に用意されています。<font color=red>型名は &lt;コンテナの型&gt;::iterator</font> で、<font color=red>始点のイテレータは begin メンバ関数</font>で、<font color=red>終点 + 1 のイテレータは end メンバ関数</font>で取得できます。</p>
+
+<p>　このことを踏まえて、前回のプログラムをアルゴリズムを使って書き直してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Vector2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;vector&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;algorithm&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=green>// 配列のようなものを表示するアルゴリズム Disp</font>
+<font color=blue>template</font> &lt;typename TYPE&gt;
+<font color=blue>void</font> Disp(TYPE pBegin, TYPE pEnd)
+{
+    <font color=blue>for</font>(TYPE p = pBegin; p != pEnd; p++)
+        cout &lt;&lt; *p &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    vector &lt;<font color=blue>int</font>&gt; vct(<font color=darkcyan>10</font>);
+
+    fill(<font color=red>vct.begin()</font>, <font color=red>vct.end()</font>, <font color=darkcyan>0</font>);
+    Disp(<font color=red>vct.begin()</font>, <font color=red>vct.end()</font>);
+
+    vct.resize(<font color=darkcyan>5</font>);
+    fill(<font color=red>vct.begin()</font>, <font color=red>vct.end()</font>, <font color=darkcyan>1</font>);
+    Disp(<font color=red>vct.begin()</font>, <font color=red>vct.end()</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0 0 0 0 0 0 0 0 0 0
+1 1 1 1 1</pre></td></tr>
+
+</table></center>
+
+<p>　このように、<font color=red>begin と end を使えばコンテナをアルゴリズムを使って操作することができるようになる</font>のです。</p>
+
+<p>　また、<font color=red>逆順</font>でアクセスするためのイテレータもあり、型名は <font color=red>&lt;コンテナ名&gt;::reverse_iterator</font> 、取得関数は <font color=red>rbegin と rend</font> です。</p>
+
+<p>　他にも、const オブジェクトの場合はイテレータも const ポインタっぽいものになっていて、<font color=red>const_iterator や const_reverse_iterator</font> という型名になっています。</p>
+
+<p>　このようなイテレータは大体のコンテナに用意されています。他にも気を付けるべき細かい仕様はいくらかありますが、それはおいおい話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>基本的なイテレータの型は &lt;コンテナの型&gt;::iterator である。</li>
+<li>begin で先頭のイテレータを、end で末尾のイテレータを取得できる。</li>
+<li>逆順のイテレータは rbegin と rend で取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp04005.html" target="main">第５章　コンテナ</a>
+<!--
+ | <a href="cpp04007.html" target="main">第７章　</a>
+-->
+</p>
+<p align=right><font size=-1><i>Last update was done on 2001.8.2</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

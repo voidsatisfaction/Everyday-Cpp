@@ -1,0 +1,172 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１３章 さらに条件分岐 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１３章　さらに条件分岐</font>
+</center>
+<hr>
+
+<p>　しつこいようですが、今回も if 文です。しかし、前回のように同じ事をやるのではなく、条件文のもう１つの書き方について話します。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件文は数値でもよく、０は偽、０でないときは真となる。</li>
+<li>条件式を数値として使うこともでき、真は１、偽は０となる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ある事を判別する関数を作るとします。例えば前回の関数 ChangeToShohwa なんかがそうです。</p>
+
+<p>　その際、いちいち == 0 とかを付けるのは面倒です。それよりは</p>
+
+<pre>if(ChangeToShohwa(a)) ...</pre>
+
+<p>とした方が視覚的にも関数が成功したかどうかを判定する文に見えます。</p>
+
+<p>　Ｃ／Ｃ＋＋言語ではもちろんこのような表記が使用できます。それだけでなく変数を</p>
+
+<pre>if(a) ...</pre>
+
+<p>のように置くだけというのも可能です。</p>
+
+<p>　これは、<font color=red>条件式には数値を用いることもできる</font>ということを示します。<font color=red>０は偽、０でないときは真となります。</font></p>
+
+<p>　つまり、<font color=red>失敗したときに０を返す</font>ようにすれば、この表記が可能なのです。</p>
+
+<p>　では、これを踏まえて、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// If3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> ChangeToShohwa(<font color=blue>int</font> a)
+{
+    <font color=blue>if</font>(<font color=darkcyan>1926</font> &lt;= a && a &lt;= <font color=darkcyan>1989</font>)
+        <font color=blue>return</font> a - <font color=darkcyan>1925</font>;
+    <font color=blue>else</font>
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> Shohwa()
+{
+    <font color=blue>int</font> a;
+
+    cout &lt;&lt; <font color=darkcyan>"西暦を入力して下さい &gt; "</font>;
+    cin &gt;&gt; a;
+
+    <font color=blue>if</font>(ChangeToShohwa(a))
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和 "</font> &lt;&lt; ChangeToShohwa(a)
+             &lt;&lt; <font color=darkcyan>" 年です。"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和ではありません。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Shohwa();
+    Shohwa();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>西暦を入力して下さい > 1979
+その年は昭和 54 年です。
+西暦を入力して下さい > 1999
+その年は昭和ではありません。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　視覚的にも意味のとりやすいプログラムになりましたね。</p>
+
+<p>　また、数値にも &&, ||, ! を使うことができます。数値と条件式を混在させても構いません。</p>
+
+<hr>
+
+<p>　ここで鋭い人はこう考えるでしょう。<font color=red>「条件式に数値を使えるのなら、条件式を数値として使えるのではないか？」</font>と。</p>
+
+<p>　もちろん使えます。<font color=red>真は１、偽は０となります。</font></p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Require1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Points()
+{
+    <font color=blue>int</font> a;
+
+    cout &lt;&lt; <font color=darkcyan>"テストは何点でしたか &gt; "</font>;
+    cin &gt;&gt; a;
+
+    cout &lt;&lt; <font color=darkcyan>"へー、"</font> &lt;&lt; a * (<font color=darkcyan>0</font> &lt;= a && a &lt;= <font color=darkcyan>100</font>)
+         &lt;&lt; <font color=darkcyan>" 点でしたか。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Points();
+    Points();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>テストは何点でしたか &gt; 87
+へー、87 点でしたか。
+テストは何点でしたか &gt; -273
+へー、0 点でしたか。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　if がないのに、<font color=red>a が無効な値の時は a を０にするという処理を行っています</font>。</p>
+
+<p>　あと、条件式はカッコで囲んで下さい。条件に使う演算子は優先順位が低いからです。</p>
+
+<hr>
+
+<p>　次回はいよいよループ処理に入ります。これで同じ処理を複数回行うとき、それだけコピーするという必要がなくなります。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件文は数値でもよく、０は偽、０でないときは真となる。</li>
+<li>条件式を数値として使うこともでき、真は１、偽は０となる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01012.html" target="main">第１２章　もっと条件分岐</a> | <a href="cpp01014.html" target="main">第１４章　ループの仕方</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

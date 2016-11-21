@@ -1,0 +1,519 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４０章 二世帯住宅 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４０章　二世帯住宅</font>
+</center>
+<hr>
+
+<p>　今回はＫＭＰ法の回で少しだけ話題に出たアレについて話します。大きなファイルを小出しに処理する際に重要なテクニックです。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>２つのバッファを交互に使えば、ある程度逆戻りがしやすい。</li>
+<li>この方法をダブルバッファリングと呼ぶ。</li>
+<li>ダブルバッファリングは大きなファイルを扱うときに便利。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　大きなファイルを取り扱うとします。メモリの大きな環境であればその内容を一気にメモリに読み込むことができるかもしれませんが、そういう場合は<font color=red>小出しに読み出していく</font>のが普通でしょう。</p>
+
+<p>　メモリの少ないパソコンでは全く使えないプログラムになる可能性もあります。また、大きなメモリを確保できたとしても、そのせいで他のプログラムのメモリが足らなくなってしまうこともあります。関連して、ＯＳ自体の動作が不安定になることもあるかもしれません。このように、大きなファイルは小出しに扱うのが普通なのです。</p>
+
+<p>　例えば、大きなファイルをＢＭ法（<a href="cpp03039.html" target="main">第３９章</a>参照）で検索していくことを考えましょう。もちろん大きなメモリを確保することはよくないので、小出しにバッファに読み出すことにします。普通は数千バイトくらいとるのですが、ここでは例のために８バイトとします。</p>
+
+<center><table border=1><tr>
+  <th width=15%><nobr>バッファ</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｕ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr></table></center>
+
+<p>　ＢＭ法はほとんどの場合、検索していく際にバッファ内を逆方向にすすむことがあります。</p>
+
+<center><table border=1><tr>
+  <th width=15%><nobr>バッファ</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｕ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr><tr>
+  <th width=15%><nobr>検索</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th colspan=4 width=40%>　</th>
+</tr><tr>
+  <th width=15%>　</th>
+  <th width=10%>　</th>
+  <th width=10%>×</th>
+  <th width=10%>←</th>
+  <th width=10%>←</th>
+  <th colspan=4 width=40%>　</th>
+</tr></table></center>
+
+<p>　このように、逆に戻った先もまだバッファ内であればいいのですが、かならずそうなるというわけではありません。小出しに確認していく時には前のバッファの内容を消してしまいます。消さなければメモリの節約になりませんね。ということは、<font color=red>その消した先に戻りたい</font>ことが出てくるはずです。</p>
+
+<center><table border=1><tr>
+  <th width=10%><nobr>バッファ</nobr></th>
+  <th colspan=2 width=12%>×</th>
+  <th width=6%>ｔ</th>
+  <th width=6%>ｏ</th>
+  <th width=6%>ｍ</th>
+  <th width=6%>ａ</th>
+  <th width=6%>ｔ</th>
+  <th width=6%>ａ</th>
+  <th width=6%>\r</th>
+  <th width=6%>\n</th>
+</tr><tr>
+  <th width=10%><nobr>検索</nobr></th>
+  <th width=6%>ｍ</th>
+  <th width=6%>ａ</th>
+  <th width=6%>ｔ</th>
+  <th width=6%>ｏ</th>
+  <th colspan=6 width=36%>　</th>
+</tr><tr>
+  <th width=10%>　</th>
+  <th colspan=2 width=12%>？？</th>
+  <th width=6%>←</th>
+  <th width=6%>←</th>
+  <th colspan=6 width=36%>　</th>
+</tr></table></center>
+
+<p>　このときはどうすればいいでしょうか？　簡単にはもう一度前の所を読み出せばいいですね。</p>
+
+<center><table border=1><tr>
+  <th width=15%><nobr>バッファ</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｕ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr><tr>
+  <th width=15%><nobr>検索</nobr></th>
+  <th colspan=6 width=60%>　</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+</tr><tr>
+  <th width=15%>　</th>
+  <th colspan=7 width=70%>　</th>
+  <th width=10%>×</th>
+</tr></table></center>
+
+<p>で、照合に失敗したのでまた先に進みます。このとき、<font color=red>さっきまで読み出していた部分をもう一度読み出すことになります</font>。しかも、<font color=red>この部分も前に読み出したことのある部分です</font>。何か無駄な感じがしますね。</p>
+
+<p>　大きなファイルの検索というと結構時間のかかる作業です。その中でもファイルからの読み出しというのは遅く、この頻度を減らすことは検索速度の向上に繋がります。<font color=red>小出しに読み出しつつもファイルからの読み出し頻度を減らすにはどうすればよいのでしょうか？</font></p>
+
+<hr>
+
+<p>　バッファのサイズを大きくして頻度を減らすという方法を考える人がいるかもしれません。しかし、メモリの節約がしたいのでこの案はいまいち使えません。しかも、読み直しが起こったときに読み直すサイズが大きいので、読み直しが起こったときのペナルティが大きくなってしまいます。</p>
+
+<p>　ここでちょっと上の方に書いた一文をもう一度見てみましょう。</p>
+
+<p><font color=red>「小出しに確認していく時には前のバッファの内容を消してしまいます」</font></p>
+
+<p>このように、そもそもファイルの読み直しが起きるのは前のバッファを消してしまうからです。しかし、消さなければバッファの節約はできません。残したいのに消さなければならないわけです。</p>
+
+<p>　しかし、<font color=red>１回前のものくらいは残しておいても問題はない</font>のではないでしょうか？　これならメモリも充分節約でき、同時にある程度前に戻ることもできますね。上の例を使って見ていきましょう。</p>
+
+<center><table border=1><tr>
+  <th width=15%><nobr>バッファ１</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｕ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr><tr>
+  <th width=15%><nobr>検索</nobr></th>
+  <th colspan=6 width=60%>　</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+</tr><tr>
+  <th width=15%>　</th>
+  <th colspan=7 width=70%>　</th>
+  <th width=10%>×</th>
+</tr><tr>
+  <th width=15%><nobr>バッファ２</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr><tr>
+  <th width=15%><nobr>検索</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th colspan=6 width=60%>　</th>
+</tr><tr>
+  <th width=15%>　</th>
+  <th width=10%>←</th>
+  <th width=10%>←</th>
+  <th colspan=6 width=60%>　</th>
+</tr></table></center>
+
+<p>　初めはバッファ１に読み出します。そしてバッファ１の先に進む必要が出てくると、バッファ１に上書きするのではなく<font color=red>バッファ２に読み出します</font>。これで、上のように検索の時にバッファ２よりも前に戻りたいときは、<font color=red>バッファ１に戻ればいい</font>ようになります。</p>
+
+<p>　バッファ１よりまだ戻る必要がある場合は読み戻さなければいけませんが、バッファのサイズを検索文字列よりも大きく取るようにすればそのようなことは起こりません。これで読み直しがなくなるというわけです。</p>
+
+<p>　バッファ２の終わりまで来れば、次はバッファ１に上書きします。</p>
+
+<center><table border=1><tr>
+  <th width=15%><nobr>バッファ１</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｉ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr><tr>
+  <th width=15%><nobr>検索</nobr></th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th colspan=4 width=40%>　</th>
+</tr><tr>
+  <th width=15%>　</th>
+  <th colspan=3 width=30%>　</th>
+  <th width=10%>×</th>
+  <th colspan=4 width=40%>　</th>
+</tr><tr>
+  <th width=15%><nobr>バッファ２</nobr></th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ｏ</th>
+  <th width=10%>ｍ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>ｔ</th>
+  <th width=10%>ａ</th>
+  <th width=10%>\r</th>
+  <th width=10%>\n</th>
+</tr><tr>
+  <th width=15%><nobr>検索</nobr></th>
+  <th colspan=8 width=80%>　</th>
+</tr><tr>
+  <th width=15%>　</th>
+  <th colspan=8 width=80%>　</th>
+</tr></table></center>
+
+<p>　あとはこれを続けていくだけですね。</p>
+
+<p>　このように、<font color=red>大きなファイルをメモリを節約しながら解析していくような場合などには、バッファを２つ用意すると便利です</font>。このテクニックのことを、バッファを２つ使うので<font color=red>ダブルバッファリング</font>と呼びます。</p>
+
+<p>　ダブルバッファリングは、ＢＭ法やコンパイルのように<font color=red>逆戻りの必要な作業にしか使わない</font>ことを注意してください。ＫＭＰ法のように、先に進むだけならいくら上書きしても問題ないですね。</p>
+
+<hr>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// BMMatch.h</font>
+<font color=blue>#ifndef</font> __BMMATCH_H__010417_2236_70554750__INCLUDED__
+<font color=blue>#define</font> __BMMATCH_H__010417_2236_70554750__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;limits.h&gt;</font>
+
+<font color=green>// 検索文字列は２５５文字まで</font>
+<font color=blue>const int</font> BMM_PAT_MAX  = <font color=darkcyan>255</font>;
+<font color=green>// 再検索</font>
+<font color=blue>const int</font> BMM_NEXT     = <font color=darkcyan>-1</font>;
+<font color=green>// 見つかりませんでした</font>
+<font color=blue>const int</font> BMM_NOTFOUND = <font color=darkcyan>-1</font>;
+
+<font color=green>// 表を再利用できるように、保存できるようにします
+// skip がＢＭ法用の表で、
+// pat が前に検索した文字列で、
+// nFound が前に検索した箇所で、
+// nPatLen が pat の長さです</font>
+<font color=blue>struct</font> SBMMatch
+{
+    <font color=blue>int</font>  skip[UCHAR_MAX + <font color=darkcyan>1</font>];
+    <font color=blue>char</font> pat[BMM_PAT_MAX + <font color=darkcyan>1</font>];
+    <font color=blue>int</font>  nFound;
+    <font color=blue>int</font>  nPatLen;
+};
+
+<font color=green>// ファイル内をＢＭ法で検索します
+// ファイルはバイナリモードで開かれている必要があります
+// nFirst は検索を始める場所で、
+// pat は検索文字列で、bm は上の構造体です
+// pat に NULL を指定すると、bm.pat を検索文字列として使います
+// さらに nFound に BMM_NEXT を指定すると、bm.nFound + 1 から始めます
+// 初めて検索する際に、構造体の初期化は必要ありませんが、
+// 初期化していない構造体を使って再検索を行ったときの動作は
+// 全く保証されないものとします
+// 見つかった場合は true を、見つからなかった場合は false を返します
+// 位置は bm.nFound に入ります</font>
+<font color=blue>bool</font> BMMatch(FILE* file, SBMMatch&amp; bm,
+             <font color=blue>int</font> nFirst = BMM_NEXT, <font color=blue>const char</font>* pat = NULL);
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __BMMATCH_H__010417_2236_70554750__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// BMMatch.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BMMatch.h"</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>static void</font> BMMakeSkipTable(SBMMatch&amp; bm);
+
+<font color=blue>bool</font> BMMatch(FILE* file, SBMMatch&amp; bm,
+             <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat)
+{
+    <font color=blue>if</font>(pat == NULL)
+    {
+        <font color=blue>if</font>(bm.nPatLen == <font color=darkcyan>0</font>)
+            <font color=blue>return false</font>;
+        <font color=blue>if</font>(nFirst == BMM_NEXT)
+            nFirst = bm.nFound + <font color=darkcyan>1</font>;
+    }
+    <font color=blue>else</font>
+    {
+        <font color=green>// 最低限の初期化</font>
+        bm.pat[<font color=darkcyan>0</font>]  = <font color=darkcyan>0</font>;
+        bm.nFound  = BMM_NOTFOUND;
+        bm.nPatLen = <font color=darkcyan>0</font>;
+
+        <font color=green>// それ以外の初期化</font>
+        <font color=blue>int</font> nPatLen = strlen(pat);
+        <font color=blue>if</font>(nPatLen &lt;= <font color=darkcyan>0</font> || BMM_PAT_MAX &lt; nPatLen)
+            <font color=blue>return false</font>;
+        bm.nPatLen = nPatLen;
+        strcpy(bm.pat, pat);
+        BMMakeSkipTable(bm);
+    }
+
+    <font color=green>// バッファサイズ</font>
+    <font color=blue>const int</font> BMM_BUFSIZE = (BMM_PAT_MAX + <font color=darkcyan>1</font>) * <font color=darkcyan>4</font>;
+    <font color=green>// ダブルバッファ</font>
+    <font color=blue>char</font>      dblbuf[<font color=darkcyan>2</font>][BMM_BUFSIZE];
+    <font color=green>// どちらのバッファを使っているか</font>
+    <font color=blue>int</font>       fBuf        = <font color=darkcyan>0</font>;
+    <font color=green>// バッファへのポインタ</font>
+    <font color=blue>char</font>*     src         = dblbuf[<font color=darkcyan>0</font>];
+    <font color=green>// 読み出しサイズ</font>
+    <font color=blue>int</font>       nRead;
+    <font color=green>// 読み戻しでバッファが変わったかどうか</font>
+    <font color=blue>bool</font>      bSwitched   = <font color=blue>false</font>;
+    <font color=green>// 最初以外で読み出した回数</font>
+    <font color=blue>int</font>       nCount      = <font color=darkcyan>0</font>;
+
+    <font color=blue>int</font>       nPatLen     = bm.nPatLen - <font color=darkcyan>1</font>;
+    <font color=blue>char</font>      letLast     = bm.pat[nPatLen];
+    <font color=blue>char</font>      letSkip;
+    <font color=blue>int</font>       i           = nPatLen;
+
+    <font color=green>// ファイルの nFirst バイト目に移動します</font>
+    fseek(file, nFirst, SEEK_SET);
+
+    nRead = fread(src, <font color=darkcyan>1</font>, BMM_BUFSIZE, file);
+
+    <font color=blue>while</font>(bSwitched || i &lt; nRead)
+    {
+        letSkip = src[i];
+
+        <font color=blue>if</font>(letSkip == letLast)
+        {
+            <font color=blue>int</font> j = nPatLen;
+            <font color=blue>int</font> k = i;
+
+            <font color=blue>do</font>
+            {
+                <font color=green>// 見つかりました</font>
+                <font color=blue>if</font>(j == <font color=darkcyan>0</font>)
+                {
+                    bm.nFound = nFirst + nCount * BMM_BUFSIZE + k;
+                    <font color=blue>return true</font>;
+                }
+
+                j--; k--;
+                <font color=green>// k が負になったらバッファを交換</font>
+                <font color=blue>if</font>(k &lt; <font color=darkcyan>0</font>)
+                {
+                    src = dblbuf[fBuf ^= <font color=darkcyan>1</font>];
+                    bSwitched = <font color=blue>true</font>;
+                    k += BMM_BUFSIZE;
+                    nCount--;
+                }
+            }
+            <font color=blue>while</font>(src[k] == bm.pat[j]);
+        }
+
+        <font color=green>// バッファが交換されているときは、元に戻す</font>
+        <font color=blue>if</font>(bSwitched)
+        {
+            src       = dblbuf[fBuf ^= <font color=darkcyan>1</font>];
+            bSwitched = <font color=blue>false</font>;
+            nCount++;
+        }
+        i += bm.skip[(<font color=blue>unsigned char</font>)letSkip];
+
+        <font color=green>// バッファを超えた時は、次のバッファに読み出す</font>
+        <font color=blue>if</font>(i &gt;= BMM_BUFSIZE)
+        {
+            <font color=blue>if</font>(nRead != BMM_BUFSIZE)
+                <font color=blue>break</font>;
+
+            src   = dblbuf[fBuf ^= <font color=darkcyan>1</font>];
+            i    -= BMM_BUFSIZE;
+            nCount++;
+            nRead = fread(src, <font color=darkcyan>1</font>, BMM_BUFSIZE, file);
+        }
+    }
+    bm.nFound = BMM_NOTFOUND;
+    <font color=blue>return false</font>;
+}
+
+<font color=blue>static void</font> BMMakeSkipTable(SBMMatch&amp; bm)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; numof(bm.skip); i++)
+        bm.skip[i] = bm.nPatLen;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; bm.pat[i + <font color=darkcyan>1</font>] != <font color=darkcyan>0</font>; i++)
+        bm.skip[bm.pat[i]] = bm.nPatLen - <font color=darkcyan>1</font> - i;
+}
+
+</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// DblBuf1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BMMatch.h"</font>
+
+<font color=blue>static</font> FILE* OpenFile();
+<font color=blue>static bool</font> Match(FILE* file, SBMMatch&amp; bm);
+
+<font color=blue>int</font> main()
+{
+    FILE*    file = NULL;
+
+    file = OpenFile();
+    <font color=blue>if</font>(file == NULL)
+        <font color=blue>goto</font> ON_ERROR;
+
+    SBMMatch bm;
+    <font color=blue>while</font>(Match(file, bm));
+
+ON_ERROR:
+    <font color=blue>if</font>(file != NULL)
+        fclose(file);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>static</font> FILE* OpenFile()
+{
+    <font color=blue>char</font> szPath[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"検索したいファイルのパスを入力してください。"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"&gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; szPath;
+
+    <font color=green>// $ で終了します</font>
+    <font color=blue>if</font>(strcmp(szPath, <font color=darkcyan>"$"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> NULL;
+
+    <font color=blue>return</font> fopen(szPath, <font color=darkcyan>"rb"</font>);
+}
+
+<font color=blue>static bool</font> Match(FILE* file, SBMMatch&amp; bm)
+{
+    <font color=blue>char</font>     pat[<font color=darkcyan>1024</font>];
+    <font color=blue>bool</font>     bRet;
+
+    cout &lt;&lt; <font color=darkcyan>"検索したい文字列を入力してください。"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"&gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; pat;
+
+    <font color=green>// $ で終了します</font>
+    <font color=blue>if</font>(strcmp(pat, <font color=darkcyan>"$"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+    <font color=green>// / で次を検索します</font>
+    <font color=blue>else if</font>(strcmp(pat, <font color=darkcyan>"/"</font>) == <font color=darkcyan>0</font>)
+        bRet = BMMatch(file, bm);
+    <font color=green>// 普通に検索します</font>
+    <font color=blue>else</font>
+        bRet = BMMatch(file, bm, <font color=darkcyan>0</font>, pat);
+
+    <font color=blue>if</font>(bRet)
+        cout &lt;&lt; bm.nFound &lt;&lt; <font color=darkcyan>" バイト目に見つかりました！"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"見つかりませんでした..."</font> &lt;&lt; endl;
+    <font color=blue>return true</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　このようにダブルバッファリングを使えば、ＫＭＰ法に頼らなくてもファイルの読み直しを抑えることができるのです。</p>
+
+<hr>
+
+<p>　では、最後に今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>２つのバッファを交互に使えば、ある程度逆戻りがしやすい。</li>
+<li>この方法をダブルバッファリングと呼ぶ。</li>
+<li>ダブルバッファリングは大きなファイルを扱うときに便利。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　これでアルゴリズムに関することは一通り終わりました。</p>
+
+<p>　なお、このアルゴリズム編を作るにあたって、一部「Ｃ言語による最新アルゴリズム事典（奥村晴彦著，技術評論社，平成３年，ＩＳＢＮ４−８７４０８−４１４−１）」を参考にしました（転載はしていません）。氏には心より感謝申し上げます。ちなみに、Ｂ木についてもこの本に載っています。</p>
+
+<p>　今回でアルゴリズム編は終わったわけですが、第３部はまだ続きます。それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03039.html" target="main">第３９章　速読法３</a> | <a href="cpp03041.html" target="main">第４１章　私はαでありωである</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.18</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

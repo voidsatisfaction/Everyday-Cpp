@@ -1,0 +1,183 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２４章 同姓同名３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２４章　同姓同名３</font>
+</center>
+<hr>
+
+<p>　今回も前回に引き続き演算子のオーバーロードについてやっていきます。今回は戻り値も利用してみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>演算の結果を戻り値で返すことができる。</li>
+<li>参照を返せば、返した変数へ代入できる。</li>
+<li>const メンバ関数かどうかの違いだけでもオーバーロードできる。</li>
+<li>キャスト演算子のオーバーロードでは戻り値の型は書かない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　例えば、/ 演算子を考えてみましょう。これは２つの項の割り算をするだけではなく、その<font color=red>結果</font>を渡してくれます。</p>
+
+<p>　operator 関数には普通の関数と同じく<font color=red>戻り値</font>があるので、ここで結果を返してやることができそうです。</p>
+
+<p>　今回は、この戻り値を利用してみようと思います。</p>
+
+<hr>
+
+<p>　CIntArray では Get, Set 関数を使って配列の要素を扱ってきました。でも、配列クラスと言うからには [ ] を使って要素を扱いたいものです。</p>
+
+<p>　[ ] は２項演算子です。ということで、[ ] 演算子をオーバーロードすればなんとかなりそうです。<font color=red>&lt;オブジェクト&gt;[&lt;引数&gt;]</font> という割り振りになります。</p>
+
+<p>　しかし、</p>
+
+<pre>array[0] = 0;</pre>
+
+<p>というように、代入もできないと困ります。ところが array[0] は関数になります。<font color=red>関数に代入</font>なんてできるのでしょうか？</p>
+
+<p>　実は、<font color=red>戻り値を参照にすると、関数に代入できます</font>。まぁ、実際に代入の対象になっているのは関数ではなく戻り値なのですが。</p>
+
+<p>　詳しくは<a href="../html03/cpp03008.html" target="main">第３部第８章</a>で話しているので、そちらを参考にして下さい。</p>
+
+<p>　ここで返すのは要素への参照です。要素への参照を返せば、値の取得もできますし、要素への代入もできますね。</p>
+
+<p>　ということで、やってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font>&amp; <font color=blue>operator</font> [](<font color=blue>int</font> index);  <font color=green>// メンバのアクセス</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=green>// メンバのアクセス</font>
+<font color=blue>int</font>&amp; CIntArray::<font color=blue>operator</font> [](<font color=blue>int</font> index)
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}</pre></td></tr>
+
+</table></center>
+
+<p>　しかし、このままでは <font color=red>const オブジェクト</font>になったときに使えません。そこで、<font color=red>const オブジェクト用の関数</font>も作りましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> <font color=blue>operator</font> [](<font color=blue>int</font> index) <font color=blue>const</font>;  <font color=green>// メンバのアクセス</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=green>// メンバのアクセス</font>
+<font color=blue>int</font> CIntArray::<font color=blue>operator</font> [](<font color=blue>int</font> index) <font color=blue>const</font>
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}</pre></td></tr>
+
+</table></center>
+
+<p>　「あれ？　引数が同じなのにオーバーロードできるの？」と思うかもしれませんが、大丈夫です。<font color=red>const メンバ関数かどうかの違いだけでもオーバーロードできます。</font></p>
+
+<p>　<font color=red>const オブジェクト</font>から呼べば <font color=red>const メンバ関数</font>が、<font color=red>非 const オブジェクト</font>から呼べば<font color=red>非 const メンバ関数</font>が呼び出されます。</p>
+
+<p>　そして、const オブジェクトなので要素への代入はできなくて構いません。なので、戻り値はただの int になっています。これはごく自然に受け入れられる使い方ですね。</p>
+
+<hr>
+
+<p>　もう１つ、配列クラスというからには <font color=red>int 型の配列を引数にとるような関数にそのまま渡したい</font>ですね。</p>
+
+<pre>例）
+// int Average(const int* pnData, int nNumOf);
+Average(array, array.NumOf());</pre>
+
+<p>　ただ、範囲外の要素への操作を禁止している以上は、渡せるのは const int* へだけで、int* には安全のため渡せないようにしたいですね。</p>
+
+<p>　こういうときは <font color=red>(const int*)</font> という<font color=red>キャスト演算子</font>をオーバーロードすればいいのです。</p>
+
+<p>　キャストも演算子なのでオーバーロードできます。キャストは１項演算子で、(const int*)&lt;オブジェクト&gt; というそのままの割り当てになります。</p>
+
+<p>　では、やってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>operator const int</font>*() <font color=blue>const</font>;  <font color=green>// 配列の直接参照</font>
+};
+
+<font color=green>// 配列の直接参照</font>
+<font color=blue>inline</font> CIntArray::<font color=blue>operator const int</font>*() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_pnum;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　おや？　戻り値の型がないですね。</p>
+
+<p>　キャストでは、何にキャストするかが分かれば戻り値の型も自動的に決まってしまうので、<font color=red>戻り値の型は書きません</font>。</p>
+
+<p>　それ以外は特に問題はないと思います。</p>
+
+<hr>
+
+<p>　以上をまとめると、</p>
+
+<font size=+2 color=red>
+<ul>
+<li>演算の結果を戻り値で返すことができる。</li>
+<li>参照を返せば、返した変数へ代入できる。</li>
+<li>const メンバ関数かどうかの違いだけでもオーバーロードできる。</li>
+<li>キャスト演算子のオーバーロードでは戻り値の型は書かない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>となります。</p>
+
+<p>　次回は、前回予告したとおりのことをやりたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02023.html" target="main">第２３章　同姓同名２</a> | <a href="cpp02025.html" target="main">第２５章　これ。</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

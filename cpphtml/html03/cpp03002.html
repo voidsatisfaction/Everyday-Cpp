@@ -1,0 +1,153 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２章 近道 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２章　近道</font>
+</center>
+<hr>
+
+<p>　今回は、条件文についてのお話です。第３部なので、こういうともすれば隅に追いやられてしまうようなものにも光を当ててあげましょう。</p>
+
+<hr>
+
+<p>　さて、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件文は真か偽かが判明したところですぐに判定を終了する。</li>
+<li>省略された条件内の関数は呼ばれない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、次の命題が真か偽かを考えてみて下さい。</p>
+
+<pre>命題「鳥は人間であり、かつ、虫である」</pre>
+
+<p>　って、はっきり言って人をバカにしていますね。もちろん、偽ですね。</p>
+
+<p>　さて、あなたは<font color=red>どの時点で</font>偽と判断しましたか？　おそらく「かつ」の出てきた時点ではないでしょうか？</p>
+
+<p>　「鳥は人間であり」ということからして偽です。ここに「または」が来れば次の条件も確かめないといけませんが、「かつ」が来ている時点でもう真にはなりえませんね。</p>
+
+<p>　こういった判断はＣ／Ｃ＋＋言語でも行われています。<font color=red>条件文が真か偽かが途中で分かったら、もうあとの条件は判定しないのです。</font>これを<font color=red>ショートサーキット</font>と言います。</p>
+
+<p>　このことは時間の節約になるので、ショートサーキットを行うのも当然のことと思うことでしょう。しかし、<font color=red>ショートサーキットを忘れたがために起こるバグ</font>も存在します。条件文の中に関数を入れてあっても、<font color=red>その関数が必ず呼ばれるとは限らない</font>ということで起こるバグです。途中で条件文の結果が分かったがために、関数を使用している条件が無視されることがあるのです。</p>
+
+<p>　また、逆に<font color=red>ショートサーキットの有効利用法</font>なども存在します。関数が無視されることを利用してやるということです。</p>
+
+<hr>
+
+<p>　まぁ、何はともあれショートサーキットを実感してみて下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// SC1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>bool</font> Input(<font color=blue>double</font>&amp; value)
+{
+    cout &lt;&lt; <font color=darkcyan>"数値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; value;
+
+    <font color=blue>return</font> value != <font color=darkcyan>0</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>double</font> a, b;
+
+    <font color=blue>while</font>(Input(a) &amp;&amp; Input(b))
+    {
+        cout &lt;&lt; <font color=darkcyan>"a / b = "</font> &lt;&lt; a / b &lt;&lt; endl;
+        cout &lt;&lt; <font color=darkcyan>"b / a = "</font> &lt;&lt; b / a &lt;&lt; endl;
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>数値を入力して下さい &gt; 3.14
+数値を入力して下さい &gt; 1592
+a / b = 0.00197236
+b / a = 507.006
+数値を入力して下さい &gt; 2.718
+数値を入力して下さい &gt; 0.0028
+a / b = 970.714
+b / a = 0.00103017
+数値を入力して下さい &gt; 0</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　このプログラムは、値を２つ入力して、お互いをもう片方で割った数を出力するプログラムです。</p>
+
+<p>　割り算をするのですから、どちらとも０であっては困ります。なので、どちらかに０を入力するとプログラムを終了するようにします。</p>
+
+<p>　先ず、入力は１つの関数 Input で済ませてしまうことにします。この関数は double 型の参照を引数にとっています。ここに変数を渡し、これが０かどうかを戻り値で表します。０の時は偽、０以外の時は真です。</p>
+
+<p>　初めの方の Input で０が入力されると、次の Input を実行する必要はありません。簡単に考えると</p>
+
+<pre>while(1)
+{
+    if(!Input(a))
+        break;
+    if(!Input(b))
+        break;
+
+    ... 表示 ...
+}</pre>
+
+<p>となるのですが、ここでショートサーキットが利用できます。</p>
+
+<pre>while(Input(a) && Input(b))</pre>
+
+<p>　先ず、初めの Input(a) が実行されます。このとき０が入力されると偽が返ってきます。あぁ、これは初めに話した命題と同じですね。初めの条件が偽と判断され、次に「かつ」があります。全く同じです。つまり、さっき考えたように、これはもう偽にしかなりえません。</p>
+
+<p>　こうなると、<font color=red>次の Input(b) を実行することなく while 文は終了してしまいます</font>。希望通りの動作になってくれました。</p>
+
+<p><br></p>
+
+<p>　さて、初めの Input(a) で０以外の値が入力されると、真が返ってきます。すると、まだ条件文を判定する必要があります。なぜなら、次の条件が真の時は全体は真になり、次の条件が偽の時は全体は偽になる、つまり、まだ条件文の結果が分からないからです。</p>
+
+<p>　すると、<font color=red>ここでやっと Input(b) が実行される</font>わけです。ここで０以外の値を入力すれば条件文は真となり、while 文の実行文を実行します。ここで０を入力すれば条件文は偽となり、while 文は終了します。</p>
+
+<p><br></p>
+
+<p>　このように、<font color=red>ショートサーキットはプログラムの流れに重要な影響を与えることがある</font>のです。</p>
+
+<hr>
+
+<p>　さて、今回の話も終わりましたので、要点を振り返ってみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件文は真か偽かが判明したところですぐに判定を終了する。</li>
+<li>省略された条件内の関数は呼ばれない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また次回で会いましょう。</p>
+
+<hr>
+
+<p align=right><a href="cpp03001.html" target="main">第１章　シノニムの定義</a> | <a href="cpp03003.html" target="main">第３章　コンパイル済</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.2</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

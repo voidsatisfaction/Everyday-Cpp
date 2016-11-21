@@ -1,0 +1,261 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１７章 if... -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１７章　if...</font>
+</center>
+<hr>
+
+<p>　もし、こういうときにはこうコンパイルして、こういうときにはまたこうコンパイルして...。そういう風にコントロールできると便利なことがあります。今回はそういう話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>#if &lt;評価式&gt; 〜 #endif でコンパイルを制御できる。</li>
+<li>定義されているかの評価は defined(&lt;名前&gt;) でできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、早速次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// ShrpIf1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>int</font> Average(<font color=blue>const int</font>* <font color=blue>const</font> pnValues, <font color=blue>const int</font> nNumOf)
+{
+    <font color=blue>if</font>(pnValues == NULL || nNumOf &lt; <font color=darkcyan>0</font>)
+    {
+        printf(<font color=darkcyan>"Average 関数に変な引数が渡されました！\n"</font>);
+        exit(<font color=darkcyan>1</font>);
+    }
+
+    <font color=blue>int</font> i, nSum;
+
+    <font color=blue>for</font>(i = nSum = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+        nSum += pnValues[i];
+    <font color=blue>return</font> nSum;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> nValues[] = {
+        <font color=darkcyan>12</font>, <font color=darkcyan>56</font>, <font color=darkcyan>23</font>, <font color=darkcyan>93</font>, <font color=darkcyan>84</font>, <font color=darkcyan>45</font>, <font color=darkcyan>77</font>, <font color=darkcyan>87</font>, <font color=darkcyan>100</font>, <font color=darkcyan>45</font>,
+    };
+
+    cout &lt;&lt; <font color=darkcyan>"平均値 : "</font>
+         &lt;&lt; Average(nValues, numof(nValues)) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>平均値 : 62</pre></td>
+</tr>
+
+</table></center>
+
+<p>　平均値を求めるだけのプログラムです。</p>
+
+<p>　しかしこの Average という関数。こんなものがついています。</p>
+
+<pre>if(pnValues == NULL || nNumOf &lt; 0)
+    exit(1);</pre>
+
+<p>　どうやら、<font color=red>引数に異常がないか確かめている</font>ようです。異常がある時に、エラーメッセージを表示し、強制終了関数 exit を呼ぶようにしていますね。</p>
+
+<p>　しかし、平均を求める関数くらいでいちいち引数を確かめたくはないものです。エラー処理はいろいろするべきではありますが、普通に使っていれば何の問題もないところまでエラー処理は書きたくありません。</p>
+
+<p>　とはいえ、プログラムにバグのある内は、ひょっとしてこのコードのおかげでいろいろ助かるかもしれません。</p>
+
+<p>　ということで、一応プログラムの動作を確かめている最中（デバッグ中）ではこのようにしておき、バグの取れたことが確認できたらこの判定を取り除くといいわけです。また利用するかもしれないので、<a href="../htmlword/words025.html" target="words">コメントアウト</a>するとしましょう。</p>
+
+<p>　しかし、まだ問題があります。ここ以外にも同じようなことをしているとき、これらコードを全部コメントアウトして回るのは面倒です。そんなことをやっていては、日が暮れるというものです。何か、便利な方法はないのでしょうか？</p>
+
+<hr>
+
+<p>　そこで、<a href="../html01/cpp01070.html" target="main">第１部第７０章</a>で使った <font color=red>#if ディレクティブ</font>が役に立ちます。</p>
+
+<p>　では、見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// ShrpIf1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+
+<font color=red>#define ONDEBUG</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>int</font> Average(<font color=blue>const int</font>* <font color=blue>const</font> pnValues, <font color=blue>const int</font> nNumOf)
+{
+<font color=red>#if defined(ONDEBUG)</font>
+    <font color=blue>if</font>(pnValues == NULL || nNumOf &lt; <font color=darkcyan>0</font>)
+    {
+        printf(<font color=darkcyan>"Average 関数に変な引数が渡されました！\n"</font>);
+        exit(<font color=darkcyan>1</font>);
+    }
+<font color=red>#endif</font>
+
+    <font color=blue>int</font> i, nSum;
+
+    <font color=blue>for</font>(i = nSum = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+        nSum += pnValues[i];
+    <font color=blue>return</font> nSum;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> nValues[] = {
+        <font color=darkcyan>12</font>, <font color=darkcyan>56</font>, <font color=darkcyan>23</font>, <font color=darkcyan>93</font>, <font color=darkcyan>84</font>, <font color=darkcyan>45</font>, <font color=darkcyan>77</font>, <font color=darkcyan>87</font>, <font color=darkcyan>100</font>, <font color=darkcyan>45</font>,
+    };
+
+    cout &lt;&lt; <font color=darkcyan>"平均値 : "</font>
+         &lt;&lt; Average(nValues, numof(nValues)) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+</table></center>
+
+<p>　この部分に注目して下さい。</p>
+
+<pre><font color=red>#define ONDEBUG</font></pre>
+
+<p>　何と、ONDEBUG の後に何も書いてありません。ということは、このマクロは <font color=red>ONDEBUG と書いても消えてなくなるだけ</font>のマクロです。</p>
+
+<p>　「これは無意味な #define なのでは？」と思われるかもしれませんが、ここではマクロの<font color=red>「名前を定義する」</font>という部分だけを利用します。</p>
+
+<p>　で、次はここです。</p>
+
+<pre><font color=red>#if defined(ONDEBUG)</font>
+    if(pnValues == NULL || nNumOf &lt; 0)
+    {
+        printf("Average 関数に変な引数が渡されました！\n");
+        exit(1);
+    }
+<font color=red>#endif</font></pre>
+
+<p>　引数の確認部分が、何やら囲まれています。if と書かれていますが、頭に # がついています。</p>
+
+<p>　これは、<font color=red>「#if の後の評価式が真の時に、#endif までをコンパイルせよ」</font>という命令です。# が先頭に付いている命令は<font color=red>プリプロセッサディレクティブ</font>（プリプロセッサ指令）と呼ばれ、コンパイルする前にいろいろと操作する命令です。</p>
+
+<p>　つまり、#if の後の評価式が偽の時は<font color=red>コンパイラは #endif までを認識しません</font>。コンパイラに見られないように隠してしまうわけです。</p>
+
+<p>　で、評価式はこれです。</p>
+
+<pre><font color=red>defined(ONDEBUG)</font></pre>
+
+<p>　この defined というのは #if だけで使われる特別な命令で、引数の名前が<font color=red>定義されていれば真、定義されていなければ偽</font>を返します。</p>
+
+<p>　まとめると<font color=red>「もし ONDEBUG が定義されていたら #if の下から #endif の上までコンパイルしてね」</font>ということになります。上のプログラムでは ONDEBUG が定義されているので、#if から #endif まではコンパイルされます。</p>
+
+<p>　では、デバッグも済み、この引数の評価の部分を消したいと思います。どうすればいいでしょうか？</p>
+
+<p>　そうです。こうすればいいのです。</p>
+
+<pre><font color=red>//</font> #define ONDEBUG</pre>
+
+<p>　こういった引数の評価をいくつしようとも、<font color=red>ONDEBUG の定義文をコメントアウトするだけ</font>で全てが消え去ってしまうのです。</p>
+
+<p>　イメージとしてはこんな感じでしょうか。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// ShrpIf1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+
+<font color=green>// #define ONDEBUG</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>int</font> Average(<font color=blue>const int</font>* <font color=blue>const</font> pnValues, <font color=blue>const int</font> nNumOf)
+{
+<font color=white>#if defined(ONDEBUG)
+    if(pnValues == NULL || nNumOf &lt; 0)
+    {
+        printf("Average 関数に変な引数が渡されました！\n");
+        exit(1);
+    }
+#endif</font>
+
+    <font color=blue>int</font> i, nSum;
+
+    <font color=blue>for</font>(i = nSum = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+        nSum += pnValues[i];
+    <font color=blue>return</font> nSum;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> nValues[] = {
+        <font color=darkcyan>12</font>, <font color=darkcyan>56</font>, <font color=darkcyan>23</font>, <font color=darkcyan>93</font>, <font color=darkcyan>84</font>, <font color=darkcyan>45</font>, <font color=darkcyan>77</font>, <font color=darkcyan>87</font>, <font color=darkcyan>100</font>, <font color=darkcyan>45</font>,
+    };
+
+    cout &lt;&lt; <font color=darkcyan>"平均値 : "</font>
+         &lt;&lt; Average(nValues, numof(nValues)) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+</table></center>
+
+<p>　確かにコードは書いてあるのですが、コンパイラには見えないのです。</p>
+
+<p>　またこの評価をしたいと思ったときはコメントアウトを消せばいいだけです。</p>
+
+<pre>#define ONDEBUG</pre>
+
+<p>　簡単ですね。</p>
+
+<hr>
+
+<p>　長くなるので、今回はこれで終わりです。では、要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>#if &lt;評価式&gt; 〜 #endif でコンパイルを制御できる。</li>
+<li>定義されているかの評価は defined(&lt;名前&gt;) でできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も #if ディレクティブについてのお話です。#if も多いと読みづらいプログラムになります。多少止むを得ない場合もあるのですが、うまく使えば読みにくさを軽減することもできます。工夫次第ではプログラムをとても柔軟にしてくれるでしょう。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03016.html" target="main">第１６章　仰山の引数</a> | <a href="cpp03018.html" target="main">第１８章　if...２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

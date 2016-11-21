@@ -1,0 +1,130 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５１章 ファイルのススメ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５１章　ファイルのススメ</font>
+</center>
+<hr>
+
+<p>　今回から数回にわたって、ファイルの扱い方について話していきたいと思います。先ず、今回はその事始めに、ファイルについていくつか説明したいと思います。</p>
+
+<p>　また、ファイルについては少し<a href="cpp01031.html" target="main">第３１章</a>でも触れました。こちらも参考にして下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ファイルを扱うにはメモリを介さなければならない。</li>
+<li>ファイルを使うには、ファイルを開く必要がある。</li>
+<li>ファイルを使った後は、きちんと閉じる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、ファイルとは何なのでしょうか？　ファイルとは<font color=red>ディスク上にあるデータを整理、管理したもの</font>です。</p>
+
+<p>　ディスク上にはデータがときにバラバラに、ときにまとまって存在しています。それらの位置をＯＳが管理しています。ファイルには主データの他に、ＯＳから名前や更新日時などの情報が与えられています。このように、ただのデータをＯＳがユーザーに分かりやすいようにしたもの、それがファイルです。</p>
+
+<p>　ファイルはディスク上に存在しています。つまりメモリ上ではありません。なので、その内容を利用するには、<font color=red>メモリに読み込んだり、メモリから書き出したりする必要があります</font>。</p>
+
+<p>　なんか難しいような気がしますが、ファイルを利用するのはとても簡単です。stdio.h にはファイルを扱う便利な関数がいろいろ入っています。fstream.h には、cout, cin と同じ感覚で使える fstream というものもあります。ここではいろいろ小回りの利く stdio.h の関数を使ってファイルを扱うことにします。</p>
+
+<hr>
+
+<p>　さて、先ずは簡単なプログラムから見ていきましょう。では、下のプログラムを先ず見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// File1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+
+    pFile = fopen(<font color=darkcyan>"test.txt"</font>, <font color=darkcyan>"w"</font>);
+    fputs(<font color=darkcyan>"ファイルに書き込んじゃえ。"</font>, pFile);
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>test.txt の中身</th></tr>
+
+<tr><td><pre>ファイルに書き込んじゃえ。</pre></td></tr>
+</tr>
+
+</tbody></table></center>
+
+<p>　非常に簡単です。これだけで「ファイルに書き込んじゃえ」という文字列がファイルに書き込まれました。</p>
+
+<p>　では、関数の説明をしていきましょう。</p>
+
+<p>　<font color=red>fopen</font> は、ファイルを<font color=red>「開く」</font>関数です。ファイルを使うには、先ずファイルを「開き」ます。</p>
+
+<p>　ファイル名とフラグを関数に渡し、ＯＳに「ファイルを使わせて下さい」と頼みます。もしファイルがなければ、フラグによってはファイルを作り、フラグによってはエラーになります。そして、ファイルが使えない状態にあっても、エラーになります。そして、エラーが出なかったとき、ファイルはこのプログラムで使える状態になり、「開かれた」ことになります。ここでのフラグは「ファイルに書き込む」というフラグです。フラグについてはおいおい話していきます。</p>
+
+<p>　ファイルが正常に開かれると、<font color=red>FILE*</font> 型の値を返します。FILE は構造体というもので、後の機会に話すつもりです。ファイルが開けなかった場合は、NULL を返します。NULL はマクロで、普通は 0 に置き換えられます。通常はポインタに対して使います。ポインタに NULL が入っている場合、参照しようとすると必ずエラーになるので、NULL はエラーや未使用などの目印として使われます。ここではエラー処理は割愛しています。</p>
+
+<p>　FILE 構造体へのポインタを返すわけですが、あまりそのことにこだわる必要はなく、ただの管理キーのように思ってもらって結構です。ただ、</p>
+
+<pre>FILE* pFile1, pFile2;</pre>
+
+<p>のようにしてしまうと、pFile2 がポインタにならない、というところは注意して下さい。</p>
+
+<pre>FILE *pFile1, <font color=red>*</font>pFile2;</pre>
+
+<p>とするか、宣言を２つに分けるかして下さい。</p>
+
+<p>　<font color=red>fputs</font> は<font color=red>文字列をファイルに書き込む</font>関数です。文字列と FILE 構造体へのポインタを指定するだけで、ファイルに書き込むことが出来ます。文字列はメモリ上にあるデータで、それをファイルに書き込む関数が fputs な訳です。</p>
+
+<p>　<font color=red>fclose</font> はファイルを<font color=red>「閉じる」</font>関数です。そう、<font color=red>「開けたら閉める」</font>のはこの世の常識です。でも、閉じ忘れていても、実はプログラムが終わるときに勝手に閉じてくれます。ただ、ファイルの開きすぎはエラーになることもあり、いらなくなったら閉じるのがルールとなっています。</p>
+
+<p>　以上がファイルへ文字列を書き込む方法です。</p>
+
+<hr>
+
+<p>　ファイルにはただの文字列以外にも、fprintf を使って、書式化された文字列を書き込むことが出来ます。ほかにも、書式化文字列でなく、メモリにあるデータの「生の」形で書き込むこともできます。</p>
+
+<p>　また、もちろん読み出すことも出来ます。読み出す方が少し厄介な制限があったりするのですが、基本的には簡単です。</p>
+
+<p>　これらのことは次回から順を追って話していきたいと思います。</p>
+
+<hr>
+
+<p>　それでは今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ファイルを扱うにはメモリを介さなければならない。</li>
+<li>ファイルを使うには、ファイルを開く必要がある。</li>
+<li>ファイルを使った後は、きちんと閉じる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次の章まで、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01050.html" target="main">第５０章　命名法</a> | <a href="cpp01052.html" target="main">第５２章　ファイルのススメ２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

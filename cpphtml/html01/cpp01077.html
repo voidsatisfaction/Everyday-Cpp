@@ -1,0 +1,243 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７７章 リテラル文字列 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７７章　リテラル文字列</font>
+</center>
+<hr>
+
+<p>　前回のプログラム、cout の部分を switch 文で分岐して書きましたが、何か無駄に見えますよね。今回はそういうときに便利な文字列の配列と、文字列での初期化についての話を行います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>" " で囲んだ文字列のことをリテラル文字列と呼ぶ。</li>
+<li>リテラル文字列はそのアドレスを返す。</li>
+<li>リテラル文字列は静的であり、そして書き換えてはならない。</li>
+<li>ポインタをリテラル文字列で初期化すると、リテラル文字列へのアドレスで初期化される。</li>
+<li>配列をリテラル文字列で初期化しても普通の配列になる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、<a href="cpp01076.html" target="main">前回</a>のプログラムで switch 文で分岐した cout がありました。しかし、処理は全て同じなのですから、ここを何とか１つの cout ですむようにはできないものでしょうか？</p>
+
+<p>　そこで考えられる方法といえば、「表示する文字列を配列にする」というのがあるでしょう。たとえば result という文字列の配列があるとすると、switch 文の所は</p>
+
+<pre>cout &lt;&lt; result[Compare(a, b)] &lt;&lt; endl;</pre>
+
+<p>ですむわけですね。<font color=red>（もちろん、Compare が ECompare として正しい値を返すように保証しなければいけません！）</font></p>
+
+<p>　しかし、このような文字列の配列などはどのようにすればいいのでしょうか？</p>
+
+<hr>
+
+<p>　先ず、文字列は単なる文字コードの配列なので、文字列の配列は「配列の配列」つまり<a href="cpp01061.html" target="main">第６１章</a>でやった「２次元配列」で実現できそうです。ではやってみましょう。</p>
+
+<pre>char result[][] = {
+    "前者は後者より小さいです。",
+    "両者は等しいです。",
+    "前者は後者より大きいです。",
+};</pre>
+
+<p>　と、ちょっと待って下さい。<a href="cpp01062.html" target="main">第６２章</a>で「２番目以降の要素数を省略できない」と言いました。ということは、これはエラーになるはずです。コンパイルしてみると...やっぱりエラーになりますね。</p>
+
+<pre>error C2087: '&lt;Unknown&gt;' : 添字が不正です。
+error C2117: '前者は後者より小さいです。' : 指定された配列には、初期化子が多すぎます。
+error C2117: '両者は等しいです。' : 指定された配列には、初期化子が多すぎます。
+error C2117: '前者は後者より大きいです。' : 指定された配列には、初期化子が多すぎます。</pre>
+
+<p>　パッと見よく分からないエラーですが、まぁ、これが２つとも省略したときのエラーです。エラーは機械的に判定するだけなので、よく分からないエラーを出すことがよくあります。なので、エラーの表面的な意味よりも、<font color=red>実際どういうときにどういうエラーが出るのかを覚えておいた方がいいでしょう</font>。</p>
+
+<p>　となると、いちいち文字列の大きさを確かめて、配列の２番目の要素数を指定しなければならないのです。これはとても面倒ですね。ということで、この案は没です。（明らかに２番目の要素数を決められるような場合など、これはこれで利用価値のあることもあるんですけどね。）</p>
+
+<hr>
+
+<p>　次の案です。<a href="cpp01072.html" target="main">第７２章</a>で言った通り、配列へのポインタは単にその要素の型へのポインタで構いません。ということで、<font color=red>文字列へのポインタの配列</font>を作ってみてはどうでしょうか？</p>
+
+<p>　ポインタはただの変数です。ただの変数の配列ということは [ ] は１つで、となるとここに大きさを指定しなくて構わなくなります。イメージとしては、</p>
+
+<pre>char* result[] = {
+    "前者は後者より小さいです。",
+    "両者は等しいです。",
+    "前者は後者より大きいです。",
+};</pre>
+
+<p>という感じです。しかし、文字列のアドレスで初期化する必要がありますが、これは面倒ではないのでしょうか？</p>
+
+<p>　実はそんなことはありません。とても簡単に初期化することができます。何と、上のイメージ通りで何の問題もないのです！</p>
+
+<p>　ということで、Enum1.cpp は次のように無事簡単になりました。めでたしめでたし。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Enum1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>enum</font> ECompare
+{
+    LESSTHAN    = <font color=darkcyan>0</font>,
+    EQUALTO     = <font color=darkcyan>1</font>,
+    GREATERTHAN = <font color=darkcyan>2</font>,
+};
+
+ECompare Compare(<font color=blue>int</font> a, <font color=blue>int</font> b)
+{
+    <font color=blue>return</font> (a &lt; b) ? LESSTHAN :
+           (a &gt; b) ? GREATERTHAN : EQUALTO;
+}
+
+<font color=blue>bool</font> Compare()
+{
+    <font color=blue>const char</font>* pszResult[] = {
+        <font color=darkcyan>"前者は後者より小さいです。"</font>,
+        <font color=darkcyan>"両者は等しいです。"</font>,
+        <font color=darkcyan>"前者は後者より大きいです。"</font>,
+    };
+
+    <font color=blue>int</font> a, b;
+
+    cout &lt;&lt; <font color=darkcyan>"数字を２つ入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; a &gt;&gt; b;
+
+    <font color=blue>if</font>(a == <font color=darkcyan>-1</font>)
+        <font color=blue>return false</font>;
+
+    cout &lt;&lt; pszResult[Compare(a, b)] &lt;&lt; endl;
+
+    <font color=blue>return true</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(Compare());
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>数字を２つ入力して下さい &gt; 0 1
+前者は後者より小さいです。
+数字を２つ入力して下さい &gt; 1 1
+両者は等しいです。
+数字を２つ入力して下さい &gt; 1 0
+前者は後者より大きいです。
+数字を２つ入力して下さい &gt; -1 0</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<hr>
+
+<p>　しかし、なぜこれで初期化できるのでしょうか？　「初期化できるようになっているからできる」でも構わないのですが、いつまでもそんな理解では困ります。ということで、この章ではその秘密に迫ってみます。</p>
+
+<p>　pszResult は配列でした。しかし、別に配列でなくてもこの初期化は可能です。</p>
+
+<pre>const char* str = "文字列どす";</pre>
+
+<p>　そして、これは別に初期化でなくても可能です。</p>
+
+<pre>const char* str;
+str = "文字列どす";</pre>
+
+<p>　これを見れば分かると思いますが、この " " は何やら<font color=red>アドレスを返す</font>みたいです。</p>
+
+<p>　この " " で囲まれた文字列のことは<font color=red>リテラル文字列</font>と呼ばれます。これは<font color=red>静的なデータ</font>です。メモリ上の静的な領域のどこかにこの文字列が置かれます。</p>
+
+<p>　そして、これをポインタに代入する式は、<font color=red>ポインタにそのアドレスを渡す式</font>になるのです。よく考えてみれば、文字列を受ける関数</p>
+
+<pre>例）void Func(const char* str);</pre>
+
+<p>に " " で囲まれた文字列を渡したことが何度もあると思います。その時の str の値は何なのか考えたことはあるでしょうか？　まさにそれがリテラル文字列へのアドレスなのです。</p>
+
+<p>　このように、<font color=red>ポインタにリテラル文字列を代入すると、ポインタにはそのリテラル文字列へのアドレスが代入される</font>のです。</p>
+
+<p>　ここで注意することは、リテラル文字列へのアドレスが入っているので、str[0] = 0; などをするとリテラル文字列を直接書き換えることになるということです。環境によるのですが、<font color=red>リテラル文字列を書き換えようとするとエラーになる</font>ことが多いです。昔の環境ではエラーにならないこともありますが、そういう場合でも<font size=+1 color=red>リテラル文字列を書き換えてはいけません</font>。</p>
+
+<p>　なので、<font color=red>リテラル文字列を受けるポインタには const を必ず付けましょう</font>。</p>
+
+<p>　また、リテラル文字列は静的なデータなので、<font color=red>寿命はプログラムが始まってから終わるまで</font>です。例えば</p>
+
+<pre>return "文字列を返しちゃうよ";</pre>
+
+<p>としても、何の問題もありません。</p>
+
+<p>　また、上の pszResult も関数に入る毎に毎回初期化するのは無駄なので、</p>
+
+<pre>static const char* result[] = {
+    "前者は後者より小さいです。",
+    "両者は等しいです。",
+    "前者は後者より大きいです。",
+};</pre>
+
+<p>と、静的にしてしまうといいでしょう。</p>
+
+<hr>
+
+<p>　と、リテラル文字列での初期化の話をしました。では、配列をリテラル文字列で初期化したとき、例えば</p>
+
+<pre>char str[] = "This is string.";</pre>
+
+<p>としたとき、str はリテラル文字列を直接指しているのでしょうか？　答は<font color=red>ノー</font>です。</p>
+
+<p>　str という配列は "This is string." という配列で初期化されるだけです。つまりは、</p>
+
+<pre>char str[] = {
+    'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 's', 't', 'r', 'i', 'n', 'g', '.', 0,
+};</pre>
+
+<p>と同じ事になるわけです。</p>
+
+<p>　<font color=red>str は普通の配列</font>であり、書き換えても問題ありません。str が自動変数なら str の寿命はそのブロック内に限られ、そのブロックを抜けると値は保証されません。なので、自動変数 str を関数から返すということは絶対にしてはなりません。</p>
+
+<p>　このことは、初期化というのは普通の式とはちょっと違うのだということを表しています。初期化と代入式との違いというのは他にもあります。<font color=red>初期化と代入式は厳密には区別されるものなのです。</font></p>
+
+<p>　<a href="cpp01067.html" target="main">第６７章</a>で言ったように「自動変数と静的変数では随分アドレスに差がある」ので、これらのことを自分で確かめてみるといいでしょう。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>" " で囲んだ文字列のことをリテラル文字列と呼ぶ。</li>
+<li>リテラル文字列はそのアドレスを返す。</li>
+<li>リテラル文字列は静的であり、そして書き換えてはならない。</li>
+<li>ポインタをリテラル文字列で初期化すると、リテラル文字列へのアドレスで初期化される。</li>
+<li>配列をリテラル文字列で初期化しても普通の配列になる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　２番目の要点と４番目の要点が重なるようですが、これは初期化と代入は違うということを意識した結果です。くどいかもしれませんが、講座で間違ったことを書くわけにもいきませんからね。（既にいろいろ間違えてることもあるかも知れませんが（汗）。）</p>
+
+<hr>
+
+<p>　もう第１部も終わりに近づいてきました。キリがいいので８０章までやる予定なのですが、凝った話は第３部にまわすつもりなので、もうやることがなくなってきました（笑）。ピンチです。</p>
+
+<p>　残り３章がかなりどうでもいい話に感じたら、そういういきさつがあるものだと思って見逃して下さい。それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01076.html" target="main">第７６章　列挙子</a> | <a href="cpp01078.html" target="main">第７８章　逃げの一手</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.31</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

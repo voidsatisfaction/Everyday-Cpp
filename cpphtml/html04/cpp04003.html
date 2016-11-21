@@ -1,0 +1,184 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３章 アル・コワリズミ２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３章　アル・コワリズミ２</font>
+</center>
+<hr>
+
+<p>　今回も前回に続き、アルゴリズムについて話していきます。難しいことは置いておいて、とにかく感覚をつかんでいきましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>_n のつかないアルゴリズムの引数は &lt;始点&gt;, &lt;終点&gt; + 1, ... となる。</li>
+<li>_n のつくアルゴリズムの引数は &lt;始点&gt;, &lt;要素数&gt;, ... となる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　いきなりですが、前回使った min_element 以外のアルゴリズムを使ってみましょう。それらのアルゴリズムは min_element と同じく <font color=red>algorithm</font> ヘッダにいろいろ用意されています。</p>
+
+<p>　では、簡単なところで fill を使ってみましょう。<font color=red>fill はデータをあるデータで埋めるという関数テンプレート</font>です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Algo3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;algorithm&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> data[<font color=darkcyan>10</font>];
+
+    <font color=red>fill</font>(data, data + numof(data), <font color=red>0</font>);
+
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; numof(data); i++)
+        cout &lt;&lt; data[i] &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0 0 0 0 0 0 0 0 0 0</pre></td></tr>
+
+</table></center>
+
+<p>　はい。data は全て０で埋められていますね。</p>
+
+<p>　前回の min_element と今回の fill を見て分かるように、アルゴリズムの引数は一般的に</p>
+
+<pre><font color=red>&lt;先頭位置&gt;, &lt;終端の次の要素の位置&gt;, ...</font></pre>
+
+<p>という形になっていることが分かります。</p>
+
+<p>　終端の次の要素の位置は、配列では<font color=red>先頭位置＋要素数</font>になっています。終端位置そのものを渡すと、先頭位置＋要素数−１になって少し不便ですね。わざわざ次の要素の位置を渡すようになっているのも納得がいくかと思います。前回やったように、for ループも簡単に書けます。</p>
+
+<hr>
+
+<p>　また、アルゴリズムの中にはサイズを渡すものもいくつかあります。fill と同じ動作をする fill_n などがそうです。<font color=red>_n</font> がついたアルゴリズムの引数は</p>
+
+<pre><font color=red>&lt;先頭位置&gt;, &lt;要素数&gt;, ...</font></pre>
+
+<p>という風になります。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Algo4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;algorithm&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> data[<font color=darkcyan>10</font>];
+
+    <font color=red>fill_n</font>(data, <font color=red>numof(data)</font>, <font color=darkcyan>0</font>);
+
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; numof(data); i++)
+        cout &lt;&lt; data[i] &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0 0 0 0 0 0 0 0 0 0</pre></td></tr>
+
+</table></center>
+
+<p>　はい。問題ありませんね。</p>
+
+<hr>
+
+<p>　上のプログラムを見ると、結果を表示する部分も<font color=red>ループ処理</font>になっています。ということは、この部分もアルゴリズムで処理できそうです。</p>
+
+<p>　<font color=red>for_each</font> というアルゴリズムは<font color=red>それぞれの要素に対して第３引数に渡された関数を実行する</font>というアルゴリズムです。データを表示する関数を作って、それを for_each に渡せば良さそうですね。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Algo5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;algorithm&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>void</font> Disp(<font color=blue>int</font> num)
+{
+    cout &lt;&lt; num &lt;&lt; <font color=darkcyan>' '</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> data[<font color=darkcyan>10</font>];
+
+    <font color=red>fill_n</font>(data, <font color=red>numof(data)</font>, <font color=darkcyan>0</font>);
+
+    <font color=red>for_each</font>(data, data + numof(data), <font color=red>Disp</font>);
+    cout &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0 0 0 0 0 0 0 0 0 0</pre></td></tr>
+
+</table></center>
+
+<p>　for_each を実行すると、順次 Disp(data[0]), Disp(data[1]), Disp(data[2]), ... と実行されるわけです。そして、Disp(data[9]) まで実行され、0 が１０個表示されたわけです。</p>
+
+<p>　このように、<font color=red>アルゴリズムはループ処理を行う時に役に立ってくれる</font>わけです。アルゴリズムを使えば、fill という名前から「これはデータをあるデータで埋めるという処理だ」ということが一目で分かり、<font color=red>読みやすさも増します</font>ね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>_n のつかないアルゴリズムの引数は &lt;始点&gt;, &lt;終点&gt; + 1, ... となる。</li>
+<li>_n のつくアルゴリズムの引数は &lt;始点&gt;, &lt;要素数&gt;, ... となる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はイテレータというものについて話してみたいと思います。「先頭アドレス」でなく「先頭位置」と、「配列」でなく「配列のようなもの」と言ってきた理由などが分かると思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp04002.html" target="main">第２章　アル・コワリズミ</a> | <a href="cpp04004.html" target="main">第４章　偽ポインタ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.7.8</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

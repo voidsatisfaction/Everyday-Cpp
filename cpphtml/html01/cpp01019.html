@@ -1,0 +1,199 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１９章 ループの強制終了 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１９章　ループの強制終了</font>
+</center>
+<hr>
+
+<p>　今までのを見たとおり、条件式はループの端でしか判定されません。</p>
+
+<p>　今回は実行文の真ん中あたりでもループを終了する方法について話していきます。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>break を使えばループを抜けられる。</li>
+<li>continue を使えば実行文の終わりに飛べる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ループを抜けるには、今まではループ命令の条件判定に頼ってきました。しかし、その判定部分は先頭か終わり、つまり、実行文の端でしか判定されませんでした。</p>
+
+<p>　実際には実行文の真ん中あたりで抜け出さなくてはならないときもあります。そのときは <font color=red>break</font> を使います。</p>
+
+<p>　書式は単純で</p>
+
+<pre>break;</pre>
+
+<p>だけで構いません。ですが、途中にこれを置いただけではループができなくなってしまいます。そこで、実際には <font color=red>if 文と組み合わせて使います</font>。</p>
+
+<p>　さて、途中で抜け出す必要のあるプログラムとはどのようなものがあるでしょうか？</p>
+
+<p>　<a href="cpp01012.html">第１２章</a>で行った割り算プログラムを思い出して下さい。これを、繰り返してずっと割り算を行うように改造します（無限ループ）。</p>
+
+<p>　このとき、２番目に０を入力するとループを終わるようにしたいと思います。</p>
+
+<p>　では、プログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Break1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a, b;
+
+    <font color=blue>while</font>(<font color=darkcyan>1</font>)
+    {
+        cout &lt;&lt; <font color=darkcyan>"１番目の値を入力してください &gt; "</font>;
+        cin &gt;&gt; a;
+
+        cout &lt;&lt; <font color=darkcyan>"２番目の値を入力してください &gt; "</font>;
+        cin &gt;&gt; b;
+
+        <font color=blue>if</font>(b == <font color=darkcyan>0</font>)
+        {
+            cout &lt;&lt; <font color=darkcyan>"０では割れません！"</font> &lt;&lt; endl;
+            <font color=blue>break</font>;
+        }
+
+        cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" / "</font> &lt;&lt; b &lt;&lt; <font color=darkcyan>" = "</font>
+             &lt;&lt; a / b &lt;&lt; <font color=darkcyan>" ... "</font> &lt;&lt; a % b &lt;&lt; endl;
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"プログラムは終了しました。"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>１番目の値を入力してください &gt; 23
+２番目の値を入力してください &gt; 7
+23 / 7 = 3 ... 2
+１番目の値を入力してください &gt; 16
+２番目の値を入力してください &gt; 2
+16 / 2 = 8 ... 0
+１番目の値を入力してください &gt; 7
+２番目の値を入力してください &gt; 0
+０では割れません！
+プログラムは終了しました。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　ああ、終われましたね。この終わり方は普通のループ文ではできません。</p>
+
+<p>　また、ループを抜け出した後、すぐ関数が終わるようなら、return を使って抜け出しても構いません。</p>
+
+<hr>
+
+<p>　今度は、０を入力したら終わるのではなく、５回実行したら終わるようにしてみましょう。</p>
+
+<p>　「あれ、for 使うだけでええやないの」と思ったでしょう。確かにそうです。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Break1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a, b, i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>5</font>; i++)
+    {
+        cout &lt;&lt; <font color=darkcyan>"１番目の値を入力してください &gt; "</font>;
+        cin &gt;&gt; a;
+
+        cout &lt;&lt; <font color=darkcyan>"２番目の値を入力してください &gt; "</font>;
+        cin &gt;&gt; b;
+
+        <font color=blue>if</font>(b == <font color=darkcyan>0</font>)
+        {
+            cout &lt;&lt; <font color=darkcyan>"０では割れません！"</font> &lt;&lt; endl;
+            <font color=blue>continue</font>;
+        }
+
+        cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" / "</font> &lt;&lt; b &lt;&lt; <font color=darkcyan>" = "</font>
+             &lt;&lt; a / b &lt;&lt; <font color=darkcyan>" ... "</font> &lt;&lt; a % b &lt;&lt; endl;
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"プログラムは終了しました。"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>１番目の値を入力してください &gt; 89
+２番目の値を入力してください &gt; 4
+89 / 4 = 22 ... 1
+１番目の値を入力してください &gt; 0
+２番目の値を入力してください &gt; 5
+0 / 5 = 0 ... 0
+１番目の値を入力してください &gt; 0
+２番目の値を入力してください &gt; 0
+０では割れません！
+１番目の値を入力してください &gt; 8
+２番目の値を入力してください &gt; 1
+8 / 1 = 8 ... 0
+１番目の値を入力してください &gt; 40
+２番目の値を入力してください &gt; 9
+40 / 9 = 4 ... 4
+プログラムは終了しました。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　おや、何か見慣れないものがありますね。</p>
+
+<pre><font color=red>continue;</font></pre>
+
+<p>　これは、<font color=red>残りの実行文を無視する</font>ものです。実行文の末尾に飛ぶと言っても構いません。</p>
+
+<p>　その後は、ループ式（i++）を行い、条件式を判定します。そして、条件を満たしていればさらにループを続けます。</p>
+
+<p>　「else を使えばいいのでは」と思うかも知れませんが、これは<a href="../htmlword/words009.html" target="words">ネスト</a>を深くしないための工夫です。こういう条件が何個も出てくるときなどには非常に効果的です。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>break を使えばループを抜けられる。</li>
+<li>continue を使えば実行文の終わりに飛べる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01018.html" target="main">第１８章　もうひとつのループ</a> | <a href="cpp01020.html" target="main">第２０章　多条件分岐</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

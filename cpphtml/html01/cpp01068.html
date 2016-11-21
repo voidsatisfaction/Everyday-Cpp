@@ -1,0 +1,180 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６８章 寿命 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６８章　寿命</font>
+</center>
+<hr>
+
+<p>　変数の値はいつまでも有効であるとは限りません。それは前からずっと言っていることですね。では、変数の値はそれぞれいつまで有効なのでしょうか？　今回はそれについて詳しく話してみたいと思います。前章に続き地味な内容が続きますが、まぁ、勘弁して下さい（笑）。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数の有効期間を寿命と呼ぶ。</li>
+<li>{ } で囲まれた部分をブロックと呼ぶ。</li>
+<li>変数や関数の見える範囲をスコープという。</li>
+<li>スコープはブロックによって決まる。</li>
+<li>変数の寿命はスコープによって決まる。</li>
+<li>ブロックが違えば同じ名前の別の変数を作ることができる。</li>
+<li>:: を付ければどのスコープからでもグローバル変数を指せる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　変数はそれぞれ有効期間を持っています。例えば、グローバル変数はプログラムが実行されている間はずっと有効ですし、内部変数は関数を抜けるまでのみ有効です。このような、<font color=red>変数の有効期間を寿命と呼びます</font>。</p>
+
+<p>　しかし、実は、<font color=red>内部変数の寿命は全て同じとは限りません</font>。このことは追って話します。その前に、<a href="cpp01009.html" target="main">第９章</a>の内容を突き詰めていこうと思います。</p>
+
+<hr>
+
+<p>　<a href="cpp01009.html" target="main">第９章</a>では、どの変数がどこで使えるかを見ました。実はこれでは不十分なのです。</p>
+
+<p>　例えば、次のプログラムをコンパイルしてみて下さい。コンパイルエラーが出ます。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>コンパイルエラー</th></tr>
+
+<tr>
+<td><pre><font color=green>// Scope1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    {
+        <font color=blue>int</font> a = <font color=darkcyan>0</font>;
+        cout &lt;&lt; a &lt;&lt; endl;
+    }
+    cout &lt;&lt; a &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td valign=top><pre>
+
+
+
+
+
+
+
+
+
+Scope1.cpp(10) : error C2065: 'a' : 定義されていない識別子です。
+
+
+</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　何と、{ } で囲まれた中では a は使えたのに、{ } を抜けたとたん変数が使えなくなってしまいました。つまり、{ } を抜けると変数は使えなくなってしまうわけです。</p>
+
+<p>　この { } で囲まれた範囲を<font color=red>ブロック</font>といいます。そして、変数や関数などの見える範囲のことを<font color=red>スコープ</font>（scope : 視野）と呼びます。例えば、内部変数のスコープは宣言から、そのブロックの終わりまでということになります。</p>
+
+<p>　では、グローバル変数のスコープはどうなるのでしょうか？　グローバル変数はどのブロックの中にもなく、ファイル上に直接乗っかっているので、<font color=red>ファイルスコープ</font>にあるといいます。一方、ブロック内に限定されているスコープを<font color=red>ブロックスコープ</font>といいます。</p>
+
+<p>　で、<font color=red>自動変数の寿命はスコープ内のみ</font>です。そして、<font color=red>ファイルスコープにあるもの、もしくは静的内部変数の寿命は、プログラムが始まってから終わるまで</font>です。</p>
+
+<p>　こうやって文字でいろいろ書いていると何か難しそうですが、よく考えてみれば何も難しいことはなく、むしろ自然なことしか言っていないことが分かります。</p>
+
+<hr>
+
+<p>　次は、同じ名前の別の変数についてです。</p>
+
+<p>　実は、<font color=red>ブロックが違えば、同じ名前の別の変数を作ることができます</font>。確かに別の関数で同じ名前の別の変数を作ることは今まででもやってきましたが、これは同じ関数内でも実現できるのです。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Scope2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> a = <font color=darkcyan>1</font>;
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; &amp;a &lt;&lt; endl;
+
+    <font color=blue>int</font> a = <font color=darkcyan>2</font>;
+    cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; &amp;a &lt;&lt; endl;
+
+    {
+        <font color=blue>int</font> a = <font color=darkcyan>3</font>;
+        cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; &amp;a &lt;&lt; endl;
+    }
+    cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; &amp;a &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td valign=top><pre>1 : 0x00427D50
+2 : 0x0065FDF4
+3 : 0x0065FDF0
+2 : 0x0065FDF4</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今回の変数は全て a です。で、４箇所で a と a のアドレスを表示しています。</p>
+
+<p>　このことから分かるとおり、<font color=red>同じ名前の変数が何個もあったときは、最も内側のブロックにある変数が使われます</font>。</p>
+
+<p>　ただ、<font color=red>同じ名前の変数を同じ関数内で２個以上作ると、プログラムが読みにくくなります</font>。ただできるというだけで、実際に使うことはないでしょう。</p>
+
+<p>　ここで、<font color=red>Ｃ＋＋</font>では<font color=red>グローバル変数なら</font>どのスコープからでも参照することができます。それには、<font color=red>スコープ解決演算子 ::</font> というものを使います。コロン (:) ２つです。</p>
+
+<p>　<font color=red>変数の前に :: を付ければ、それはグローバル変数を指すようになります。</font>上の最後の cout を次のように変えてみて下さい。</p>
+
+<pre>cout &lt;&lt; <font color=red>::a</font> &lt;&lt; " : " &lt;&lt; <font color=red>&amp;::a</font> &lt;&lt; endl;</pre>
+
+<p>　これで、最後の表示がグローバル変数のものになると思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数の有効期間を寿命と呼ぶ。</li>
+<li>{ } で囲まれた部分をブロックと呼ぶ。</li>
+<li>変数や関数の見える範囲をスコープという。</li>
+<li>スコープはブロックによって決まる。</li>
+<li>変数の寿命はスコープによって決まる。</li>
+<li>ブロックが違えば同じ名前の別の変数を作ることができる。</li>
+<li>:: を付ければどのスコープからでもグローバル変数を指せる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回は用語が沢山出てきてしんどかったです。ですが、<font color=red>大切なのは用語より内容</font>なので、用語は、まぁ、また出てきたときにここで確認したので構わないでしょう。</p>
+
+<p>　次回はファイルを越えての変数や関数の使い方についてのお話です。それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01067.html" target="main">第６７章　静的内部変数</a> | <a href="cpp01069.html" target="main">第６９章　リンケージ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

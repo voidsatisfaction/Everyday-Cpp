@@ -1,0 +1,125 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４章 引数付きの構築 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４章　引数付きの構築</font>
+</center>
+<hr>
+
+<p>　コンストラクタには引数があった方がいいときもあるでしょう。今回はそういうときのお話です。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>コンストラクタに引数があってもよい。</li>
+<li>引数つきコンストラクタを呼ぶには、宣言時に変数名に引数をつける。</li>
+<li>引数つきコンストラクタは配列などの作成時には呼べない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　いきなりですが、前回のクラス CInt でちょっと不満はありませんでしたか？　m_num を好きな値で初期化できませんでしたね。これはちょっと問題です。</p>
+
+<p>　もちろん、好きな値で初期化できるようにもできます。方法は簡単です。<font color=red>コンストラクタに引数をつければいいのです。</font></p>
+
+<p>　しかし、ちょっと待って下さい。コンストラクタは実体を作る際に呼ばれる、つまり変数宣言文で呼ばれる関数だったはずです。<font color=red>引数なんてどうやって渡せばいいのでしょうか？</font></p>
+
+<p>　これも、とても単純です。こうやるのです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Cstruct2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CInt
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> m_num;
+
+    CInt();
+    CInt(<font color=blue>int</font> num);
+    <font color=blue>void</font> Disp();
+};
+
+<font color=green>// コンストラクタ
+// オーバーロードしています（<a href="../html01/cpp01064.html" target="main">第１部第６４章</a>参照）</font>
+CInt::CInt()       { m_num = <font color=darkcyan>0</font>; }
+CInt::CInt(<font color=blue>int</font> num){ m_num = num; }
+
+<font color=green>// メンバ変数の表示</font>
+<font color=blue>void</font> CInt::Disp(){ cout &lt;&lt; m_num &lt;&lt; endl; }
+
+<font color=blue>int</font> main()
+{
+    CInt a, <font color=red>b(100)</font>, <font color=red>c(40)</font>;
+
+    a.Disp();
+    b.Disp();
+    c.Disp();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>0
+100
+40</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　引数つきコンストラクタを使っているのはここです。</p>
+
+<pre>CInt a, <font color=red>b(100)</font>, <font color=red>c(40)</font>;</pre>
+
+<p>　何と、<font size=+2 color=red>まるで変数が関数であるかのように引数を指定しているではありませんか！</font>　こんな単純でいいんですね。</p>
+
+<p><br></p>
+
+<p>　このように、<font color=red>クラスのメンバ変数の初期化はコンストラクタで行います</font>。第１，２回のように、構造体と同じようにしてはいけません。</p>
+
+<hr>
+
+<p>　しかしこの方法、配列の宣言では使えそうにありませんね。これはその通りで、<font color=red>配列では引数なしのコンストラクタしか呼べません</font>。他にも制限がありますが、今はまだ触れません。</p>
+
+<p>　そして、<font color=red>引数なし</font>のコンストラクタのことを<font color=red>デフォルトコンストラクタ</font>と呼びます。</p>
+
+<hr>
+
+<p>　これで終わりです。今回も短いですが、ゆっくりいきましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>コンストラクタに引数があってもよい。</li>
+<li>引数つきコンストラクタを呼ぶには、宣言時に変数名に引数をつける。</li>
+<li>引数つきコンストラクタは配列などの作成時には呼べない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p></p>
+
+<hr>
+
+<p align=right><a href="cpp02003.html" target="main">第３章　コンストラクタ</a> | <a href="cpp02005.html" target="main">第５章　隠せ！</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

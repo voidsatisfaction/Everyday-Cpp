@@ -1,0 +1,128 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１８章 if...２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１８章　if...２</font>
+</center>
+<hr>
+
+<p>　前回は #if ディレクティブをとりあえず使ってみました。今回は、その詳しい書式と、よく使われる例について話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>定義されているかどうかについては #ifdef, #ifndef が用意されている。</li>
+<li>else に対しては #else が、else if に対しては #elif がある。</li>
+<li>見づらくならない工夫をしよう。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回、#if を使いました。しかし、<a href="../html01/cpp01070.html" target="main">第１部第７０章</a>では #ifndef というのを使っていました。定義されているかの判定はよく使われるので、それ用の命令が用意されているのです。</p>
+
+<p>　定義されているかの判定に使われるのは、<font color=red>#ifdef, #ifndef</font> の２種類です。それぞれ、if defined（もし定義されていれば）、if not defined（もし定義されていなければ）の略です。</p>
+
+<p>　そして、if 文に else があるように、#if ディレクティブには <font color=red>#else ディレクティブ</font>があります。</p>
+
+<p>　また、else if に対しては、<font color=red>#elif ディレクティブ</font>を使います。#elifdef などはないので、#elif defined(&lt;名前&gt;) とする必要があります。</p>
+
+<p>　まとめると、例えば次のようになるわけです。</p>
+
+<pre>#ifdef _WIN
+#define RET_CODE "\r\n"
+#elif defined(_MAC)
+#define RET_CODE "\r"
+#else
+#define RET_CODE "\n"
+#endif</pre>
+
+<p>　先ず、_WIN が定義されていれば RET_CODE は "\r\n" で定義されます。そして、_WIN が定義されていないが、_MAC が定義されているときは、RET_CODE は "\r" で定義されます。そして、_WIN も _MAC も定義されていないときは、"\n" で定義されます。</p>
+
+<hr>
+
+<p>　#if ディレクティブの評価式で使えるのは、<font color=red>プログラムをコンパイルする前から値を判断できるデータだけ</font>です。#if 文の動作を考えると、当然のことといえます。例えば、マクロとか、即値（生の数値）とかがそうです。</p>
+
+<p>　使える演算子は、Ｃ／Ｃ＋＋のものとほとんど変わりません。使えない演算子は new, delete, sizeof のようなものくらいです。</p>
+
+<p>　まとめると、例えば次のようになるわけです。</p>
+
+<pre>define VALUE 100
+
+#if !(VALUE % 5 == 0 && VALUE > 0)
+// #error ディレクティブは、強制的にエラーを出す命令です
+#error VALUE must be a multiple of 5 and more than 0
+#endif</pre>
+
+<p>　先ず、マクロ VALUE を定義しています。この数が「正の５の倍数でなくてはならない」としたいと思います。</p>
+
+<p>　ということは、VALUE が正の５の倍数でない時にはエラーを出すようにすればいいのです。#if ディレクティブでその評価を行い、そして正の５の倍数にならないときは <font color=red>#error ディレクティブ</font>でエラーを出します。</p>
+
+<p>　このようにすれば、VALUE の初期化ミスを防ぐことができます。</p>
+
+<hr>
+
+<p>　#if ディレクティブは、前回やったように、デバッグ時にのみ動作するコード、またはその逆のコードを書くために使うことがよくあります。そのため、ＶＣ＋＋では<font color=red>デバッグ時には _DEBUG というマクロが自動的に定義されます</font>。他のツールであっても、似たようなマクロが定義されているかもしれません。</p>
+
+<p>　実は、このマクロは<font color=red>プロジェクトの設定内</font>で定義されています。<a href="../html01/cpp01070.html" target="main">第１部第７０章</a>でやったようにプロジェクトの設定を開き、「Ｃ／Ｃ＋＋」→「一般」カテゴリ→「プリプロセッサの定義」を見てみて下さい。_DEBUG と書いてあると思います。</p>
+
+<p>　で、デバッグを終了し、いざ本ビルドを行うというときは、メニューの「ビルド」から、「アクティブな構成の設定」を選び、<font color=red>Win32 Release</font> を選択します。もしくは、ツールバーの Win32 Debug と書いてある<a href="../htmlword/words027.html" target="words">コンボボックス</a>からも選択できます。こうすると、<font color=red>プロジェクトの設定が変わり</font>、_DEBUG の定義されていない状態になります。</p>
+
+<p>　このように、ＶＣ＋＋ではプロジェクトの設定を数種類保存でき、簡単に切り替えられるようになっています。</p>
+
+<hr>
+
+<p>　#if ディレクティブを使えば、<font color=red>デバッグ時にしか有効にならないコード</font>を作ることもできます。その逆もできます。</p>
+
+<pre>#ifdef _DEBUG
+void Func(int a, int b);
+#define NOMORE  default: exit(1);
+#else
+#define Func(a, b)
+#define NOMORE
+#endif</pre>
+
+<p>　_DEBUG が定義されていないときは、Func の呼び出しは消えて、空文になってしまいます。デバッグ時にしか呼び出せないわけです。NOMORE も同じですね。</p>
+
+<p>　他にも、<font color=red>環境によって定義を変える</font>こともできます。上で話した RET_CODE がそうです。_WIN は Windows 環境用、_MAC は Macintosh 環境用であることを表しています。で、それ以外用のが #else 以降で定義されています。</p>
+
+<p>　このように、#if ディレクティブを使うと、状況に合わせた柔軟なプログラムを書けるようになるのです。</p>
+
+<p>　ただ、#if ディレクティブを関数の中に頻繁に書いていると、<font color=red>非常に読みにくくなってしまいます</font>。やむを得ない場合でも、なるべく見づらくならないような<font color=red>工夫をこらす</font>ようにしましょう。</p>
+
+<p>　例としては、上でやったデバッグ時にしか動作しないコード（またはその逆）がそうです。Func を呼ぶたびに #if ディレクティブを使うよりも、Func が消える上のコードを書いておく方がいいですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>定義されているかどうかについては #ifdef, #ifndef が用意されている。</li>
+<li>else に対しては #else が、else if に対しては #elif がある。</li>
+<li>見づらくならない工夫をしよう。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03017.html" target="main">第１７章　if...</a> | <a href="cpp03019.html" target="main">第１９章　組み込みマクロ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

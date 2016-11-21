@@ -1,0 +1,219 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２３章 同姓同名２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２３章　同姓同名２</font>
+</center>
+<hr>
+
+<p>　今回はオーバーロードについてです。でも、普通のオーバーロードとは違って...。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>operator &lt;演算子&gt; 関数で演算子をオーバーロードできる。</li>
+<li>２項演算子では左項が自分自身に、右項が引数になる。</li>
+<li>後置インクリメントでは、int 型のダミー引数をとる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　CIntArray には、CIntArray をコピーする関数がありません。コピーコンストラクタはあるのですが、コンストラクタなので変数を作るときにしか使えません。</p>
+
+<p>　そこで、コピーをする関数を作ってみましょう。処理はコピーコンストラクタと同じなので、コピーコンストラクタからもこの関数を呼ぶようにします。</p>
+
+<p>　そして、コピーするときに m_nNumOf の値を変える必要があるので、定数メンバにするのはやめます。<a href="cp020221.html" target="_blank">前のソース</a>に戻してやって下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// コピー</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Copy(<font color=blue>const</font> CIntArray&amp; rother);  <font color=green>// 配列のコピー</font>
+
+    <font color=green>// 諸関数</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> Init();     <font color=green>// メンバの初期化</font>
+    <font color=blue>void</font> Release();  <font color=green>// メモリの解放</font>
+
+    <font color=green>// Success 関数の名前を IsValid に変更して下さい</font>
+    <font color=blue>bool</font> IsValid() <font color=blue>const</font>;  <font color=green>// m_pnum の値が有効かどうか</font>
+};
+
+<font color=green>// 実装の方でも Success 関数の名前を IsValid に変更して下さい</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=green>// コピーコンストラクタ</font>
+CIntArray::CIntArray(<font color=blue>const</font> CIntArray&amp; rother)
+{
+    Init();
+    Copy(rother);
+
+    cout &lt;&lt; <font color=darkcyan>"コピーコンストラクタが呼ばれました。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// デストラクタ</font>
+CIntArray::~CIntArray()
+{
+    cout &lt;&lt; <font color=darkcyan>"デストラクタが呼ばれました。"</font>
+         &lt;&lt; <font color=darkcyan>"要素数は "</font> &lt;&lt; m_nNumOf &lt;&lt; <font color=darkcyan>" でした。"</font> &lt;&lt; endl;
+
+    Release();
+}
+
+<font color=green>// 配列のコピー</font>
+<font color=blue>bool</font> CIntArray::Copy(<font color=blue>const</font> CIntArray&amp; rother)
+{
+    <font color=green>// 自分自身はコピーしない</font>
+    <font color=blue>if</font>(m_pnum == rother.m_pnum)
+        <font color=blue>return true</font>;
+
+    Release();  <font color=green>// 配列が確保されているときはメモリを解放</font>
+
+    <font color=blue>if</font>(rother.IsValid() == <font color=blue>true</font>)
+    {
+        m_pnum = <font color=blue>new int</font>[rother.NumOf()];
+        <font color=blue>if</font>(m_pnum == NULL)
+        {
+            m_nNumOf = <font color=darkcyan>0</font>;
+            <font color=blue>return false</font>;
+        }
+
+        <font color=green>// memcpy はメモリの内容をバイト単位でコピーする関数です</font>
+        memcpy(m_pnum, rother.m_pnum, rother.SizeOf());
+        m_nNumOf = rother.m_nNumOf;
+    }
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// メンバの初期化</font>
+<font color=blue>void</font> CIntArray::Init()
+{
+    m_pnum   = NULL;
+    m_nNumOf = <font color=darkcyan>0</font>;
+}
+
+<font color=green>// メモリの解放
+// 配列が確保されているときだけメモリを解放します
+// 解放した後はメンバを初期化します</font>
+<font color=blue>void</font> CIntArray::Release()
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>true</font>)
+    {
+        <font color=blue>delete</font> [] m_pnum;
+        Init();
+    }
+}</pre></td></tr>
+
+</table></center>
+
+<p>　メモリが確保されたままコピーしてしまうと<font size=+2 color=red>メモリリーク</font>になってしまうので、メモリを解放してからコピーします。メモリを解放する関数は Release としてまとめました。デストラクタからもこの関数を呼ぶようにしました。</p>
+
+<p>　そして、<font color=red>メモリを解放したあとはポインタに NULL を入れておきます</font>。これをしておかないと Release 関数をもう一度呼んだときにまた delete しようとしてしまいます。実際にそういう使い方は今のところしませんが、NULL を入れておくのが筋です。</p>
+
+<p>　あとは、m_nNumOf も０にしておくと安全ですね。CheckIndex で必ず引っかかるようになり、メモリが確保されていないときはそのオブジェクトを使えないようにすることができます。</p>
+
+<p>　ということで、メンバの初期化関数を作っておきました。コピーコンストラクタでも呼ばれるので、関数にしておくと便利です。コピーコンストラクタでこの初期化をしていないと、Copy 関数の初めにある Release 関数で if(IsValid() == true) が真になってしまいますね。（偽になることはめったにないでしょう。）</p>
+
+<p>　これで無事コピー関数が作れました。</p>
+
+<hr>
+
+<p>　でも、コピーというのは代入することでもできてほしいと思いませんか？</p>
+
+<pre>array1 = array2;</pre>
+
+<p>という感じです。感覚的に分かりやすいですよね。</p>
+
+<p>　ということで、こういう時のために<font color=red>演算子の動作を定義することができます</font>。これを<font color=red>演算子のオーバーロード</font>と呼びます。オーバーロードと言うからには、引数の型が違えば同じ演算子の動作をいくつも定義することができます。</p>
+
+<p>　上の代入では、CIntArray のオブジェクトへ<font color=red>CIntArray のオブジェクト</font>が代入されています。そういうときはこうします。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// コピー</font>
+<font color=blue>public</font>:
+    <font color=blue>void</font> <font color=red>operator =</font>(<font color=blue>const</font> CIntArray&amp; rother); <font color=green>// = 演算子によるコピー</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=green>// = 演算子によるコピー</font>
+<font color=blue>void</font> CIntArray::<font color=red>operator =</font>(<font color=blue>const</font> CIntArray&amp; rother)
+{
+    Copy(rother);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　なにやらメンバ関数を作っています。関数の名前は <font color=red>operator =</font>です。</p>
+
+<p>　このように、<font color=red>operator &lt;演算子&gt;</font>という名前の関数を作れば<font color=red>演算子の動作を定義できる</font>のです。</p>
+
+<p>　= 演算子は２項演算子です。２項演算子には左項と右項があります。例えば、ａ＋ｂではａが左項でｂが右項になります。</p>
+
+<p>　メンバ関数で２項演算子をオーバーロードした場合は<font color=red>左項が自分自身になります</font>。そして、<font color=red>右項が引数になります</font>。１項演算子（符号演算子とか）では演算される項がそのまま自分自身になります。</p>
+
+<p>　例えば、上の array1 = array2; では、array1 が自分自身になって、array2 が引数になります。これは array1.Copy(array2); と同じ関係ですね。なので、演算子の実装は普通に Copy を呼ぶだけで構いません。</p>
+
+<p>　また、インクリメント、デクリメント演算子では、前置、後置の違いがあります（<a href="../html03/cpp03007.html" target="main">第３部第７章</a>参照）。前置の場合は普通に引数なしで定義すればいいのですが、後置の場合は前置と区別するために <font color=red>int 型の引数</font>をとります。この引数はオーバーロードのための<font color=red>ダミー</font>でしかなく、この引数の使い道は他にありません。</p>
+
+<pre>void operator++(   ) { ... }  // 前置インクリメント
+void operator++(<font color=red>int</font>) { ... }  // 後置インクリメント</pre>
+
+<hr>
+
+<p>　また、演算子をオーバーロードするといっても、別に演算を行う必要はありません。例えば、<font color=red>「右項にある数値を表示する」</font>なんてこともできるわけです。</p>
+
+<p>　これはまさに <font color=red>cout</font> のやっていることです。そうです。<font color=red>cout はクラスのオブジェクトだったのです。</font>そして、<font color=red>&lt;&lt; 演算子をオーバーロードして、型に合わせて表示を行っているのです</font>。</p>
+
+<p>　戻り値に自分自身を返すようにすれば、さらに次の &lt;&lt; で表示が行えるわけです。自分自身を返す方法については、次々回に話すことになると思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>operator &lt;演算子&gt; 関数で演算子をオーバーロードできる。</li>
+<li>２項演算子では左項が自分自身に、右項が引数になる。</li>
+<li>後置インクリメントでは、int 型のダミー引数をとる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も演算子のオーバーロードをやっていきます。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02022.html" target="main">第２２章　メンバ定数</a> | <a href="cpp02024.html" target="main">第２４章　同姓同名３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2004.1.26</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

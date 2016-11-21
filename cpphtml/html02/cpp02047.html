@@ -1,0 +1,179 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４７章 えっ！？　３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４７章　えっ！？　３</font>
+</center>
+<hr>
+
+<p>　前回、前々回のプログラムで何か気が付いたことはありませんか？　今回話すことは、もしかしたらそのことについてかもしれません。</p>
+
+<hr>
+
+<p>　ではでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>例外は型情報をもつ。</li>
+<li>catch 内の型と一致するとき、例外が捕捉される。</li>
+<li>catch ブロックは２つ以上あっても構わない。</li>
+<li>catch(...) で全ての例外を捕捉できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回までは例外として数値を投げていました。これはそういう仕様なのでしょうか？　ちょっと実験してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Except2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        <font color=blue>throw</font> <font color=red>"例外発生！"</font>;
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        <font color=green>// ？？？</font>
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>abnormal program termination</pre></td></tr>
+
+</table></center>
+
+<p>　一応コンパイルはできましたが、<font color=red>catch で受け取る値は int です</font>。どうなるのか...と思いきや、<font color=red>異常終了</font>してしまいました。</p>
+
+<p>　どうやら、int 以外の値も投げることはできるようです。しかし、その例外は catch(int) では受け取れないようです。</p>
+
+<p>　ということは、catch(char*) なら受け取れるのでしょうか？　ちょっと試してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Except2b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        <font color=blue>throw</font> <font color=red>"例外発生！"</font>;
+    }
+    <font color=blue>catch</font>(<font color=blue>char</font>* pszError)
+    {
+        cout &lt;&lt; pszError &lt;&lt; endl;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>例外発生！</pre></td></tr>
+
+</table></center>
+
+<p>　見事キャッチできました。</p>
+
+<p>　このように、<font color=red>例外はどんな型のデータでも投げることができます</font>。そして、<font color=red>その例外をキャッチするには、同じ型の値を受け取る catch を使わないといけない</font>のです。</p>
+
+<hr>
+
+<p>　では、２種類以上の例外が投げられる可能性のある場合はどうなるのでしょうか？　catch ブロックを２つ以上書いてもいいのでしょうか？　やはり、これも実験してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Except3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(<font color=blue>true</font>)
+    {
+        <font color=blue>try</font>
+        {
+            <font color=blue>int</font> type;
+            cin &gt;&gt; type;
+
+            <font color=blue>if</font>(type == <font color=darkcyan>0</font>)
+                <font color=blue>return</font> <font color=darkcyan>0</font>;
+            <font color=blue>else if</font>(type == <font color=darkcyan>1</font>)
+                <font color=blue>throw</font> <font color=red>1</font>;
+            <font color=blue>else</font>
+                <font color=blue>throw</font> <font color=red>"例外発生！"</font>;
+        }
+        <font color=blue>catch</font>(<font color=red>int</font> fError)
+        {
+            cout &lt;&lt; fError &lt;&lt; endl;
+        }
+        <font color=blue>catch</font>(<font color=red>char*</font> pszError)
+        {
+            cout &lt;&lt; pszError &lt;&lt; endl;
+        }
+    }
+    <font color=green>// 一応 return 0; を書いておきます</font>
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>1
+1
+2
+例外発生！
+0</pre></td></tr>
+
+</table></center>
+
+<p>　大丈夫なようです。</p>
+
+<p>　このように、<font color=red>catch ブロックは複数あっても構いません</font>。もちろん、同じ型の例外を受け取るブロックを２つ書くのはエラーです。ですが、違う型の例外を受け取るブロックは、このように問題ありません。</p>
+
+<p>　また、あらゆる例外を一度に捕捉したければ <font color=red>catch(...)</font> で捕捉できます。ただし、もちろん値は取得できません。このときに捕捉される例外には<font color=red>「０除算例外」</font>や<font color=red>「不正アクセス例外」</font>などのような、throw で投げた例外以外の例外も含まれます。</p>
+
+<hr>
+
+<p>　まとめると、</p>
+
+<font size=+2 color=red>
+<ul>
+<li>例外は型情報をもつ。</li>
+<li>catch の型と一致するとき、例外が捕捉される。</li>
+<li>catch ブロックは２つ以上あっても構わない。</li>
+<li>catch(...) で全ての例外を捕捉できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>ということになります。</p>
+
+<p>　例外処理はまだまだ続きます。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02046.html" target="main">第４６章　えっ！？　２</a> | <a href="cpp02048.html" target="main">第４８章　えっ！？　４</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

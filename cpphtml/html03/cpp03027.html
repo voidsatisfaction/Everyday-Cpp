@@ -1,0 +1,285 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２７章 たのしいソート４ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２７章　たのしいソート４</font>
+</center>
+<hr>
+
+<p>　今回紹介するソート法はおそらく最も使用頻度の高いソート法になると思います。なぜなら...。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ある値より大きいもの同士、小さいもの同士で集め、集めたものをまた同じように分けていくとソートできる。</li>
+<li>このソート法をクイックソートと呼ぶ。</li>
+<li>qsort 関数でクイックソートができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回のソート法は<font color=red>平均的に最も速い方法</font>として知られてきたソート法です。今でもソート法の開発は続いており、このソート法よりも速いものも現れてきているそうですが、詳しいことは知らないのでそれらについてはこの講座では触れません。</p>
+
+<p>　と、大仰に紹介しましたが、ソート法のアルゴリズム自体は簡単です。</p>
+
+<p>　先ず、ある値よりも<font color=red>小さい</font>要素を配列の<font color=red>前半</font>に、<font color=red>大きい</font>要素を配列の<font color=red>後半</font>に集めます。この時、「ある値」はそれよりも大きな値も、小さな値も、必ず存在するような値にします。例えば「両端の要素の平均値」などです。また、等しいときはどちらに含めても構いません。</p>
+
+<p>　こうしてできた<font color=red>各組でまたこれと同じことをします</font>。これをずっと続けていけばソートができますね。このソート法を<font color=red>クイックソート</font>と呼びます。</p>
+
+<p>　では、次の例を見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0302701.gif" width=500 height=475 alt="クイックソート"></td></tr>
+
+<tr><th>図．１　クイックソート</th></tr>
+
+</table></center>
+
+<p>　先ず、１番上の配列では、両端要素の平均値は３９です。そこで、<font color=red>左からそれ以上</font>の、<font color=red>右からそれ以下</font>の値を探します。そして、その値がでてきたところで<font color=red>両値を交換します</font>。探す位置が交差するまでこれを続ければ、配列を<font color=red>３９以下</font>のグループと、<font color=red>３９以上</font>のグループに分けることができます。</p>
+
+<p>　それを行うと、２番目の配列になります。確認してみて下さい。そして、次に２番目の配列の前半・後半で同じ事をします。そうして３番目の配列ができます。</p>
+
+<p>　すると、「３１」という要素は１つだけになったので、このブロックはこれでソート終了です。このようにして全ブロックがソートできない状態になったとき（要素が１つだけになったとき）、ソートが終了します。</p>
+
+<hr>
+
+<p>　「各組でまたこれと同じことをします」というのを見て分かるとおり、クイックソート関数は<font color=red>再帰関数</font>にすると便利です。</p>
+
+<p>　では、実際に作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortData.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortSub.h"</font>
+
+<font color=green>// 再帰関数</font>
+<font color=blue>static void</font> Sub_QuickSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nFirst, <font color=blue>int</font> nLast);
+
+<font color=green>// クイックソート</font>
+<font color=blue>void</font> QuickSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    Sub_QuickSort(pnData, <font color=darkcyan>0</font>, nNumOf - <font color=darkcyan>1</font>);
+}
+
+<font color=green>// 再帰関数
+// nFirst : ブロックの最初のインデックス
+// nLast  : ブロックの最後のインデックス</font>
+<font color=blue>static void</font> Sub_QuickSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nFirst, <font color=blue>int</font> nLast)
+{
+    <font color=blue>int</font> iLess    = nFirst;  <font color=green>// 前半のインデックス</font>
+    <font color=blue>int</font> iGreater = nLast;   <font color=green>// 後半のインデックス</font>
+    <font color=blue>int</font> x;                  <font color=green>// 「ある値」</font>
+
+    <font color=green>// 「ある値」は両端の要素の平均値にする</font>
+    x = (pnData[nFirst] + pnData[nLast]) / <font color=darkcyan>2</font>;
+
+    <font color=green>// 交換ループ
+    // 位置が逆になると終了</font>
+    <font color=blue>while</font>(iLess &lt; iGreater)
+    {
+        <font color=green>// x より小さい要素は無視</font>
+        <font color=blue>while</font>(pnData[iLess] &lt; x)
+            iLess++;
+        <font color=green>// x より大きい要素は無視</font>
+        <font color=blue>while</font>(pnData[iGreater] &gt; x)
+            iGreater--;
+
+        <font color=green>// 位置がちゃんとしているときは交換し、
+        // iLess と iGreater を１つずつ進める</font>
+        <font color=blue>if</font>(iLess &lt; iGreater)
+            Swap(pnData[iLess++], pnData[iGreater--]);
+    }
+    <font color=green>// iLess == iGreater で終わった時は、
+    // iGreater &lt; iLess になるようにする</font>
+    <font color=blue>if</font>(iLess == iGreater)
+    {
+        <font color=blue>if</font>(pnData[iLess] &lt; x)
+            iLess++;
+        <font color=blue>else if</font>(pnData[iLess] &gt; x)
+            iGreater--;
+    }
+
+    <font color=green>// 次のブロックのサイズが２以上の時は再帰</font>
+    <font color=blue>if</font>(iLess &gt;= nFirst + <font color=darkcyan>2</font>)
+        Sub_QuickSort(pnData, nFirst, iLess - <font color=darkcyan>1</font>);
+    <font color=blue>if</font>(iGreater &lt;= nLast - <font color=darkcyan>2</font>)
+        Sub_QuickSort(pnData, iGreater + <font color=darkcyan>1</font>, nLast);
+}
+
+<font color=blue>int</font> main()
+{
+    QuickSort(g_anData, g_nNumOf);
+    DispArray(g_anData, g_nNumOf);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>  1,   1,   4,   6,   9,   9,  10,  11,  13,  14,
+ 15,  16,  23,  25,  28,  29,  31,  33,  34,  39,
+ 39,  40,  40,  41,  42,  44,  48,  51,  51,  53,
+ 54,  55,  56,  63,  67,  68,  73,  73,  76,  77,
+ 78,  79,  79,  87,  89,  99,  99, 101, 101, 103,
+110, 112, 116, 117, 117, 118, 124, 128, 136, 137,
+137, 138, 148, 150, 152, 155, 157, 160, 161, 164,
+166, 167, 168, 169, 173, 173, 174, 175, 185, 186,
+188, 192, 199, 203, 213, 215, 222, 228, 228, 229,
+231, 235, 239, 240, 240, 242, 249, 249, 254, 255,</pre></td></tr>
+
+</table></center>
+
+<p>　はい、きちんとソートできました。</p>
+
+<p>　しかし、やっぱりこれだけではどれだけ速くなったのか分かりませんね。そこで、前回と同じ乱数列をソートしてみたところ、０．３秒程度しかかかりませんでした。少ない要素の配列をソートさせても結構速くソートできます。</p>
+
+<p>　ただ、配列によって速度にムラがあるそうです。それでもクイックソートは平均的に高速で、愛用されています。</p>
+
+<hr>
+
+<p>　で、愛用されているということは<font color=red>標準関数が用意されていてもいいですね</font>。それが <font color=red>qsort 関数</font>です。ヘッダファイルは <font color=red>stdlib.h</font> です。</p>
+
+<p>　関数のプロトタイプは次の通りです。</p>
+
+<pre><font color=blue>void</font> qsort(<font color=blue>void</font>* pBase, size_t nNumOf, size_t nElemSize,
+           <font color=blue>int</font> (*fpCompare)(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2));</pre>
+
+<p>　第１引数には配列を、第２引数には要素数を、第３引数には１要素のサイズを渡します。</p>
+
+<p>　そして、問題は第４引数です。これは<font color=red>関数ポインタ</font>ですね。つまり、ここには関数を渡すわけです。何の関数かというと、<font color=red>比較関数</font>です。</p>
+
+<p>　比較するといってもいろいろな方法があります。例えば構造体のソートなどを考えると、ただ全体を大小比較するだけでは困りますね。ポインタのソートなどは、参照先の大小を比較することでソートするのが普通です。また、昇順だけでなく、降順でソートしたいときもあるでしょう。</p>
+
+<p>　そこで、<font color=red>要素をどう比較するか</font>を関数にして、第４引数に渡すのです。</p>
+
+<p>　比較関数の型は <font color=blue>int</font> (*)(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2) となっています。例えば、</p>
+
+<pre><font color=green>// int 型要素を昇順ソートするときの比較関数</font>
+<font color=blue>int</font> IntCompareA(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2)
+{
+    <font color=blue>return</font> *(<font color=blue>const int</font>*)pElem1 - *(<font color=blue>const int</font>*)pElem2;
+}</pre>
+
+<p>の Compare を渡すわけです。</p>
+
+<p>　引数は、比較する要素の<font color=red>アドレス</font>になります。どんな型の要素でも受け取れるように、こういう仕組みになっています。</p>
+
+<p>　で、戻り値の意味は以下の通りです。</p>
+
+<table border=1>
+
+<tr>
+  <th>戻り値</th>
+  <th>意味</th>
+</tr>
+
+<tr>
+  <td align=center>負</td>
+  <td>pElem1 の指す要素が pElem2 の指す要素より小さい</td>
+</tr>
+
+<tr>
+  <td align=center>０</td>
+  <td>pElem1 の指す要素と pElem2 の指す要素は等しい</td>
+</tr>
+
+<tr>
+  <td align=center>正</td>
+  <td>pElem1 の指す要素が pElem2 の指す要素より大きい</td>
+</tr>
+
+</table>
+
+<p>　qsort では、この比較関数の結果を使って<font color=red>昇順で</font>ソートを行います。<font color=red>降順</font>でソートしたければ、上の「小さい」と「大きい」の部分を逆に考えればいいです。</p>
+
+<pre><font color=green>// int 型要素を降順ソートするときの比較関数</font>
+<font color=blue>int</font> IntCompareD(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2)
+{
+    <font color=blue>return</font> *(<font color=blue>const int</font>*)pElem2 - *(<font color=blue>const int</font>*)pElem1;
+}</pre>
+
+<p>　では、実際にいつもの配列をソートしてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort6.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortData.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortSub.h"</font>
+
+<font color=green>// int 型要素を昇順ソートするときの比較関数</font>
+<font color=blue>int</font> IntCompareA(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2)
+{
+    <font color=blue>return</font> *(<font color=blue>const int</font>*)pElem1 - *(<font color=blue>const int</font>*)pElem2;
+}
+
+<font color=blue>int</font> main()
+{
+    qsort(g_anData, g_nNumOf, <font color=blue>sizeof</font> *g_anData, IntCompareA);
+    DispArray(g_anData, g_nNumOf);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>  1,   1,   4,   6,   9,   9,  10,  11,  13,  14,
+ 15,  16,  23,  25,  28,  29,  31,  33,  34,  39,
+ 39,  40,  40,  41,  42,  44,  48,  51,  51,  53,
+ 54,  55,  56,  63,  67,  68,  73,  73,  76,  77,
+ 78,  79,  79,  87,  89,  99,  99, 101, 101, 103,
+110, 112, 116, 117, 117, 118, 124, 128, 136, 137,
+137, 138, 148, 150, 152, 155, 157, 160, 161, 164,
+166, 167, 168, 169, 173, 173, 174, 175, 185, 186,
+188, 192, 199, 203, 213, 215, 222, 228, 228, 229,
+231, 235, 239, 240, 240, 242, 249, 249, 254, 255,</pre></td></tr>
+
+</table></center>
+
+<p>　はい、きちんとソートできましたね。</p>
+
+<p>　このように、ソートするときは qsort という関数が用意されているので、<font color=red>バグを避けるためにも</font>、この関数を使うことを奨めます。「今までやってきたのは何だったんだ！」という感じですが、まぁ、いろいろなアルゴリズムを知るのもいいことですよ（汗）。</p>
+
+<p>　そして、速いこともさることながら、このことからもクイックソートが最も使用頻度の高いソート法になるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ある値より大きいもの同士、小さいもの同士で集め、集めたものをまた同じように分けていくとソートできる。</li>
+<li>このソート法をクイックソートと呼ぶ。</li>
+<li>qsort 関数でクイックソートができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も、まだソートをやります。ただ、新しいソート法を出すのではなく、ソートの利用方法についての話です。</p>
+
+<hr>
+
+<p align=right><a href="cpp03026.html" target="main">第２６章　たのしいソート３</a> | <a href="cpp03028.html" target="main">第２８章　たのしいソート５</a></p>
+<p align=right><font size=-1><i>Last update was done on 2003.5.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

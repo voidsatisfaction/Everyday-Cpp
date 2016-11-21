@@ -1,0 +1,192 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１１章 条件分岐 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１１章　条件分岐</font>
+</center>
+<hr>
+
+<p>　プログラムをただ垂れ流すだけでは何か物足りないですよね。いろいろと分岐してこそプログラムはその本領を発揮します。</p>
+
+<p>　今回は条件分岐のうち if 文を説明します。ほかにも switch 文がありますが、それはもっと後に説明します。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件分岐の書式は if(&lt;条件&gt;){ &lt;実行文１&gt; } else{ &lt;実行文２&gt; } 。</li>
+<li>else 文はなくてもよい。</li>
+<li>&lt;条件&gt;用の演算子がある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回、値を入力する方法を教えました。ですが、それに対する反応は「３で割ったときの余りは...」という一辺倒なものでした。なので、今回はもうちょっと違った種類の反応をしてみましょう。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// If1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Birthmonth()
+{
+    <font color=blue>int</font> a;
+
+    cout &lt;&lt; <font color=darkcyan>"あなたは何月生まれですか &gt; "</font>;
+    cin &gt;&gt; a;
+
+    <font color=blue>if</font>(<font color=darkcyan>1</font> &lt;= a &amp;&amp; a &lt;= <font color=darkcyan>12</font>)
+    {
+        cout &lt;&lt; <font color=darkcyan>"へー、"</font> &lt;&lt; a
+             &lt;&lt; <font color=darkcyan>" 月なんですか。"</font> &lt;&lt; endl;
+    }
+    <font color=blue>else</font>
+    {
+        cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" 月やと！？"</font> &lt;&lt; endl
+             &lt;&lt; <font color=darkcyan>"んな月、あらへんわ！"</font> &lt;&lt; endl;
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    Birthmonth();
+    Birthmonth();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>あなたは何月生まれですか &gt; 2
+へー、2 月なんですか。
+あなたは何月生まれですか &gt; 13
+13 月やと！？
+んな月、あらへんわ！</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今回のプログラムは、誕生月を入力し、とんでもない数字が入力されるとツッコミが入るというプログラムです。</p>
+
+<p>　値の入れ物の変数は<font color=red>内部変数</font>になっています。この変数は Birthmonth 内でしか使えないのでしたね。</p>
+
+<p>　では、入力した後の処理を見てみましょう。</p>
+
+<pre>if(1 &lt;= a &amp;&amp; a &lt;= 12)
+{
+    cout &lt;&lt; "へー、" &lt;&lt; a
+         &lt;&lt; " 月なんですか。" &lt;&lt; endl;
+}
+else
+{
+    cout &lt;&lt; a &lt;&lt; " 月やと！？" &lt;&lt; endl
+         &lt;&lt; "んな月、あらへんわ！" &lt;&lt; endl;
+}</pre>
+
+<p>　どうやらこの部分で条件分岐を行っているようです。この部分を大雑把に見ると、</p>
+
+<pre>if(&lt;条件&gt;){ &lt;実行文１&gt; }
+else{ &lt;実行文２&gt; }</pre>
+
+<p>となります。<font color=red>if の次のカッコにかかれた &lt;条件&gt; を満たすと &lt;実行文１&gt; が、満たされないと else の次の &lt;実行文２&gt; が実行されます。</font>実行文が１文しかない場合は、普通 { } を書く必要はありません。</p>
+
+<p>　また、<font color=red>else 文はなくても良いなら、なくても構いません</font>。</p>
+
+<p>　ここでは a が 1 から 12 のどれかなら普通の反応をし、それ以外の時はツッコミを入れればよいことになります。</p>
+
+<hr>
+
+<p>　では、&lt;条件&gt; つまり<font color=red>条件式</font>はどのように表記すればよいのでしょうか？</p>
+
+<pre>if(1 &lt;= a &amp;&amp; a &lt;= 12)</pre>
+
+<p>　&lt;= は≦の事です。=&lt; とはできません。そして、&amp;&amp; は「<a href="../htmlword/words008.html" target="words">且（か）つ</a>」の事です。つまり、これは「a が 1 以上 かつ 12 以下の場合...」となります。</p>
+
+<p>　こういった演算子の一覧を以下に示します。</p>
+
+<table align=left border=2>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th bgcolor=lightgreen>演算子</th><th bgcolor=cyan>意味</th></tr>
+<tr><th colspan=2 bgcolor=yellow>比較</th></tr>
+
+<tr><td bgcolor=lightgreen>==</td>
+<td bgcolor=cyan>等しいとき</td></tr>
+<tr><td bgcolor=lightgreen>!=</td>
+<td bgcolor=cyan>異なるとき</td></tr>
+
+<tr><td bgcolor=lightgreen>&gt;</td>
+<td bgcolor=cyan>左辺が右辺より大きいとき</td></tr>
+<tr><td bgcolor=lightgreen>&lt;</td>
+<td bgcolor=cyan>左辺が右辺より小さいとき</td></tr>
+
+<tr><td bgcolor=lightgreen>&gt;=</td>
+<td bgcolor=cyan>左辺が右辺以上の時</td></tr>
+<tr><td bgcolor=lightgreen>&lt;=</td>
+<td bgcolor=cyan>左辺が右辺以下の時</td></tr>
+
+<tr><th colspan=2 bgcolor=yellow>条件の結合</th></tr>
+
+<tr><td bgcolor=lightgreen>&amp;&amp;</td>
+<td bgcolor=cyan><a href="../htmlword/words008.html" target="words">且（か）つ</a></td></tr>
+<tr><td bgcolor=lightgreen>||</td>
+<td bgcolor=cyan><a href="../htmlword/words008.html" target="words">または</a></td></tr>
+<tr><td bgcolor=lightgreen>!</td>
+<td bgcolor=cyan>〜でない</td></tr>
+
+</tbody></table>
+
+<p>　「等しいとき」は == です。= は代入演算子なので、それと区別をするために２つ重ねます。<font color=red>= と == は間違いやすいので注意して下さい。</font></p>
+
+<p>　またはの | は、Shift + \ で表示します。</p>
+
+<p>　! の「〜でない」というのは、たとえば</p>
+
+<pre>if(!(a &lt; 5))...</pre>
+
+<p>のように使い、この場合は「a が 5 より小さく<font color=red>ない</font>とき」になります。</p>
+
+<p><br clear=left><br></p>
+
+<p>　また、条件式が満たされる状態を<font color=red>真</font>、満たされない状態を<font color=red>偽</font>と言います。</p>
+
+<hr>
+
+<p>　今回はこれで終わりですが、以上を踏まえて何かプログラムを自分で組んでみて下さい。いろいろと実験することで わかってくることもあるでしょう。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件分岐の書式は if(&lt;条件&gt;){ &lt;実行文１&gt; } else{ &lt;実行文２&gt; } 。</li>
+<li>else 文はなくてもよい。</li>
+<li>&lt;条件&gt;用の演算子がある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01010.html" target="main">第１０章　値の入力</a> | <a href="cpp01012.html" target="main">第１２章　もっと条件分岐</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

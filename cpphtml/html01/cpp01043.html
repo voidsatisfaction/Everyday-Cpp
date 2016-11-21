@@ -1,0 +1,156 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４３章 ？： ？？？ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４３章　？： ？？？</font>
+</center>
+<hr>
+
+<p>　ある変数に、条件によって違った値を代入したいときとかあります。また、同じ関数の引数に、条件によって違った値を渡したいときもあるでしょう。そういったときに if-else 文を使うと少し冗長な感じがします。こんな時に便利な演算子があります。今回はそんな話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件演算子 ?: を使うと、条件によって違う値を表現することができる。</li>
+<li>条件演算子の書式は &lt;条件式&gt; ? &lt;真の場合&gt; : &lt;偽の場合&gt; 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Cndop1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> num1, num2;
+
+    cout &lt;&lt; <font color=darkcyan>"２つ値を入力して下さい &gt; "</font>;
+    cin &gt;&gt; num1 &gt;&gt; num2;
+
+    <font color=blue>if</font>(num1 &gt; num2)
+        cout &lt;&lt; <font color=darkcyan>"大きい方の値は "</font> &lt;&lt; num1 &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"大きい方の値は "</font> &lt;&lt; num2 &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+<tr><th>実行結果</th></tr>
+<tr><td><pre>２つ値を入力して下さい &gt; 12 54
+大きい方の値は 54 です。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　２つの値を入力させて、大きい方の値を出力するというプログラムです。等しい場合も「大きい方の値は」と表示されてしまいますが、そこは気にしないで下さい。何ていうか意味のないプログラムですが、まぁ我慢して下さい。</p>
+
+<p>　このプログラム、出力の部分がかなり重複していて無駄ですね。先ず、今までの知識で工夫をしてみましょう。</p>
+
+<p>　先ず考えられるのは、重複している部分を if-else 文内から出してやることですね。ということで、以下のようにしてみました。</p>
+
+<pre>cout << "大きい方の値は ";
+if(num1 > num2)
+    cout << num1;
+else
+    cout << num2;
+cout << " です。" << endl;</pre>
+
+<p>　一応すっきりしましたが、cout が４つも並んでいて見ていて気持ちのいいものではありませんね。では、次のようにしてみましょう。あらかじめ出力する値を別変数に入れておき、出力を１つで済ましてしまうというものです。</p>
+
+<pre>int max;
+if(num1 > num2)
+    max = num1;
+else
+    max = num2;
+cout << "大きい方の値は " << max << " です。" << endl;</pre>
+
+<p>　まあまあすっきりしましたが、こういった処理をする度にいちいち変数を作らなければならないのも面倒な気がします。</p>
+
+<p>　では、cout が１つですみ、変数も作らなくてすむ方法はあるのでしょうか？
+もちろんあります。そのための演算子が<font color=red>条件演算子</font>です。記号は <font color=red>?:</font> です。</p>
+
+<p>　何やら変な演算子ですね。これは<font color=red>３項演算子</font>で、３つのパラメータをとります。代入演算子 = では、右辺と左辺の２つのパラメータをとるので２項演算子、インクリメント演算子 ++ では、変数１つをパラメータにとるので単項演算子と呼ばれます。３項演算子はこの条件演算子だけです。</p>
+
+<p>　使い方を説明する前に、上のプログラムを条件演算子で書き換えたものを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Cndop1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> num1, num2;
+
+    cout &lt;&lt; <font color=darkcyan>"２つ値を入力して下さい &gt; "</font>;
+    cin &gt;&gt; num1 &gt;&gt; num2;
+
+    cout &lt;&lt; <font color=darkcyan>"大きい方の値は "</font>
+         &lt;&lt; (<font color=red>(num1 &gt; num2) ? num1 : num2</font>) &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+<tr><th>実行結果</th></tr>
+<tr><td><pre>２つ値を入力して下さい &gt; 12 54
+大きい方の値は 54 です。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　赤くなっている部分が条件演算子の部分です。書式は</p>
+
+<pre><font color=red>&lt;条件式&gt; ? &lt;数値１&gt; : &lt;数値２&gt;</font></pre>
+
+<p>のようです。<font color=red>条件式を判定して、その結果に応じて数値１か数値２を返す</font>という風になっていることが想像できますね。</p>
+
+<p>　num1 &gt; num2 のときに num1 を返すべきなのですから、<font color=red>条件文が満たされているときは数値１を返す</font>ことが分かります。<font color=red>満たされていないときは数値２を返します。</font></p>
+
+<p>　この演算子は文の量が減るだけでなく、変数確保や関数の重複使用などを避けることが出来るので<font color=red>処理の軽減</font>にも繋がります。使えそうなところでは積極的に使うといいでしょう。</p>
+
+<p>　ちなみに、上で使った最大値を求めるルーチンは stdlib.h で <a href="../htmlword/words018.html" target="words">__max</a> マクロとして定義されています。それだけ一般的なルーチンとも言えます。</p>
+
+<hr>
+
+<p>　では、今回はこれで終わりです。要点を再度まとめてみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>条件演算子 ?: を使うと、条件によって違う値を表現することができる。</li>
+<li>条件演算子の書式は &lt;条件式&gt; ? &lt;真の場合&gt; : &lt;偽の場合&gt; 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　また次回まで、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01042.html" target="main">第４２章　変えてくれるな２</a> | <a href="cpp01044.html" target="main">第４４章　いろんな計算を</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

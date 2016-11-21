@@ -1,0 +1,154 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１６章 仰山の引数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１６章　仰山の引数</font>
+</center>
+<hr>
+
+<p>　printf はいくらでも引数を取ることができます。不思議ですねー。今回はそういった関数の作り方について話そうと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数の部分を ... にすれば、いくらでも引数を取れる。</li>
+<li>va_list 型の変数と、va_start, va_arg, va_end マクロで可変個引数を扱える。</li>
+<li>引数のサイズは int のサイズの倍数に拡張される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回はいくらでも引数の取れる関数を作ってみたいと思います。</p>
+
+<p>　printf はいくらでも引数を取ることができます（printf については<a href="../html01/cpp01024.html" target="main">第１部第２４章</a>を参照して下さい）。しかし、普通の関数では引数を多く渡すとエラーになります。ということは、何か特別な構文があると思われます。</p>
+
+<p>　ヘルプを見れば分かりますが、printf のプロトタイプはこのようになっています。</p>
+
+<pre>int printf(const char*, <font color=red>...</font>);</pre>
+
+<p>　<font color=red>引数が ... になっていますね。</font>こうすれば、いくらでも引数を取ることができるようになります。</p>
+
+<p>　しかし、これでは引数に名前がありません。引数が渡されたとしても、どのように使えばいいのでしょうか？　とりあえず、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// VarArg1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdarg.h&gt;</font>
+
+<font color=blue>int</font> DispLetters(<font color=blue>int</font> first, ...)
+{
+    <font color=blue>int</font>     letter = first;
+    <font color=red>va_list args;</font>
+
+    <font color=red>va_start(args, first);</font>
+    <font color=blue>while</font>(letter != <font color=darkcyan>0</font>)
+    {
+        putchar(letter);
+        letter = <font color=red>va_arg(args, int)</font>;
+    }
+    <font color=red>va_end(args);</font>
+}
+
+<font color=blue>int</font> main()
+{
+    DispLetters(<font color=darkcyan>'H'</font>, <font color=darkcyan>'e'</font>, <font color=darkcyan>'l'</font>, <font color=darkcyan>'l'</font>, <font color=darkcyan>'o'</font>, <font color=darkcyan>' '</font>,
+                <font color=darkcyan>'w'</font>, <font color=darkcyan>'o'</font>, <font color=darkcyan>'r'</font>, <font color=darkcyan>'l'</font>, <font color=darkcyan>'d'</font>, <font color=darkcyan>'!'</font>, <font color=darkcyan>'\n'</font>, <font color=darkcyan>0</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>Hello world!</pre></td>
+</tr>
+
+</table></center>
+
+<p>　DispLetters という関数を作ってみました。この関数は、<font color=red>引数の値が０になるまで文字を表示する</font>関数です。main では何と１４個もの引数を渡しています。</p>
+
+<p>　で、赤い部分が可変個引数を使うためのコードです。</p>
+
+<p>　概要を説明します。先ず、letter に引数を渡します。そして、それを一文字出力する関数 putchar を使って文字を出力します。そして、次の引数を letter に渡します。これを、渡される引数の値が０になるまで続けます。</p>
+
+<p>　では、順を追ってみてみましょう。</p>
+
+<pre>int     letter = first;
+va_list args;</pre>
+
+<p>　変数 letter を宣言し、そして初めの引数で初期化しています。これは構いませんね。</p>
+
+<p>　問題は次です。<font color=red>va_list という型の変数 args を宣言しています。</font>これは<font color=red>可変個引数を使うために必要な変数</font>です。この変数は、次の<font color=red>マクロ</font>で初期化されます。</p>
+
+<pre>va_start(args, first);</pre>
+
+<p>　初めの引数はさっきの args です。で、次に指定するのは <font color=red>... の直前にある変数</font>です。</p>
+
+<p>　で、とりあえず最初の変数は普通に表示して、次は</p>
+
+<pre>letter = va_arg(args, int);</pre>
+
+<p>です。<font color=red>va_arg マクロで次の引数を受け取っています。</font>マクロの初めの引数はやっぱり args です。で、次の引数は<font color=red>取得する引数の型</font>です。</p>
+
+<p>　このようにして引数を順次受け取っていくのです。</p>
+
+<p>　で、最後は args の後始末です。</p>
+
+<pre>va_end(args);</pre>
+
+<p>　これは args を使えない状態にする<font color=red>マクロ</font>です。もう関数が終わるので実際的にはしなくても構いませんが、念のためしておく方がいいでしょう。</p>
+
+<hr>
+
+<p>　ちょっと仕組みについて話したいと思います。</p>
+
+<p>　仮引数は実はメモリ上に順番に並んでいます。なので、<font color=red>... の直前の変数のアドレス</font>が分かれば、<font color=red>... の各引数のアドレスも分かる</font>というわけです。</p>
+
+<p>　ということで、va_list はポインタ型です。va_start で初期化し、va_arg でポインタを進め、va_end でその変数を NULL にセットするという流れなのです。</p>
+
+<p>　また、１つ注意することがあるとすれば、<font color=red>引数は int 型のサイズの倍数に拡張されて渡されます</font>。signed char は signed int に、unsigned char は unsigned int に拡張されます。</p>
+
+<p>　まぁ、これを char なら char のまま扱うときには何も問題ないので、それほど意識する必要はないと思います。</p>
+
+<p><br></p>
+
+<p>　最後に１つ。ここでやったことは一般的なＣ／Ｃ＋＋言語での話なのですが、UNIX System V では方法が変わってきます。詳しくはヘルプを見て下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数の部分を ... にすれば、いくらでも引数を取れる。</li>
+<li>va_list 型の変数と、va_start, va_arg, va_end マクロで可変個引数を扱える。</li>
+<li>引数のサイズは int のサイズの倍数に拡張される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回からはプリプロセッサディレクティブについての話をしたいと思います。頭に # のつくやつです。</p>
+
+<p>　それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03015.html" target="main">第１５章　伸縮自在</a> | <a href="cpp03017.html" target="main">第１７章　if...</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.12</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

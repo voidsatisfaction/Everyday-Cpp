@@ -1,0 +1,48 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>用語集 - インラインアセンブラ -</title>
+</head>
+
+<body bgcolor=white>
+
+<p><h3>インラインアセンブラ</h3></p>
+
+<p>　コンパイラの機能の１つで、Ｃ／Ｃ＋＋言語の中にアセンブリ言語を書けるようにするというもの。もしくはその挿入されたアセンブリ言語。</p>
+
+<p>例）</p>
+
+<pre>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a;
+    char *format = "a = %d\n";
+
+    // 以下のコードは
+    //
+    // a = 5;
+    // printf(format, a);
+    //
+    // と同じ。
+
+    __asm
+    {
+        mov     a, 5
+        push    0
+        push    a
+        push    format
+        call    printf
+        add     esp, 12
+    }
+
+    return 0;
+}</pre>
+
+<hr>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

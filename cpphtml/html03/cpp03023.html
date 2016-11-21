@@ -1,0 +1,299 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２３章 call itself ３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２３章　call itself ３</font>
+</center>
+<hr>
+
+<p>　今回こそ再帰関数を有効的に利用したいと思います。代表的な例として、マッチングでもやってみましょう。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>実現したい処理が自分自身なら、自分自身を呼べばいい。</li>
+<li>木構造のデータの処理には再帰関数が適している。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　マッチングというのは、ある文字列と別の文字列を比較して、同じかどうかを確かめることです。それだけなら strcmp を使えばいいのですが、マッチングというと普通<font color=red>ワイルドカード</font>を含みます。</p>
+
+<p>　ワイルドカードというのは、<font color=red>何の代わりにでも使える文字</font>のことです。有名なカードゲーム「ＵＮＯ」にも、自由に色を変えることのできる「ワイルドカード」というのがありますね。あれと同じ事です。</p>
+
+<p>　ここでは、<font color=red>*</font> というワイルドカードだけを考えたいと思います。この * は普通、<font color=red>「ここには文字が０〜ｘ文字ありますよ」</font>というワイルドカードです。例えば、"*.txt" は "File.txt" や ".txt" などにマッチし、"Test.dat" にはマッチしないと言う具合です。</p>
+
+<p>　「じゃぁ、簡単だ。* の次に '.' があるわけだから、'.' が出てくるまで処理を飛ばせばいいんだ」ということで、次のようにしてみました。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// Match1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>bool</font> Match(<font color=blue>const char</font>* str, <font color=blue>const char</font>* pszMatch)
+{
+    <font color=blue>int</font> i, iMatch;
+
+    <font color=blue>for</font>(i = iMatch = <font color=darkcyan>0</font>; !(pszMatch[iMatch] == <font color=darkcyan>0</font> || str[i] == <font color=darkcyan>0</font>); i++, iMatch++)
+    {
+        <font color=green>// ワイルドカードの時の処理</font>
+        <font color=blue>if</font>(pszMatch[iMatch] == <font color=darkcyan>'*'</font>)
+        {
+            iMatch++;
+            <font color=blue>for</font>(; !(str[i] == pszMatch[iMatch] || str[i] == <font color=darkcyan>0</font>); i++);
+
+            <font color=green>// str が終了していると、ループはもう終了</font>
+            <font color=blue>if</font>(str[i] == <font color=darkcyan>0</font>)
+                <font color=blue>break</font>;
+        }
+        <font color=green>// 普通の比較処理</font>
+        <font color=blue>else</font>
+        {
+            <font color=green>// 文字が違えば、マッチは失敗</font>
+            <font color=blue>if</font>(pszMatch[iMatch] != str[i])
+                <font color=blue>break</font>;
+        }
+    }
+
+    <font color=green>// マッチングが成功しているときは両方ヌルターミネータを指しています
+    // そうでないときは、異なる値が入っています</font>
+    <font color=blue>return</font> pszMatch[iMatch] == str[i];
+}
+
+<font color=blue>bool</font> InputAndOutput()
+{
+    <font color=blue>static const char</font>* pszResult[] = {
+        <font color=darkcyan>"マッチしませんでした。"</font>, <font color=darkcyan>"マッチしました。"</font>
+    };
+    <font color=blue>static const char</font> szMatch[] = <font color=darkcyan>"*.txt"</font>;
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; szMatch &lt;&lt; <font color=darkcyan>" とのマッチングを行います。"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+    <font color=blue>if</font>(strcmp(buffer, <font color=darkcyan>"exit"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    cout &lt;&lt; pszResult[Match(buffer, szMatch)] &lt;&lt; endl;
+    <font color=blue>return true</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(InputAndOutput());
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>*.txt とのマッチングを行います。
+文字列を入力して下さい > Test.txt
+マッチしました。
+*.txt とのマッチングを行います。
+文字列を入力して下さい > File.txt
+マッチしました。
+*.txt とのマッチングを行います。
+文字列を入力して下さい > File.txA
+マッチしませんでした。
+*.txt とのマッチングを行います。
+文字列を入力して下さい > File.txA.txt
+<font color=red>マッチしませんでした。</font>
+*.txt とのマッチングを行います。
+文字列を入力して下さい > exit</pre></td></tr>
+
+</table></center>
+
+<p>　おや？　<font color=red>"Test.txA.txt" でマッチが失敗しています。</font></p>
+
+<p>　これがこのワイルドカードの厄介なところで、* の次の <font color=red>'.' が来るまで処理を飛ばすだけ</font>では、<font color=red>'A' の部分でマッチングが失敗してしまうのです</font>。</p>
+
+<p>　つまり、一回失敗したとしても、即座にマッチングを失敗させるわけには行かないのです。再び '.' の次からさらに '.' を探し、そこからも確認してみないことには、マッチングが失敗したのかは分からないのです。</p>
+
+<hr>
+
+<p>　一旦まとめてみます。'.' がくると、その後に "txt" が来るかどうか確認したいわけです。で、失敗するとまた次の '.' を探し、また "txt" が来るかどうか確認したいわけです。</p>
+
+<p>　ここで、素直に考えてみましょう。<font size=+1 color=red>この「確認」には Match 関数自身が使えると思いませんか？</font>　ということで、次のようにしてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// Match1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>bool</font> Match(<font color=blue>const char</font>* str, <font color=blue>const char</font>* pszMatch)
+{
+    <font color=blue>int</font> i, iMatch;
+
+    <font color=blue>for</font>(i = iMatch = <font color=darkcyan>0</font>; !(pszMatch[iMatch] == <font color=darkcyan>0</font> || str[i] == <font color=darkcyan>0</font>); i++, iMatch++)
+    {
+        <font color=green>// ワイルドカードの時の処理</font>
+        <font color=blue>if</font>(pszMatch[iMatch] == <font color=darkcyan>'*'</font>)
+        {
+            <font color=red>bool bRet;</font>
+
+            iMatch++;
+            <font color=red>do
+            {</font>
+                <font color=blue>for</font>(; !(str[i] == pszMatch[iMatch] || str[i] == <font color=darkcyan>0</font>); i++);
+                <font color=green>// str が終了していると、ループはもう終了</font>
+                <font color=blue>if</font>(str[i] == <font color=darkcyan>0</font>)
+                    <font color=red>goto EXIT_FUNC;
+
+                // マッチング
+                i++;
+                bRet = Match(&amp;str[i], &pszMatch[iMatch + 1]);
+            }
+            while(!bRet);
+            return bRet;</font>
+        }
+        <font color=green>// 普通の比較処理</font>
+        <font color=blue>else</font>
+        {
+            <font color=green>// 文字が違えば、マッチは失敗</font>
+            <font color=blue>if</font>(pszMatch[iMatch] != str[i])
+                <font color=blue>break</font>;
+        }
+    }
+
+<font color=red>EXIT_FUNC:</font>
+    <font color=green>// マッチングが成功しているときは両方ヌルターミネータを指しています
+    // そうでないときは、異なる値が入っています</font>
+    <font color=blue>return</font> pszMatch[iMatch] == str[i];
+}
+
+<font color=blue>bool</font> InputAndOutput()
+{
+    <font color=blue>static const char</font>* pszResult[] = {
+        <font color=darkcyan>"マッチしませんでした。"</font>, <font color=darkcyan>"マッチしました。"</font>
+    };
+    <font color=blue>static const char</font> szExit[] = <font color=darkcyan>"exit"</font>;
+    <font color=blue>char</font> szMatch[<font color=darkcyan>512</font>];
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"マッチングを行います。"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"先ずはマッチ文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; szMatch;
+    <font color=blue>if</font>(strcmp(szMatch, szExit) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"では、確認する文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+    <font color=blue>if</font>(strcmp(buffer, szExit) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    cout &lt;&lt; pszResult[Match(buffer, szMatch)] &lt;&lt; endl;
+    <font color=blue>return true</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(InputAndOutput());
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>マッチングを行います。
+先ずはマッチ文字列を入力して下さい > *.txt
+では、確認する文字列を入力して下さい > Txt.txt.txt
+マッチしました。
+
+マッチングを行います。
+先ずはマッチ文字列を入力して下さい > *.txt
+では、確認する文字列を入力して下さい > File.txA.txt
+マッチしました。
+
+マッチングを行います。
+先ずはマッチ文字列を入力して下さい > *.txt
+では、確認する文字列を入力して下さい > .txt
+マッチしました。
+
+マッチングを行います。
+先ずはマッチ文字列を入力して下さい > *A*B*C
+では、確認する文字列を入力して下さい > ABBBCBBCB
+マッチしませんでした。
+
+マッチングを行います。
+先ずはマッチ文字列を入力して下さい > *A*B*C
+では、確認する文字列を入力して下さい > ABBBCBBC
+マッチしました。
+
+マッチングを行います。
+先ずはマッチ文字列を入力して下さい > exit</pre></td></tr>
+
+</table></center>
+
+<p>　問題なく動作しますね。</p>
+
+<p>　このように、ある動作を行いたいときに<font color=red>その関数自身が利用できる可能性</font>も考える必要があるわけです。この考え方が出来るようになれば、プログラミングの幅も大きく広がると思います。</p>
+
+<hr>
+
+<p>　もう１つ、再帰関数の定番に<font color=red>「フォルダ操作」</font>があります。が、これは<a href="../htmlword/words023.html" target="words">機種依存</a>なので詳しくは話しません。が、どんなことができるかくらいは話しておきましょう。</p>
+
+<p>　例えば、フォルダの中身を全て検索し、<font color=red>全てのファイル名を取得する</font>と言うことが出来ます。</p>
+
+<p>　先ず、初めのフォルダの中身を検索します。そのとき、サブフォルダが出てくると<font color=red>またその中身を検索する</font>ことになりますが、ここで再帰呼び出しが出来ますね。</p>
+
+<p><br></p>
+
+<p>　ほかにも、<font color=red>深いフォルダを作成する</font>こともできます。</p>
+
+<p>　環境によるのかもしれませんが、深いフォルダを一気に作ることができないことがあります。そういうときは、１つずつフォルダを作っていくことになります。</p>
+
+<p>　先ず、フォルダ名を書き換え可能なバッファに移します。ここから再帰関数を呼び出します。この再帰関数では、先ずフォルダを１階層減らしてみます。後ろから '/' や '\' を探して (strrchr) 、これを消せば（ヌルターミネータに変えれば）いいですね。</p>
+
+<p>　で、このフォルダが存在するかを確認します。存在しなければ、<font color=red>再帰呼び出し</font>をします。こうして、１階層ずつフォルダを確認して行くわけです。</p>
+
+<p>　そして、最終的にフォルダの存在する場所に来ます。そのとき、消した '/' や '\' を<font color=red>元に戻し</font>、そのフォルダを作って return します。そして、戻ったところでも '/' や '\' を元に戻して、フォルダを作ります。これを<font color=red>繰り返し</font>ていけば、深いフォルダが作れるわけですね。</p>
+
+<p><br></p>
+
+<p>　フォルダのような構造のことを枝分かれした木に見立てて<font color=red>「木構造」</font>というのですが、木構造のデータを扱うときは、このように再帰関数が活躍することがよくあります。</p>
+
+<p>　木構造を扱うときは、「再帰関数が使えるのでは？」という意識をもってかかるといいでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>実現したい処理が自分自身なら、自分自身を呼べばいい。</li>
+<li>木構造のデータの処理には再帰関数が適している。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回で再帰関数は終わりです。再帰関数は頭の中だけで考えるのはちょっと複雑になることもあるので、紙に書いてどうなるか考えてから作ってみるといいでしょう。</p>
+
+<p>　それでは、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp03022.html" target="main">第２２章　call itself ２</a> | <a href="cpp03024.html" target="main">第２４章　たのしいソート</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

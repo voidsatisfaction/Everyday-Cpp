@@ -1,0 +1,136 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１０章 不動の構え -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１０章　不動の構え</font>
+</center>
+<hr>
+
+<p>　前回のプログラム。実はクラスを使ってる部分に const がありませんでした。そして const をつけると...エラーが出ます。今回はクラスにおいての const の扱いについてのお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>const オブジェクトは const メンバ関数しか呼べない。</li>
+<li>const メンバ関数では mutable メンバ変数しか変更できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　では、前回までのプログラムの一部分を見てみましょう。</p>
+
+<center><table border=1><tr>
+<td><pre>CIntArray::CIntArray(CIntArray&amp; rother)
+{
+    ...略...
+}
+
+<font color=blue>void</font> Disp(CIntArray array)
+{
+    ...略...
+}</pre></td>
+</tr></table></center>
+
+<p>　いつもなら、これらの引数の型には <font color=red>const</font> をつけているところです（const を忘れたという人は<a href="../html01/cpp01041.html" target="main">第１部第４１章</a>，<a href="../html01/cpp01042.html" target="main">第４２章</a>を参照）。なぜなら、<font color=red>rother も array も、関数内で何の変更も行われない</font>からです。メンバ変数などに手を加えるようなことはしていません。</p>
+
+<p>　しかし、この const をつけてしまうとエラーが出てきます。</p>
+
+<center><table border=1><tr>
+<td><pre>CIntArray::CIntArray(<font color=red>const</font> CIntArray&amp; rother)
+{
+    ...略...
+}
+
+<font color=blue>void</font> Disp(<font color=red>const</font> CIntArray array)
+{
+    ...略...
+}</pre></td>
+</tr></table></center>
+
+<p>　エラーは次の通りです。</p>
+
+<pre>IntArray.cpp(26) : error C2662: '<font color=red>NumOf</font>' : 'const class CIntArray' から 'class CIntArray &' へ 'this' ポインタを変換できません。
+        変換で修飾子が失われます。
+IntArray.cpp(34) : error C2662: '<font color=red>SizeOf</font>' : 'const class CIntArray' から 'class CIntArray &' へ 'this' ポインタを変換できません。
+        変換で修飾子が失われます。
+Copy1.cpp(16) : error C2662: '<font color=red>NumOf</font>' : 'const class CIntArray' から 'class CIntArray &' へ 'this' ポインタを変換できません。
+        変換で修飾子が失われます。
+Copy1.cpp(17) : error C2662: '<font color=red>Get</font>' : 'const class CIntArray' から 'class CIntArray &' へ 'this' ポインタを変換できません。
+        変換で修飾子が失われます。</pre>
+
+<p>　どうやら、全てメンバ関数を使っているところでエラーが出ているようです。</p>
+
+<p>　これは、<font color=red>そのメンバ関数がメンバ変数を変更しないかどうかが分からない</font>せいで、こういうエラーが出ているのです。</p>
+
+<p>　分かるようにするには、その<font color=red>メンバ関数の宣言の後ろに const をつけます</font>。</p>
+
+<center><table border=1><tr>
+<td><pre>例）
+<font color=blue>class</font> CIntArray
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_nNumOf;
+<font color=blue>public</font>:
+    <font color=blue>int</font> NumOf() <font color=red>const</font>;
+};
+
+<font color=blue>inline int</font> NumOf() <font color=red>const</font>
+{
+    <font color=blue>return</font> m_nNumOf;
+}</pre></td>
+</tr></table></center>
+
+<p>　こうすると、NumOf はメンバ変数を変更しないということがやっと分かるようになります。もちろん、このようなメンバ関数の中でメンバ変数の内容を変えてしまうとエラーになります。</p>
+
+<p>　同じように、const を Get, SizeOf, CheckIndex の後にもつければ、エラーは出なくなります。<font color=red>CheckIndex は Get から呼ばれる</font>メンバ関数なので、<font color=red>これも const 関数でないとエラー</font>になります。あとは Success 関数にもつけるといいでしょう。</p>
+
+<p>　const のついたオブジェクトのことを、const オブジェクトと呼びます。この <font color=red>const オブジェクトからは const メンバ関数しか呼べない</font>のです。たとえメンバ変数を変えていなくても、そのメンバ関数の宣言の後ろに const をつけない限り呼べないのです。</p>
+
+<hr>
+
+<p>　const オブジェクトは全てのメンバ変数を変更できません。しかし、const オブジェクトであってもどうしても変えたい変数があるときもあるかもしれません。</p>
+
+<p>　そういうときは、メンバ変数の型に <font color=red>mutable</font>（変更可能な）というものを加えれば、const オブジェクトであってもそのメンバ変数の内容を変えることができるようになります。</p>
+
+<p>　普通はあまり使うことはないと思います。内容をずっと残しておきたい作業領域のようなものにしか使うことはないかもしれません。</p>
+
+<hr>
+
+<p>　短いですが、今回はこれで終わりです。それでは今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>const オブジェクトは const メンバ関数しか呼べない。</li>
+<li>const メンバ関数では mutable メンバ変数しか変更できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<hr>
+
+<p>　今回まででクラスの一番基本的な部分が終わりました。これまでのことが分かっていれば色々なクラスを作ることができるでしょう。途中から長さを変えることのできる配列も作れるでしょうし、それを発展させて文字列を便利に操作するクラスを作ることもできるでしょう。</p>
+
+<p>　しかし、クラスにはまだとても重要な要素があります。次回からは、そのことについて順を追って話していこうと思います。</p>
+
+<p>　それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp02009.html" target="main">第９章　コピー</a> | <a href="cpp02011.html" target="main">第１１章　子孫</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.9</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７章 関数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７章　関数</font>
+</center>
+<hr>
+
+<p>　Ｃ／Ｃ＋＋言語では、同じような処理を１つにまとめてしまうことができます。これを関数といいます。見た目は数学の関数と同じです。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数は引数と戻り値を持っている。</li>
+<li>関数は定義しなければ使えない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　では、先ず数学の関数を考えてみましょう。</p>
+
+<pre>f(x, y) = 2x + y と定義する。
+すると、f(1, 2) = 4 になる。</pre>
+
+<p>　先ず、関数 f を定義し、次に、その関数を使っています。2 * 1 + 2 = 4 になりますね。</p>
+
+<p>　このように、関数にはカッコの中に入れる<font color=red>「引数（ひきすう）」</font>と、計算した答えである<font color=red>「戻り値」</font>があります。このことはＣ／Ｃ＋＋言語でも同じです。</p>
+
+<p>　では、これと同じ事をＣ／Ｃ＋＋言語でやってみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Func1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> f(<font color=blue>int</font> x, <font color=blue>int</font> y)
+{
+    <font color=blue>return</font> <font color=darkcyan>2</font> * x + y;
+}
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"f(1, 2) = "</font> &lt;&lt; f(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>) &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"f(182, 144) = "</font> &lt;&lt; f(<font color=darkcyan>182</font>, <font color=darkcyan>144</font>) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>f(1, 2) = 4
+f(182, 144) = 508</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　先ず、関数は使う前に定義しなければ使えません。それが次の部分です。関数は main の外で定義します。</p>
+
+<pre>int f(int x, int y)
+{
+    return 2 * x + y;
+}</pre>
+
+<p>　何かどこかで見たような形ですね。そう、<font color=red>main の部分と同じ形</font>です。<font color=red>実は main も関数の１つなのでした。</font></p>
+
+<p>　最初にある int というのは、<font color=red>戻り値の型</font>です。（型ってなんだという人は、<a href="cpp01005.html">第５章</a>を見て下さい。）この場合、関数は何らかの整数値を<a href="../htmlword/words012.html" target="words">返します</a>。</p>
+
+<p>　そして、<font color=red>引数に名前が付いていて、型もついています</font>。関数の中身では、引数はこの名前で使います。これを<font color=red>仮引数</font>と呼びます。</p>
+
+<p>　そして、<font color=red>f というのが関数の名前です</font>。使える文字は変数と一緒です（<a href="cpp01005.html" target="main">第５章</a>を参照）。Ｃ言語では関数の名前は他の関数と同じ名前のものがあってはいけません。ですが、Ｃ＋＋言語では、関数の名前が同じでも、引数の数や型が違えば違う関数と認められます。</p>
+
+<p>　あと、関数にはその中身が必要ですね。それは <font color=red>{ } の中に書きます</font>。</p>
+
+<p>　で、返す値は <font color=red>return 文</font>で指定します。return の後に返す値を書いて、セミコロンで締めくくります。また、これがあると関数の途中でも関数を終了します。</p>
+
+<hr>
+
+<p>　で、関数が定義できました。では、この関数を使ってみましょう。</p>
+
+<pre>f(1, 2)</pre>
+
+<p>　数学のそれと何ら変わりないですね。この 1 と 2 は実際に関数が呼ばれるときの、実際の引数です。これを仮引数に対して<font color=red>実引数</font>と呼びます。</p>
+
+<p>　では、値が 4 になっているか確かめてみましょう。...きちんと 4 になっていますね。</p>
+
+<p>　折角ですから、もう１回使ってみましょう。再利用は関数の利点の１つですから。どうせなので、パッと見では答えがすぐ出てこないようなのを入れてみましょう。</p>
+
+<pre>f(182, 144)</pre>
+
+<p>　どうやら答えは 508 のようですね。</p>
+
+<p>　このように、<font color=red>関数は繰り返し使用することができます</font>。</p>
+
+<hr>
+
+<p>　今回はこれでお終いです。え？　少し短いって？　関数について話すことはまだもう少しありますが、１回にして話すには長いので、今回はここで打ち切ります。ご了承下さい。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数は引数と戻り値を持っている。</li>
+<li>関数は定義しなければ使えない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回。</p>
+
+<hr>
+
+<p align=right><a href="cpp01006.html" target="main">第６章　中身を変えよう</a> | <a href="cpp01008.html" target="main">第８章　void</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.11</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４３章 切り捨て御免 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４３章　切り捨て御免</font>
+</center>
+<hr>
+
+<p>　今回はずいぶんと荒っぽいことをします。できれば使わないで済ませたいのですが、使わざるを得ない状況もあるかもしれません。
+
+</p>
+
+<p><font color=red>注）今回の話はＣ＋＋というよりはＣ言語のお話です。この機能はＣ＋＋ではなるべく例外処理で行うようにしてください。それではまずいというときだけ利用してください。</font></p>
+
+<hr>
+
+<p>　というわけで、今回の要点はこんな感じです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>exit か abort で強制終了できる。</li>
+<li>exit は終了処理を行うが、abort はいきなりうち切る。</li>
+<li>exit の引数は終了コードに使われる。</li>
+<li>atexit で終了処理を登録できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ず、どうしようもないエラーが発生したとします。そういう場合、即座にプログラムを終了しないことにはどうしようもなかったりします。つまりは、<font color=red>強制終了</font>したくなるわけです。</p>
+
+<p>　もちろん、Ｃ／Ｃ＋＋言語には強制終了する関数が用意されています。それが今回お話しする <font color=red>exit</font> と <font color=red>abort</font> です。</p>
+
+<p>　では、両者にはどんな違いがあるのでしょうか？　先ず目に付く違いは <font color=red>exit は引数を持っていて、abort は引数を持っていない</font>というところです。それ以外の違いは、実際に実行してみて確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Exit1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>void</font> Func(<font color=blue>bool</font> b)
+{
+    <font color=blue>if</font>(b)
+        abort();
+    <font color=blue>else</font>
+        exit(<font color=darkcyan>1</font>);
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> letter;
+    cin &gt;&gt; letter;
+    Func(letter == <font color=darkcyan>'y'</font>);
+    cout &lt;&lt; <font color=darkcyan>"dummy"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果１</th></tr>
+
+<tr><td><pre>n</pre></td></tr>
+
+<tr><th>実行結果２</th></tr>
+
+<tr><td><pre>y
+
+abnormal program termination
+<font color=red>注）環境によって結果は異なります
+ＶＣ＋＋でも、場合によってはダイアログが表示されます</font></pre></td></tr>
+
+</table></center>
+
+<p>　両方とも dummy という文字を表示することなく終了しました。しかし、abort の方は「abnormal program termination（異常終了）」というなんだか物騒な表示が出ています。</p>
+
+<p>　このように、<font color=red>同じ強制終了でも abort の方がきつい</font>ということが分かります。</p>
+
+<p>　では、この終了コードはどうなっているでしょうか？　ＶＣ＋＋では、デバッグ実行（Ｆ５）をしたときは「デバッグ」と書かれたウィンドウ内に終了コードが表示されます。これを見比べてみると、exit では 1 に、abort ではよく分からないけどいつも同じ値になっていると思います。</p>
+
+<p>　では、exit の引数を変えて実行してみてください。今度はその値になっていると思います（環境によっては１６進で上位数桁がちょん切られていることもあるかもしれません）。このように、<font color=red>exit の引数は終了コードに使われます</font>。abort では終了コードは固定になります。</p>
+
+<hr>
+
+<p>　と、ここまでは実に表面的な話です。exit と abort の重要な違いは「同じ強制終了でも abort の方がきつい」というところにあります。では、具体的にどう違うのでしょうか？</p>
+
+<p>　それは、次のプログラムを実行すれば分かると思います。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Exit2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>void</font> Func(<font color=blue>bool</font> b)
+{
+    <font color=blue>if</font>(b)
+        abort();
+    <font color=blue>else</font>
+        exit(<font color=darkcyan>1</font>);
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> letter;
+    cin &gt;&gt; letter;
+    <font color=red>cout &lt;&lt; "表示される？"</font>
+    Func(letter == <font color=darkcyan>'y'</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果１</th></tr>
+
+<tr><td><pre>n
+表示される？</pre></td></tr>
+
+<tr><th>実行結果２</th></tr>
+
+<tr><td><pre>y
+
+abnormal program termination</font></pre></td></tr>
+
+</table></center>
+
+<p>　<a href="../html01/cpp01002.html" target="main">第１部第２章</a>で、endl や flush を書いていないと文字が出力されないことがあると言いました。これは、cout &lt;&lt; を行うごとに出力していては時間がかかるので、一旦バッファに溜めて、<font color=red>バッファが一杯になるか endl か flush が呼ばれるかプログラムが普通に終了するかすると出力する</font>ようになっているからです。こういった処理を<font color=red>バッファリング</font>と呼び、バッファから出力することを<font color=red>フラッシュ</font>と呼びます。ファイルを扱うときにもよく使うテクニックです。</p>
+
+<p>　さて、上のプログラムを見てみましょう。cout &lt;&lt; "表示される？"; と書いてあるように、フラッシュを行っていません。つまり、この段階ではまだ文字は表示されていないわけです。そして、それ以降にフラッシュする命令がないので、フラッシュされるタイミングはもうプログラムの終わりしかありません。</p>
+
+<p>　結果を見てみると、exit では表示されていますが、abort では表示されていないことが分かります。このように、<font color=red>exit はいろいろな終了処理を行ってくれる</font>わけです。強制的に終わらせるのは main 関数だ、と考えてもいいと思います。</p>
+
+<p>　これに対して abort では表示されませんでした。つまり、<font color=red>abort は終了処理を行わずにいきなりプログラムを終わらせる</font>ことが分かります。これが exit と abort の大きな違いです。</p>
+
+<hr>
+
+<p>　また、終了処理はバッファのフラッシュの他にも<font color=red>自分で登録することが出来ます</font>。そのための関数が <font color=red>atexit</font> です。戻り値の型が void で引数無しの関数を作り、それを atexit 関数に渡せば登録完了です。あとは登録した順の<font color=red>逆</font>に実行されます。これは後に作られたオブジェクトのデストラクタが先に呼ばれるのと同じ理由です。ある終了処理を行ったがために、後の方の終了処理内で使う変数の内容が破棄される可能性があると困るからです。</p>
+
+<p>　では、実際にプログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Exit3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>void</font> AtExit1(){ cout &lt;&lt; <font color=darkcyan>"at exit 1"</font> &lt;&lt; endl; }
+<font color=blue>void</font> AtExit2(){ cout &lt;&lt; <font color=darkcyan>"at exit 2"</font> &lt;&lt; endl; }
+<font color=blue>void</font> AtExit3(){ cout &lt;&lt; <font color=darkcyan>"at exit 3"</font> &lt;&lt; endl; }
+<font color=blue>void</font> AtExit4(){ cout &lt;&lt; <font color=darkcyan>"at exit 4"</font> &lt;&lt; endl; }
+
+<font color=blue>int</font> main()
+{
+    atexit(AtExit1);
+    atexit(AtExit2);
+    atexit(AtExit3);
+    atexit(AtExit4);
+
+    <font color=blue>char</font> letter;
+    cin &gt;&gt; letter;
+    <font color=blue>if</font>(letter == <font color=darkcyan>'y'</font>)
+        exit(<font color=darkcyan>1</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果１</th></tr>
+
+<tr><td><pre>y
+at exit 4
+at exit 3
+at exit 2
+at exit 1</pre></td></tr>
+
+<tr><th>実行結果２</th></tr>
+
+<tr><td><pre>n
+at exit 4
+at exit 3
+at exit 2
+at exit 1</pre></td></tr>
+
+</table></center>
+
+<p>　見れば分かるように、この処理は普通に終了したときにも実行されます。exit に限らず、<font color=red>atexit は終了処理一般の登録に使われる</font>わけです。exit を使うにしても使わないにしても行って欲しい終了処理を登録するのに atexit を使うわけです。</p>
+
+<p>　<font color=red>abort ではこの atexit で登録した関数も実行されません。</font>完全に異常終了なわけです。</p>
+
+<hr>
+
+<p>　あと、Ｃ＋＋では少し補足が必要です。</p>
+
+<p>　先ず、こういった処理は大抵は<font color=red>例外処理で事足りる</font>ということです。ただ、abort のように完全にうち切りたいときには abort を使うこともあるかもしれません。</p>
+
+<p>　また、<font color=red>今までに作ったオブジェクトのデストラクタは呼ばれません</font>。ただし、<font color=red>main の外にあるオブジェクト（外部変数）のデストラクタは呼ばれます</font>。main を強制終了する関数と言ったのは、このあたりを意識していたわけです。普通のデストラクタを呼ばれたくはないけど終了処理はしたいというときには、exit を使うこともあるかもしれません。どういう場合なのかは分かりませんが。</p>
+
+<p>　何にしろ、Ｃ＋＋では例外処理があるのでどちらを使えばいいかを考えてから exit や abort を使って欲しいということです。使ってはいけないとは言いませんが、使う前にちょっと考えて欲しいわけです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>exit か abort で強制終了できる。</li>
+<li>exit は終了処理を行うが、abort はいきなりうち切る。</li>
+<li>exit の引数は終了コードに使われる。</li>
+<li>atexit で終了処理を登録できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03042.html" target="main">第４２章　私はαでありωである２</a> | <a href="cpp03044.html" target="main">第４４章　デバッグ文</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４４章 いろんな計算を -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４４章　いろんな計算を</font>
+</center>
+<hr>
+
+<p>　コンピューターは計算をする機械という意味です。今までは四則演算が中心でしたが、計算といえば他に累乗、三角関数、対数などもありますね。（まだ知らない人も、そういうもんがあると思って下さい。）今回はそういった計算をやってみたいと思います。</p>
+
+<hr>
+
+<p></p>
+
+<font size=+2 color=red>
+<ul>
+<li>小数の型は精度の違う float 型、double 型、long double 型の３種類ある。</li>
+<li>演算は double 型で行うのが基本。</li>
+<li>三角関数などの関数は math.h で宣言されている。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今まで行ってきた計算はどれも四則演算でした。ですが、実際には平方根などの計算を行うことも必要になってくるでしょう。このような計算は全て <font color=red>math.h</font> というヘッダファイルで宣言されています。</p>
+
+<p>　また、このような計算をするときは、整数ではなく普通小数（実数）で行います。（コンピューターの世界では整数型と小数型は内部的な処理の方法が違います。）int 型は普通整数しか扱えません。そこで、小数用の型というものが存在します。float と double と long double です（<a href="cpp01021.html" target="main">第２１章</a>も参照）。</p>
+
+<p>　今まで小数の計算については特に触れませんでしたが、大体整数と同じなので詳しくは最後に話します。</p>
+
+<hr>
+
+<p>　では、実際に math.h の関数を使ってみましょう。簡単なところから、直角三角形の直角を挟む２辺の長さを入力し、最後の１辺（斜辺）を求めるプログラムを組んでみましょう。</p>
+
+<p>　こういうときは有名な<a href="../htmlword/words019.html" target="words">ピタゴラスの定理</a>を使って求めるのが常套ですね。ですが、四則演算だけを使っていたのでは、斜辺の長さの自乗を求めることは出来ても斜辺の長さを求めることはできません。</p>
+
+<p>　そこで、平方根を求める関数 sqrt を使います。（sqrt は square-root の略です。）では、実際のプログラムを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Math1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=red>#include &lt;math.h&gt;</font>     <font color=green>// math.h をインクルードする！</font>
+
+<font color=blue>int</font> main()
+{
+    double a, b;
+
+    cout &lt;&lt; <font color=darkcyan>"直角を挟む２辺の長さを入力して下さい &gt; "</font>;
+    cin &gt;&gt; a &gt;&gt; b;
+
+    cout &lt;&lt; <font color=darkcyan>"斜辺の長さは "</font>
+         &lt;&lt; <font color=red>sqrt(a * a + b * b)</font> &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>直角を挟む２辺の長さを入力して下さい &gt; 5 12
+斜辺の長さは 13.0000 です。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　特に難しいところはありませんね。sqrt という関数を、普通の関数の使い方で使っているだけのことです。</p>
+
+<hr>
+
+<p>　他にも math.h では色々な関数が宣言されています。以下に表にしましたので、参考にして下さい。</p>
+
+<table border=1>
+<colgroup>
+<col valign=center>
+<col valign=center>
+<col valign=top>
+</colgroup>
+
+<tbody>
+
+<tr>
+  <th>関数名</th>
+  <th>引数</th>
+  <th>機能</th>
+</tr>
+
+<tr>
+  <td>abs, fabs</td>
+  <td>任意の値</td>
+  <td>絶対値を求めます。abs は整数型用、fabs は小数型用です。</td>
+</tr>
+
+<tr>
+  <td>floor, ceil</td>
+  <td>任意の値</td>
+  <td>小数第１位の切り捨て、切り上げを行います。floor が切り捨てで、ceil が切り上げです。</td>
+</tr>
+
+<tr>
+  <td>fmod</td>
+  <td>２つの任意の値</td>
+  <td>小数の割り算を行い、余りを求めます。</td>
+</tr>
+
+<tr>
+  <td>modf</td>
+  <td>１：任意の値<br>２：int 型変数のアドレス</td>
+  <td>実数を、整数部分と小数部分に分割します。小数点以下の部分を返し、整数部分は第２引数で渡した変数で受け取ります。</td>
+</tr>
+
+<tr>
+  <td>sqrt</td>
+  <td>任意の０か正の値</td>
+  <td>正の平方根を返します。</td>
+</tr>
+
+<tr>
+  <td>pow</td>
+  <td>２つの任意の値</td>
+  <td>第１引数の第２引数乗を求めます。</td>
+</tr>
+
+<tr>
+  <td>exp</td>
+  <td>任意の値</td>
+  <td>エキスポネンシャルです。自然対数の底ｅ（≒２．７１８２８１８２８）の累乗を求めます。</td>
+</tr>
+
+<tr>
+  <td>log, log10</td>
+  <td>任意の正の値</td>
+  <td>対数を求めます。log は自然対数、log10 は常用対数です。</td>
+</tr>
+
+<tr>
+  <td>sin, cos, tan</td>
+  <td>角度<br>（単位はラジアン）</td>
+  <td>三角関数です。それぞれサイン、コサイン、タンジェントを求めます。</td>
+</tr>
+
+<tr>
+  <td>asin, acos</td>
+  <td>−１から１までの数値</td>
+  <td>三角関数の逆関数です。それぞれアークサイン、アークコサインを求めます。</td>
+</tr>
+
+<tr>
+  <td>atan, atan2</td>
+  <td>任意の値<br>（atan2 は引数が２つ）</td>
+  <td>アークタンジェントです。atan2 は第１引数を第２引数で割った値についてアークタンジェントを求めます。</td>
+</tr>
+
+<tr>
+  <td>sinh, cosh, tanh</td>
+  <td>任意の値</td>
+  <td>双曲線三角関数です。それぞれハイパボリックサイン、ハイパボリックコサイン、ハイパボリックタンジェントを求めます。</td>
+</tr>
+
+</tbody>
+</table>
+
+<p>　ざっと書きましたが、別に覚える必要はありません。必要になったときに調べればよいのです。それに、名前はそのまんまのが多いですしね。</p>
+
+<p>　中にはよく分からない関数もあるかもしれませんが、重要なのはこんなところです。おいおい使うこともあるでしょう。</p>
+
+<hr>
+
+<p>　では、最後に小数型について話します。</p>
+
+<p>　小数の型は初めに話した、float 、double 、long double の３つでした。整数にも色々な型がありましたね。小数型のそれぞれの違いは、整数型の時と同じでサイズの違いです。つまりは<font color=red>精度の違い</font>です。</p>
+
+<p>　float が３２ビット（４バイト）、double が６４ビット（８バイト）、long double も６４ビット（８バイト）です。それぞれの精度は、float が７桁、double が１５桁、long double も１５桁です。</p>
+
+<p>　昔は long double は８０ビット（１０バイト）で、精度は１９桁でした。今は double と同じになってしまったようです。</p>
+
+<p>　この中では、精度がいいので <font color=red>double 型を使うのが普通です</font>。しかし、double のサイズは float の２倍もあるので、サイズが気になるようなときは（配列変数など）float を使うこともあるかもしれません。でも、精度がかなり犠牲になるので実際問題 float はあまり使わないですね。</p>
+
+<p>　処理速度ですが、float だと速いということはないです。むしろ、double の方が速いと聞いたほどです。この辺はＣＰＵによるかもしれないので、あまり一般的にはこうだと断言はしませんが。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。今回の要点は以下の通りでした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>小数の型は精度の違う float 型、double 型、long double 型の３種類ある。</li>
+<li>演算は double 型で行うのが基本。</li>
+<li>三角関数などの関数は math.h で宣言されている。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回からはコンピューターならではの演算について話していきます。次回はその準備段階として、２進数と１６進数について話します。<a href="cpp01021.html" target="main">第２１章</a>も参考にして下さい。では次回まで、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01043.html" target="main">第４３章　？： ？？？</a> | <a href="cpp01045.html" target="main">第４５章　２進数と１６進数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.29</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

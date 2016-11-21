@@ -1,0 +1,142 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７４章 もっとロジカルに -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７４章　もっとロジカルに</font>
+</center>
+<hr>
+
+<p>　「関数は成功しましたか？」「０です」「今度はどうですか？」「１です」「ええい！　よーわからんのや！」「では、true でどうでしょうか？」「おお、よく分かる」というお話です（謎）。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>bool 型の変数は true と false の２値しかとれない。</li>
+<li>条件文において true は真、false は偽になる。</li>
+<li>true は１、false は０になる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、ある関数があります。その関数が成功したか失敗したかを返すとします。こういうとき、あなたならどうしますか？</p>
+
+<p>　簡単に考えれば「戻り値を０か１かにしてそれを条件にして判定する」という方法が思いつくでしょう。この考えはごくごく普通の考え方ですが、なんか０と１というのは<font color=red>ダサい</font>ですね。</p>
+
+<p>　そこで、<font color=red>Ｃ＋＋</font>にはたった２つの値しかとれないような型が存在します。それが<font color=red>論理型 bool</font> です。<a href="cpp01021.html" target="main">第２１章</a>でちらと表に出てきたのを覚えている人はいるでしょうか？</p>
+
+<p>　bool 型のとれる値は２つです。それは <font color=red>true と false</font> です。「真」と「偽」ですね。</p>
+
+<p>　これを if 文に入れてみるとどうなるのでしょうか？　両方真になったり、両方偽になったりするでしょうか？　まさかそんなアホなことは起こりません。<font color=red>true は真、false は偽と判定されます。</font></p>
+
+<p>　また、条件文は０か１の数値として使えるのでした。ということで、<font color=red>true は１、false は０の数値として使えます</font>。</p>
+
+<p>　うーん。bool についてはこれ以上話すことはないですね。(^ ^;　では、例でも１つ書いて今回はもう終わりにしましょう。</p>
+
+<p>　そうですね。<a href="cpp01064.html" target="main">第６４章</a>の Input 関数の戻り値を bool 型にするといいでしょうね。ついでに、<a href="cpp01044.html" target="main">第４４章</a>で紹介した絶対値を求める関数 abs と fabs 、また、インライン関数も使って、豪華に仕立ててあげましょう。することありませんし。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Ovload1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;math.h&gt;</font>
+
+<font color=green>// 絶対値を求める</font>
+<font color=green>// abs で扱う数の型は int なので、int にしました</font>
+<font color=blue>inline int</font> Abs(<font color=blue>int</font> a)
+{
+    <font color=blue>return</font> abs(a);
+}
+
+<font color=blue>inline double</font> Abs(<font color=blue>double</font> a)
+{
+    <font color=blue>return</font> fabs(a);
+}
+
+<font color=green>// 入力</font>
+<font color=red>bool</font> Input(<font color=blue>int</font>&amp; nInt, <font color=blue>double</font>&amp; nDouble)
+{
+    cout &lt;&lt; <font color=darkcyan>"整数値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; nInt;
+    <font color=blue>if</font>(nInt == <font color=darkcyan>1</font>)
+        <font color=red>return false;</font>
+
+    cout &lt;&lt; <font color=darkcyan>"小数値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; nDouble;
+    <font color=red>return true;</font>
+}
+
+<font color=green>// 絶対値の表示</font>
+<font color=blue>void</font> DispAbs(<font color=blue>int</font> nInt, <font color=blue>double</font> nDouble)
+{
+    cout &lt;&lt; nInt    &lt;&lt; <font color=darkcyan>" の絶対値は "</font> &lt;&lt; Abs(nInt)    &lt;&lt; <font color=darkcyan>"で、"</font> &lt;&lt; endl
+         &lt;&lt; nDouble &lt;&lt; <font color=darkcyan>" の絶対値は "</font> &lt;&lt; Abs(nDouble) &lt;&lt; <font color=darkcyan>"です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>    nInt;
+    <font color=blue>double</font> nDouble;
+
+    <font color=blue>while</font>(Input(nInt, nDouble))
+        DispAbs(nInt, nDouble);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>整数値を入力して下さい &gt; -126
+小数値を入力して下さい &gt; 0.23
+-126 の絶対値は 126 で、
+0.23 の絶対値は 0.23 です。
+整数値を入力して下さい &gt; 319
+小数値を入力して下さい &gt; -0.2
+319 の絶対値は 319 で、
+-0.2 の絶対値は 0.2 です。
+整数値を入力して下さい &gt; 1</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　while の条件に直接 Input 関数を渡しています。true を返したときはループを続け、false を返したときはループを終わるわけです。実際動作させてみても、そうなっていることがわかります。</p>
+
+<hr>
+
+<p>　今回は非常に楽でした。この内容なら、もっと早くやってもよかったですね。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>bool 型の変数は true と false の２値しかとれない。</li>
+<li>条件文において true は真、false は偽になる。</li>
+<li>true は１、false は０になる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01073.html" target="main">第７３章　借りたら返す３</a> | <a href="cpp01075.html" target="main">第７５章　乱数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.29</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

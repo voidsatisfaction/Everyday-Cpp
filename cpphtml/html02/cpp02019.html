@@ -1,0 +1,264 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１９章 動的オブジェクト -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１９章　動的オブジェクト</font>
+</center>
+<hr>
+
+<p>　今回は、オブジェクトを動的に確保してみます。コンストラクタやデストラクタはどうなるのでしょうか？</p>
+
+<hr>
+
+<p>　では、要点を先ず。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>オブジェクトを new するときにコンストラクタが、delete するときにデストラクタが呼ばれる。</li>
+<li>引数付きのコンストラクタも呼べる。</li>
+<li>配列確保の時はデフォルトコンストラクタしか呼べない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　オブジェクトを動的に確保したいときというのもあります。そこで、CBinaryFile を new で確保してみましょう。</p>
+
+<pre>CBinaryFile* pbin;
+pbin = new CBinaryFile;</pre>
+
+<p>と、new の文法からいってこれで間違いはないはずです（<a href="../html01/cpp01071.html" target="main">第１部第７１章</a>参照）。</p>
+
+<p>　このとき、コンストラクタとかは呼ばれるのでしょうか？　呼ばれないと困りますよね。ということで、確かめてみましょう。ついでに、delete するときにデストラクタが呼ばれるかも確かめます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td valign=top><pre><font color=green>// CBinFile.h</font>
+<font color=blue>class</font> CBinaryFile : <font color=blue>public</font> CFile
+{
+<font color=blue>public</font>:
+    ~CBinaryFile();  <font color=green>// デストラクタ</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td valign=top><pre><font color=green>// CBinFile.cpp</font>
+<font color=green>// デフォルトコンストラクタ</font>
+CBinaryFile::CBinaryFile()
+{
+    cout &lt;&lt; <font color=darkcyan>"CBinaryFile::CBinaryFile 1"</font> &lt;&lt; endl;
+}
+
+<font color=green>// 構築と同時にファイルを開く</font>
+CBinaryFile::CBinaryFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    cout &lt;&lt; <font color=darkcyan>"CBinaryFile::CBinaryFile 2"</font> &lt;&lt; endl;
+    Open(pszPath, pszFlags);
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CBinaryFile::CBinaryFile(<font color=blue>const</font> CBinaryFile&amp; rother) : CFile(rother)
+{
+    cout &lt;&lt; <font color=darkcyan>"CBinaryFile::CBinaryFile 3"</font> &lt;&lt; endl;
+}
+
+<font color=green>// デストラクタ</font>
+CBinaryFile::~CBinaryFile()
+{
+    cout &lt;&lt; <font color=darkcyan>"CBinaryFile::~CBinaryFile"</font> &lt;&lt; endl;
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : "</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CBinaryFile* pbin;
+
+    Viss(<font color=darkcyan>1</font>);
+    pbin = <font color=blue>new</font> CBinaryFile;
+    <font color=blue>if</font>(pbin == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    Viss(<font color=darkcyan>2</font>);
+    <font color=blue>delete</font> pbin;
+
+    Viss(<font color=darkcyan>3</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>Viss : 1
+CBinaryFile::CBinaryFile 1
+Viss : 2
+CBinaryFile::~CBinaryFile
+Viss : 3</pre></td></tr>
+
+</table></center>
+
+<p>　やはり呼ばれていますね。</p>
+
+<p>　ということで、オブジェクトを動的に確保するときは、<font color=red>new のときにコンストラクタが、delete の時にコンストラクタが呼ばれます</font>。</p>
+
+<hr>
+
+<p>　では、引数付きのコンストラクタは呼べるのでしょうか？</p>
+
+<p>　指定できそうなところと言えば、new の CBinaryFile の後ろくらいですね。まぁ、とりあえずやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : "</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CBinaryFile* pbin;
+
+    Viss(<font color=darkcyan>1</font>);
+    pbin = <font color=blue>new</font> CBinaryFile(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pbin == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    Viss(<font color=darkcyan>2</font>);
+    <font color=blue>delete</font> pbin;
+
+    Viss(<font color=darkcyan>3</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>Viss : 1
+CBinaryFile::CBinaryFile 2
+Viss : 2
+CBinaryFile::~CBinaryFile
+Viss : 3</pre></td></tr>
+
+</table></center>
+
+<p>　うまくいきました。</p>
+
+<p>　このように、引数付きのコンストラクタを呼ぶときは、<font color=red>new に指定した型の後に実引数リストをくっつけます</font>。特に問題はありませんね。</p>
+
+<hr>
+
+<p>　では、配列で確保してみましょう。確か、配列でオブジェクトを作成するときはデフォルトコンストラクタしか呼べませんでした。ここでも同じなのでしょうか？</p>
+
+<p>　まぁ、とりあえずやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : "</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CBinaryFile* pbin;
+    CBinaryFile   bin;
+
+    Viss(<font color=darkcyan>1</font>);
+    pbin = <font color=blue>new</font> CBinaryFile[<font color=darkcyan>5</font>];
+    <font color=blue>if</font>(pbin == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    Viss(<font color=darkcyan>2</font>);
+    <font color=blue>delete</font> [] pbin;
+
+    Viss(<font color=darkcyan>3</font>);
+    pbin = <font color=blue>new</font> CBinaryFile[<font color=darkcyan>5</font>](bin);
+    <font color=blue>if</font>(pbin == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    Viss(<font color=darkcyan>4</font>);
+    <font color=blue>delete</font> [] pbin;
+
+    Viss(<font color=darkcyan>5</font>);
+    pbin = <font color=blue>new</font> CBinaryFile(bin)[<font color=darkcyan>5</font>];
+    <font color=blue>if</font>(pbin == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    Viss(<font color=darkcyan>6</font>);
+    <font color=blue>delete</font> [] pbin;
+
+    Viss(<font color=darkcyan>7</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>エラーコード</th></tr>
+
+<tr><td valign=top><pre>TestFile.cpp(24) : error C2538: new : 配列に対し初期化子が与えられています。
+    pbin = <font color=blue>new</font> CBinaryFile[<font color=darkcyan>5</font>](bin);
+
+TestFile.cpp(32) : error C2143: 構文ｴﾗｰ : ';' が '[' の前に必要です。
+    pbin = <font color=blue>new</font> CBinaryFile(bin)[<font color=darkcyan>5</font>];</pre></td></tr>
+
+</table></center>
+
+<p>　やはり、<font color=red>配列で確保するときに引数付きのコンストラクタは使えない</font>ようですね。</p>
+
+<hr>
+
+<p>　以上をまとめると、</p>
+
+<font size=+2 color=red>
+<ul>
+<li>オブジェクトを new するときにコンストラクタが、delete するときにデストラクタが呼ばれる。</li>
+<li>引数付きのコンストラクタも呼べる。</li>
+<li>配列確保の時はデフォルトコンストラクタしか呼べない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>となります。</p>
+
+<p>　次回も動的確保について話したいと思います。アップキャストと併せたときにどうなるか...ということです。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02018.html" target="main">第１８章　ピュア</a> | <a href="cpp02020.html" target="main">第２０章　デストラクタ（仮）</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.26</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

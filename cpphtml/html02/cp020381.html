@@ -1,0 +1,264 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - CArray クラステンプレート -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>CArray クラステンプレート</font>
+</center>
+
+<center><table border=1>
+
+<tr><th>Array.h</th></tr>
+
+<tr><td><pre><font color=green>// Array.h</font>
+<font color=blue>#ifndef</font> __ARRAY_H__INCLUDED__
+<font color=blue>#define</font> __ARRAY_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>class</font> CArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    TYPE* m_pnum;    <font color=green>// 動的配列</font>
+    <font color=blue>int</font>   m_nNumOf;  <font color=green>// 配列の要素数</font>
+
+    <font color=green>// コンストラクタ・デストラクタ</font>
+<font color=blue>public</font>:
+    <font color=blue>explicit</font> CArray(<font color=blue>const int</font> nNumOf);
+    CArray(<font color=blue>const</font> CArray &lt;TYPE&gt; &amp; rother);  <font color=green>// コピーコンストラクタ</font>
+    <font color=blue>virtual</font> ~CArray();
+
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    TYPE Get(<font color=blue>const int</font> index) <font color=blue>const</font>;
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const</font> TYPE value);
+
+    <font color=green>// メンバの参照</font>
+    TYPE&amp; <font color=blue>operator</font> [](<font color=blue>unsigned int</font> index);
+    TYPE&amp; <font color=blue>operator</font> [](<font color=blue>int</font> index);
+    TYPE <font color=blue>operator</font> [](<font color=blue>unsigned int</font> index) <font color=blue>const</font>;
+    TYPE <font color=blue>operator</font> [](<font color=blue>int</font> index) <font color=blue>const</font>;
+
+    <font color=blue>operator const</font> TYPE*() <font color=blue>const</font>;  <font color=green>// 配列の直接参照</font>
+
+    <font color=green>// インデックスのチェック</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index) <font color=blue>const</font>;
+
+    <font color=green>// その他の情報の取得</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> IsValid() <font color=blue>const</font>;  <font color=green>// m_pnum の値が有効かどうか</font>
+    <font color=blue>int</font> NumOf() <font color=blue>const</font>;     <font color=green>// 配列の要素数</font>
+    <font color=blue>int</font> SizeOf() <font color=blue>const</font>;    <font color=green>// 配列のサイズ</font>
+
+    <font color=green>// コピー</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Copy(<font color=blue>const</font> CArray &lt;TYPE&gt; &amp; rother);  <font color=green>// 配列のコピー</font>
+    CArray &lt;TYPE&gt; &amp; <font color=blue>operator</font> =(<font color=blue>const</font> CArray &lt;TYPE&gt; &amp; rother);
+                                              <font color=green>// = 演算子のオーバーロード</font>
+
+    <font color=green>// 諸関数</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> Init();     <font color=green>// メンバの初期化</font>
+    <font color=blue>void</font> Release();  <font color=green>// メモリの解放</font>
+};
+
+<font color=green>// m_pnum の値が有効かどうか</font>
+<font color=red>// inline はやはり template の後に書きます</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline bool</font> CArray &lt;TYPE&gt; ::IsValid() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_pnum != NULL;
+}
+
+<font color=green>// 配列の要素数</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline int</font> CArray &lt;TYPE&gt; ::NumOf() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_nNumOf;
+}
+
+<font color=green>// 配列のサイズ</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline int</font> CArray &lt;TYPE&gt; ::SizeOf() <font color=blue>const</font>
+{
+    <font color=red>// sizeof を使っていれば、
+    // どんな型が来てもきちんとした値が得られます</font>
+    <font color=blue>return</font> m_nNumOf * <font color=blue>sizeof</font> *m_pnum;
+}
+
+<font color=green>// 配列の直接参照</font>
+<font color=red>// TYPE 型への配列を返すので、
+// もちろんキャスト演算子は (const TYPE*) となります</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline</font> CArray &lt;TYPE&gt; ::<font color=blue>operator const</font> <font color=red>TYPE</font>*() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_pnum;
+}
+
+<font color=green>// コンストラクタ</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+CArray &lt;TYPE&gt; ::CArray(<font color=blue>const int</font> nNumOf)
+{
+    <font color=red>// TYPE 型で new します
+    // クラスの配列を作るときでもコンストラクタが呼ばれます</font>
+    m_pnum = <font color=blue>new</font> <font color=red>TYPE</font>[nNumOf];
+    <font color=blue>if</font>(m_pnum == NULL)
+        m_nNumOf = <font color=darkcyan>0</font>;
+    <font color=blue>else</font>
+        m_nNumOf = nNumOf;
+
+    <font color=red>// 0 での初期化は行わないことにします
+    // クラスの配列を扱う際に問題になるからです</font>
+}
+
+<font color=green>// コピーコンストラクタ</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+CArray &lt;TYPE&gt; ::CArray(<font color=blue>const</font> CArray &lt;TYPE&gt; &amp; rother)
+{
+    Init();
+    Copy(rother);
+}
+
+<font color=green>// デストラクタ</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+CArray &lt;TYPE&gt; ::~CArray()
+{
+    Release();
+}
+
+<font color=green>// メンバへのアクセス関数</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE CArray &lt;TYPE&gt; ::Get(<font color=blue>const int</font> index) <font color=blue>const</font>
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> CArray &lt;TYPE&gt; ::Set(<font color=blue>const int</font> index, <font color=blue>const</font> TYPE value)
+{
+    CheckIndex(index);
+    m_pnum[index] = value;
+}
+
+<font color=green>// インデックスのチェック</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> CArray &lt;TYPE&gt; ::CheckIndex(<font color=blue>const int</font> index) <font color=blue>const</font>
+{
+    <font color=blue>if</font>((<font color=blue>unsigned int</font>)index &lt; (<font color=blue>unsigned int</font>)m_nNumOf)
+        <font color=blue>return</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"インデックスが不正です！"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"値 : "</font> &lt;&lt; index &lt;&lt; endl;
+    exit(<font color=darkcyan>1</font>);
+}
+
+<font color=green>// メンバの参照</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE&amp; CArray &lt;TYPE&gt; ::<font color=blue>operator</font> [](<font color=blue>unsigned int</font> index)
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}
+
+<font color=green>// メンバの参照</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline</font> TYPE&amp; CArray &lt;TYPE&gt; ::<font color=blue>operator</font> [](<font color=blue>int</font> index)
+{
+    <font color=red>// ちょっと強引でしょうか？</font>
+    <font color=blue>return</font> (*<font color=blue>this</font>)[(<font color=blue>unsigned int</font>)index];
+}
+
+<font color=green>// メンバの参照</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE CArray &lt;TYPE&gt; ::<font color=blue>operator</font> [](<font color=blue>unsigned int</font> index) <font color=blue>const</font>
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}
+
+<font color=green>// メンバの参照</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline</font> TYPE CArray &lt;TYPE&gt; ::<font color=blue>operator</font> [](<font color=blue>int</font> index) <font color=blue>const</font>
+{
+    <font color=blue>return</font> (*<font color=blue>this</font>)[(<font color=blue>unsigned int</font>)index];
+}
+
+<font color=green>// 配列のコピー</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>bool</font> CArray &lt;TYPE&gt; ::Copy(<font color=blue>const</font> CArray &lt;TYPE&gt; &amp; rother)
+{
+    <font color=green>// 自分自身はコピーしない</font>
+    <font color=blue>if</font>(<font color=blue>this</font> == &amp;rother)
+        <font color=blue>return true</font>;
+
+    Release();  <font color=green>// 配列が確保されているときはメモリを解放</font>
+
+    <font color=blue>if</font>(rother.IsValid() == <font color=blue>true</font>)
+    {
+        m_pnum = <font color=blue>new</font> TYPE[rother.NumOf()];
+        <font color=blue>if</font>(m_pnum == NULL)
+        {
+            m_nNumOf = <font color=darkcyan>0</font>;
+            <font color=blue>return false</font>;
+        }
+        m_nNumOf = rother.m_nNumOf;
+
+        <font color=red>// コピーは = 演算子を使って行います
+        // クラスを扱うときに問題になるからですね</font>
+        <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; m_nNumOf; i++)
+            m_pnum[i] = rother[i];
+    }
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// = 演算子によるコピー</font>
+<font color=red>// もちろんテンプレート引数は戻り値の型にも必要です</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+CArray &lt;TYPE&gt; &amp; CArray &lt;TYPE&gt; ::<font color=blue>operator</font> =(<font color=blue>const</font> CArray &lt;TYPE&gt; &amp; rother)
+{
+    Copy(rother);
+    <font color=blue>return</font> *<font color=blue>this</font>;
+}
+
+<font color=green>// メンバの初期化</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> CArray &lt;TYPE&gt; ::Init()
+{
+    m_pnum   = NULL;
+    m_nNumOf = <font color=darkcyan>0</font>;
+}
+
+<font color=green>// メモリの解放
+// 配列が確保されているときだけメモリを解放します
+// 解放した後はメンバを初期化します</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> CArray &lt;TYPE&gt; ::Release()
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>true</font>)
+    {
+        <font color=blue>delete</font> [] m_pnum;
+        Init();
+    }
+}
+
+<font color=blue>#endif</font> <font color=green>// #ifnde __ARRAY_H__INCLUDED__</font></pre></td></tr>
+
+</table></center>
+
+<hr>
+
+<p align=right><font size=-1><i>Last update was done on 2000.12.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

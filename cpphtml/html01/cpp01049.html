@@ -1,0 +1,209 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４９章 ビットでフラグ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４９章　ビットでフラグ</font>
+</center>
+<hr>
+
+<p>　いよいよ今回はビット演算の花形、フラグ処理について話したいと思います。１変数に多くの情報を入れられるというビット処理のもっとも基本的な利用法です。プログラムをしていく上で、欠かすことのできない技術です。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>フラグはＯＲで繋ぐ。</li>
+<li>フラグはＡＮＤ（もしくはＮＡＮＤ）で判定する。</li>
+<li>ビット演算に使用する変数は符号無しにする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回のお題はフラグ処理です。フラグとは条件が満たされているかどうかを示すもの、または条件を指定するもので、通例０が不満足、１が満足を表します。１ビットの情報のために１変数を使うのは大変もったいないことです。条件が１個なら仕方のないことですが、３個、４個となってくると、流石にばかばかしくなってきます。</p>
+
+<p>　例えば次の関数を見て下さい。</p>
+
+<center><table border=1>
+<tr><td><pre><font color=green>// 文字列をコピーする関数</font>
+<font color=blue>void</font> strcpy_ex(<font color=blue>char</font>* pszDest, <font color=blue>const char</font>* pszSource,
+               <font color=blue>int</font> fAdd, <font color=blue>int</font> fTrim, <font color=blue>int</font> fUpper, <font color=blue>int</font> fLower)
+{
+    <font color=blue>if</font>(fAdd)
+        <font color=blue>for</font>(; *pszDest; pszDest++);
+    <font color=blue>if</font>(fTrim)
+        <font color=blue>for</font>(; *pszSource == <font color=darkcyan>' '</font> || *pszSource == <font color=darkcyan>'\t'</font>; pszSource++);
+
+    <font color=blue>for</font>(; *pszSource; pszSource++, pszDest++)
+    {
+        *pszDest = fUpper ? toupper((unsigned char)*pszSource) :
+                   fLower ? tolower((unsigned char)*pszSource) :
+                   *pszSource;
+    }
+    pszDest--;
+    <font color=blue>if</font>(fTrim)
+        <font color=blue>for</font>(; *pszDest == <font color=darkcyan>' '</font> || *pszDest == <font color=darkcyan>'\t'</font>; pszDest--);
+    pszDest[<font color=darkcyan>1</font>] = <font color=darkcyan>'\0'</font>;
+}</pre></td></tr>
+</table></center>
+
+<p>　これは pszSource から pszDest へ文字列をコピーする関数です。この関数では引数にフラグを４つ取っています。名前の先頭に f の付いているものがそうです。詳しい構造については特に今は考える必要はありません。今はフラグの所にのみ目を向けて下さい。</p>
+
+<p>　fAdd は文字列を追加するようにするフラグです。このフラグが１だと（正確には「０以外」になりますが）、pszDest の文字列の後に pszSource の文字列を追加するようになります。</p>
+
+<p>　fTrim は両端の空白、タブを除いてコピーするようにするフラグです。このフラグが１だと、pszSource の両端の空白、タブは pszDest にはコピーされません。</p>
+
+<p>　fUpper は大文字にできるところは全て大文字にしてコピーするフラグです。fLower は小文字にするフラグです。同時に両方のフラグが立っている場合、大文字のフラグが優先されます。実は上記の処理法では全角文字が入っている場合に不具合が生じるのですが、今は気にしないことにします。</p>
+
+<p>　さて、この関数を使うときは、</p>
+
+<pre>strcpy_ex(szDest, szSource, 1, 1, 1, 0);</pre>
+
+<p>のようにするわけですが、とてもまどろっこしいですね。まどろっこしいだけでなく、引数が多いので少し処理が多いです。しかも、何番目の引数がなんのフラグなのかも一目では分からず、後から見てもとても読みにくい関数になってしまいました。</p>
+
+<p>　ビット演算を使えばこの不満を解消することができます。以下のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<tr><th>プログラム</th></tr>
+<tr><td><pre><font color=green>// Flag1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;ctype.h&gt;</font>
+
+<font color=blue>#define</font> BIT(num)                 ((<font color=blue>unsigned int</font>)<font color=darkcyan>1</font> << (num))
+<font color=blue>#define</font> SCEX_COPY                <font color=darkcyan>0</font>
+<font color=blue>#define</font> SCEX_ADD                 BIT(<font color=darkcyan>0</font>)
+<font color=blue>#define</font> SCEX_TRIM                BIT(<font color=darkcyan>1</font>)
+<font color=blue>#define</font> SCEX_UPPER               BIT(<font color=darkcyan>2</font>)
+<font color=blue>#define</font> SCEX_LOWER               BIT(<font color=darkcyan>3</font>)
+
+<font color=blue>void</font> strcpy_ex(<font color=blue>char</font>* pszDest, <font color=blue>const char</font>* pszSource, <font color=blue>unsigned int</font> flags);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> buf[<font color=darkcyan>512</font>];
+
+    strcpy_ex(buf, <font color=darkcyan>"The "</font>, SCEX_COPY);
+    strcpy_ex(buf, <font color=darkcyan>"\t\t Country Is Called  "</font>, SCEX_ADD | SCEX_TRIM | SCEX_LOWER);
+    strcpy_ex(buf, <font color=darkcyan>" usa."</font>, SCEX_ADD | SCEX_UPPER);
+    cout &lt;&lt; buf;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// 文字列をコピーする関数</font>
+<font color=blue>void</font> strcpy_ex(<font color=blue>char</font>* pszDest, <font color=blue>const char</font>* pszSource, <font color=blue>unsigned int</font> flags)
+{
+    <font color=blue>if</font>(flags & SCEX_ADD)
+        <font color=blue>for</font>(; *pszDest; pszDest++);
+    <font color=blue>if</font>(flags & SCEX_TRIM)
+        <font color=blue>for</font>(; *pszSource == <font color=darkcyan>' '</font> || *pszSource == <font color=darkcyan>'\t'</font>; pszSource++);
+
+    <font color=blue>for</font>(; *pszSource; pszSource++, pszDest++)
+    {
+        *pszDest = (flags & SCEX_UPPER) ? toupper((unsigned char)*pszSource) :
+                   (flags & SCEX_LOWER) ? tolower((unsigned char)*pszSource) :
+                   *pszSource;
+    }
+    pszDest--;
+    <font color=blue>if</font>(flags & SCEX_TRIM)
+        <font color=blue>for</font>(; *pszDest == <font color=darkcyan>' '</font> || *pszDest == <font color=darkcyan>'\t'</font>; pszDest--);
+    pszDest[<font color=darkcyan>1</font>] = <font color=darkcyan>'\0'</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+<tr><td><pre>The country is called USA.</pre></td></tr>
+</table></center>
+
+<p>　strcpy_ex 関数を見ると、フラグに使っている変数は flags １個だけになっています。フラグの判定は</p>
+
+<pre>if(flags & SCEX_ADD)</pre>
+
+<p>のように、<font color=red>ＡＮＤを使って判定しています</font>。そして、使うときは</p>
+
+<pre>strcpy_ex(buf, "\t\t Country Called  ", SCEX_ADD | SCEX_TRIM | SCEX_LOWER);</pre>
+
+<p>のように、<font color=red>ＯＲを使って指定しています</font>。そしてフラグは</p>
+
+<pre>#define SCEX_ADD                 BIT(0)</pre>
+
+<p>のように定義されています。</p>
+
+<p>　以上がビット演算を利用したフラグ処理の方法です。このようにすれば関数はすっきりし、フラグが意味のある文字列で表現できるので読みやすくなります。（前者ではマクロが通用しないことに注意！）</p>
+
+<hr>
+
+<p>　では、何故これでフラグ処理ができるのでしょうか。</p>
+
+<p>　先ず、引数の方から見ていきましょう。引数は次のようにマクロをＯＲで繋いでいました。</p>
+
+<pre><font color=red>SCEX_ADD | SCEX_TRIM | SCEX_LOWER</font></pre>
+
+<p>さて、これを計算してみるとどうなるでしょうか？　<font color=red>ＯＲはビットで合成する演算</font>でしたので、答は２進数で１０１１になりますね。</p>
+
+<p>　この１０１１という数字には４つの情報が入っています。第０ビットには「文字列を追加する」、第１ビットには「空白、タブを除いてコピー」、第２ビットには「大文字にしてコピーしない」、第３ビットには「小文字にしてコピーする」という情報が入っています。非常にコンパクトですね。</p>
+
+<p>　ただ、コンパクトになっても、その情報が扱えなければ意味がありません。では、条件を判定する方を見てみましょう。</p>
+
+<pre><font color=red>flags & SCEX_ADD</font></pre>
+
+<p>　flags を１０１１として上の計算をしてみるとどうなるでしょうか？　<font color=red>ＡＮＤは特定のビットを取り出す演算</font>です。SCEX_ADD は第０ビットが１、他が０なので、答は１になりますね。</p>
+
+<p>　それでは flags を１１０として上の計算をしてみるとどうなるでしょうか？　そうです。０です。</p>
+
+<p>　さて、この文は if 文の中に入っていました。if 文はカッコの中が真か偽かだけでなく、<font color=red>０か０でないかでも判定ができる</font>のでした。つまり上の条件では、flags が１０１１の時の計算では答が１なので真、flags が１１０の時の計算では答が０なので偽になります。このようにして条件を判定できるのです。</p>
+
+<hr>
+
+<p>　では、まとめてみましょう。</p>
+
+<ul>
+<li>フラグ用の変数を<font color=red>１つだけ</font>作る。</li>
+<li>フラグは<font color=red>ＯＲ</font>で繋いで関数に渡す。</li>
+<li>フラグの判定は<font color=red>ＡＮＤ</font>で行う。</li>
+</ul>
+
+<p>　まとめてみると極々簡単なことしかしていなかったことに気付きます。</p>
+
+<hr>
+
+<p>　あとは細かいことをいくつか。</p>
+
+<p>　ビット演算をするときは、変数を <font color=red>unsigned（符号無し）</font>にします。というのも、負の値に対するビット演算の結果は、環境に依存する可能性があるからです。まぁ、難しいことは抜きにして、<font color=red>ビット演算をする変数は符号無しにする</font>、と覚えておいて下さい。</p>
+
+<p>　あとは、SCEX_COPY について。これは立てるフラグの無いとき用に用意されたフラグです。「立てるフラグがない ＝ ０を指定する」なので別に０をただ指定してもいいのですが、「フラグが全て立っていないときの動作は何か」というのを覚える必要があります。そのために、このようなマクロを用意しておくのが親切というものでしょう。</p>
+
+<hr>
+
+<p>　では今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>フラグはＯＲで繋ぐ。</li>
+<li>フラグはＡＮＤ（もしくはＮＡＮＤ）で判定する。</li>
+<li>ビット演算に使用する変数は符号無しにする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回でひとまずビット演算は終了です。次回は５０章ということで、２５章のように少し変わったことをしたいと思います。あ、もちろん前回の問題の解答も行います。</p>
+
+<p>　それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01048.html" target="main">第４８章　ビットでいじろう３</a> | <a href="cpp01050.html" target="main">第５０章　命名法</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１１章 一心同体 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１１章　一心同体</font>
+</center>
+<hr>
+
+<p>　変数はメモリ上にあります。変数が違えば普通はそのアドレスは違うものですが、もし同じようにすることができるとしたらどうでしょうか？　今回はそういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の宣言の struct を union に変えると共用体になる。</li>
+<li>共用体の各メンバの先頭アドレスは全て等しい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　int 型の変数があるとします。その内容は４バイトですが、これを<font color=red>１バイトずつ操作</font>してみたいと思います。どうすればいいでしょうか？</p>
+
+<p>　例えば、次のようにできると思います。</p>
+
+<pre>int a;
+
+((unsigned char*)&amp;a)[2] = 0;</pre>
+
+<p>　先ず、a のアドレスをとり、それを <font color=red>unsigned char* でキャスト</font>しています。こうすれば、a をあたかも <font color=red>char 型の配列であるかのように</font>扱うことができるようになりますね。</p>
+
+<p>　１ヶ所でしか使わないのであればこれで構いません。ですが、数ヶ所で使う場合はちょっと面倒です。なので、<font color=red>一旦アドレスを unsigned char 型へのポインタに入れておきましょう</font>。</p>
+
+<pre>int a;
+unsigned char * const p = (char*)&amp;a;
+
+p[2] = 0;</pre>
+
+<p>　p の変更は行わないので、p は定数にしておきました（<a href="../html01/cpp01042.html" target="main">第１部第４２章</a>参照）。</p>
+
+<p>　ここでだけでしかこういうことをしないのであれば、このままで構いません。ですが、いろんな場所でこういうことをするとすればこれでは不便です。</p>
+
+<p>　考えられる方法として、<font color=red>クラス</font>を使うというのがあります。</p>
+
+<pre>class CIntInByte
+{
+public:
+    int i;
+
+    unsigned char&amp; InByte(int index);
+};
+
+inline unsigned char&amp; CIntInByte::InByte(int index)
+{
+    return ((unsigned char*)&amp;i)[index];
+}
+
+CIntInByte a;
+
+a.InByte(2) = 0;</pre>
+
+<p>　このような数を扱うときに CIntInByte クラスを使うようにすれば、問題はなさそうです。</p>
+
+<hr>
+
+<p>　しかし、こんなことをしなくても、実はもっと簡単にできるのです。</p>
+
+<pre><font color=red>union</font> UIntInByte
+{
+    int           i;
+    unsigned char c[4];
+};
+
+<font color=red>UIntInByte a;</font>
+
+<font color=red>a.c[2]</font> = 0;</pre>
+
+<p>　何やら、構造体に似た変な物を作ってますね。メンバ変数と思わしき i と c があります。</p>
+
+<p>　そして、メンバ c を使っているだけです。<font color=red>一体どこで上と同じことをしているのでしょうか？</font></p>
+
+<p>　実は、i と c は<font color=red>メモリ上の同じ位置に存在します</font>。よって、c を書き換えれば i も、i を書き換えれば c も書き換えられます。そして、c を使えば i を１バイト単位で扱うことができるというわけです。</p>
+
+<p>　構造体と似ているこれを<font color=red>共用体</font>と呼びます。メモリを「共用」しているわけですね。</p>
+
+<p>　共用体のメンバは構造体と違い、<font color=red>各メンバの先頭アドレスが同じになります</font>。言い換えれば、<font color=red>同じメモリ領域に２つ以上の名前を付けている</font>のです。</p>
+
+<p>　変数の名前というのは人間がプログラムを組む上で分かりやすいようにつけているだけのことです。実際、実行ファイルになってしまうともう変数の名前は残っていません。</p>
+
+<p>　となると、分かりやすいようにするために、同じメモリ領域に別の名前を与えることができてもいいわけです。それが共用体です。</p>
+
+<p>　では、実際に共用体を使ってみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Union1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>union</font> UIntInByte
+{
+    <font color=blue>int</font>           i;
+    <font color=blue>unsigned char</font> c[<font color=darkcyan>4</font>];
+};
+
+<font color=green>// アドレスの表示</font>
+<font color=blue>void</font> DispAdrs(<font color=blue>const</font> UIntInByte&amp; a);
+
+<font color=green>// 値の表示</font>
+<font color=blue>void</font> DispVals(<font color=blue>const</font> UIntInByte&amp; a);
+
+<font color=blue>int</font> main()
+{
+    UIntInByte a;
+
+    DispAdrs(a);
+
+    a.i = <font color=darkcyan>0</font>;
+    DispVals(a);
+
+    a.c[<font color=darkcyan>2</font>] = <font color=darkcyan>0x23</font>;
+    DispVals(a);
+
+    a.i = <font color=darkcyan>0x016D7463</font>;
+    DispVals(a);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>#define</font> ELEM(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=green>// アドレスの表示
+// %p でアドレスを１６進８桁で表示します</font>
+<font color=blue>void</font> DispAdrs(<font color=blue>const</font> UIntInByte&amp; a)
+{
+    <font color=blue>int</font>        i;
+
+    printf(<font color=darkcyan>"&amp;a.i    : 0x%p\n"</font>, &amp;a.i);
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; ELEM(a.c); i++)
+        printf(<font color=darkcyan>"&amp;a.c[%d] : 0x%p\n"</font>, i, &amp;a.c[i]);
+
+    putchar(<font color=darkcyan>'\n'</font>);
+}
+
+<font color=green>// 値の表示
+// %08X で１６進数の最低８文字で、
+// %02X で１６進数の最低２文字で表示します</font>
+<font color=blue>void</font> DispVals(<font color=blue>const</font> UIntInByte&amp; a)
+{
+    <font color=blue>int</font>        i;
+
+    printf(<font color=darkcyan>"a.i     : 0x%08X\n"</font>, a.i);
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; ELEM(a.c); i++)
+        printf(<font color=darkcyan>"a.c[%d]  : 0x%02X\n"</font>, i, a.c[i]);
+
+    putchar(<font color=darkcyan>'\n'</font>);
+}</pre></td>
+<td><pre>&a.i    : 0x0065FDF4
+&a.c[0] : 0x0065FDF4
+&a.c[1] : 0x0065FDF5
+&a.c[2] : 0x0065FDF6
+&a.c[3] : 0x0065FDF7
+
+a.i     : 0x00000000
+a.c[0]  : 0x00
+a.c[1]  : 0x00
+a.c[2]  : 0x00
+a.c[3]  : 0x00
+
+a.i     : 0x00230000
+a.c[0]  : 0x00
+a.c[1]  : 0x00
+a.c[2]  : 0x23
+a.c[3]  : 0x00
+
+a.i     : 0x016D7463
+a.c[0]  : 0x63
+a.c[1]  : 0x74
+a.c[2]  : 0x6D
+a.c[3]  : 0x01</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　先ずはアドレスの確認です。a.i のアドレスは 0x0065FDF4 です。では a.c[0] のアドレスは...ちゃんと同じ 0x0065FDF4 になっていますね。</p>
+
+<p>　a.c[1] 以降も 0x0065FDF5, 0x0065FDF6, 0x0065FDF7 と、１バイト単位できれいに並んでいます。つまり、a.c[0] は a.i の０バイト目、a.c[1] は a.i の１バイト目、a.c[2] は a.i の２バイト目、a.c[3] は a.i の３バイト目になっているはずです。</p>
+
+<p>　では、そのことを確かめてみましょう。先ずは a.i に０を代入してみました。a.i を表示すると０になるのは当たり前ですね。で、a.c[0] 〜 a.c[3] はどうなるでしょうか？　きちんと０になっているようです。</p>
+
+<p>　そして、その上で a.c[2] に 0x23 を代入しました。a.c[2] が 0x23 、他の a.c の値が０であることは問題ないのですが、a.i はどうなっているでしょうか？　<font color=red>0x00230000</font>　になっているみたいですね。期待通りの動作になっています。（納得のいかない人は<a href="../html01/cpp01055.html" target="main">第１部第５５章</a>の「エンディアンネス」を参照。）</p>
+
+<p>　そして、またその上で a.i に <font color=red>0x016D7463</font> を代入しました。すると、a.c[0] は <font color=red>0x63</font> に、a.c[1] は１ <font color=red>0x74</font> に、a.c[2] は <font color=red>0x6D</font> に、a.c[3] は <font color=red>0x01</font> になっています。これも、期待通りの動作になっています。</p>
+
+<p>　このように、<font color=red>共用体を使えば同じメモリ領域に違う名前を付けて、さらに違う型で扱うことができる</font>ようになるのです。</p>
+
+<hr>
+
+<p>　それでは、今回の話の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の宣言の struct を union に変えると共用体になる。</li>
+<li>共用体の各メンバの先頭アドレスは全て等しい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も構造体関係のお話です。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03010.html" target="main">第１０章　続・ポインタ天国</a> | <a href="cpp03012.html" target="main">第１２章　名無し</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

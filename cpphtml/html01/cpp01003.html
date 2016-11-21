@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３章 計算してみよう -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３章　計算してみよう</font>
+</center>
+<hr>
+
+<p>　コンピューターのことを日本語で「計算機」と言います。だったら計算をさせてあげましょう。今回はそういうことです。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>掛け算にはアスタリスク（*）、割り算にはスラッシュ（/）を使う。</li>
+<li>余りにはパーセント記号（%）を使う。</li>
+<li>演算の優先順位は常識的。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　「計算機」にはどんどん計算をさせてあげましょう。ですが、足し算は前回の章で使えることが判明しましたが、掛けるだの割るだのの記号は全角文字にしかありません。これはどうしたらよいのでしょうか？</p>
+
+<p>　そこで、<font color=red>掛け算にはアスタリスク（*）、割り算にはスラッシュ（/）を用いることになっています</font>。アスタリスクは×に似ていますし、スラッシュは分数を思い浮かべれば実はなじみ深いことがわかります。</p>
+
+<p>　では、いろいろやってみましょう。プログラムはやはり Hello プログラムを改造したのでいいです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr>
+<th>プログラム</th>
+<th>実行結果</th>
+</tr>
+
+<tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"2 + 2 = "</font> &lt;&lt; <font color=darkcyan>2</font> + <font color=darkcyan>2</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"1 - 5 = "</font> &lt;&lt; <font color=darkcyan>1</font> - <font color=darkcyan>5</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"2 * 9 = "</font> &lt;&lt; <font color=darkcyan>2</font> * <font color=darkcyan>9</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"9 / 3 = "</font> &lt;&lt; <font color=darkcyan>9</font> / <font color=darkcyan>3</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"9 / 2 = "</font> &lt;&lt; <font color=darkcyan>9</font> / <font color=darkcyan>2</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>2 + 2 = 4
+1 - 5 = -4
+2 * 9 = 18
+9 / 3 = 3
+9 / 2 = 4</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　おや？？　<font color=red>9 / 2 = 4</font> だって？　誰がどう考えても <font color=red>9 / 2 = 4.5</font> ですよね。コンピューターはアホですね。...というわけではないのです。</p>
+
+<p>　9 も 2 も整数です。<font color=red>コンピューターは整数同士の計算からは整数の答えしか出しません。</font>この場合、コンピューターは 9 / 2 = 4 ...1 という計算をして、商である 4 を答えとしたのです。</p>
+
+<p>　4.5 という答えを出したければ、9.0 / 2 と書いてやる必要があるのです。こうすれば 9 は小数扱いになります。</p>
+
+<p>　また、上に書いたように、コンピューターは余りも求めます。つまり、余りを求める演算子もあるのです。それにはパーセント記号（%）が使われます。</p>
+
+<p>　以上を踏まえた上で、もう一度いろいろやってみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr>
+<th>プログラム</th>
+<th>実行結果</th>
+</tr>
+
+<tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"9 / 2 = "</font> &lt;&lt; <font color=darkcyan>9</font> / <font color=darkcyan>2</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"9 % 2 = "</font> &lt;&lt; <font color=darkcyan>9</font> % <font color=darkcyan>2</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"2 + 2 * 4 = "</font> &lt;&lt; <font color=darkcyan>2</font> + <font color=darkcyan>2</font> * <font color=darkcyan>4</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"(1 - 5) / 2 = "</font> &lt;&lt; (<font color=darkcyan>1</font> - <font color=darkcyan>5</font>) / <font color=darkcyan>2</font> &lt;&lt; endl;
+    return <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>9 / 2 = 4
+9 % 2 = 1
+2 + 2 * 4 = 10
+(1 - 5) / 2 = -2</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今度は足し算と掛け算を混ぜたり、カッコを使ったりしてみました。どうやら普通の結果になっているようです。<font color=red>優先順位は常識的なようです。</font></p>
+
+<hr>
+
+<p>　最後にもう一度要点を言っておきます。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>掛け算にはアスタリスク（*）、割り算にはスラッシュ（/）を使う。</li>
+<li>余りにはパーセント記号（%）を使う。</li>
+<li>演算の優先順位は常識的。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01002.html" target="main">第２章　Hello プログラム</a> | <a href="cpp01004.html" target="main">第４章　次のプログラムに移る前に</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.2.20</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

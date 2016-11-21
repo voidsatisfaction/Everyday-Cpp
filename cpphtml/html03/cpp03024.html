@@ -1,0 +1,230 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２４章 たのしいソート -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２４章　たのしいソート</font>
+</center>
+<hr>
+
+<p>　いきなりアホな題ですみません。まぁ、そういうわけで今回からはソートをやってみたいと思います。ソートというのは、データを順番に並べ替えることです。いろいろなところで使うことがあるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点をどうぞ。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>大きいものを端に寄せていくとソートできる。</li>
+<li>このソート方法をバブルソートと呼ぶ。</li>
+</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　データを順番通りに並び替えることを<font color=red>ソート</font>といい、いろいろなところで使われます。先ず今回は難しいことを考えず、心の赴くままにソートしてみます。</p>
+
+<p>　次のようなデータがあるとします。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// SortData.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"MainDefs.h"</font>
+
+<font color=green>// ソートするデータ</font>
+<font color=blue>int</font> g_anData[] = {
+    <font color=darkcyan>117</font>, <font color=darkcyan>169</font>, <font color=darkcyan> 99</font>, <font color=darkcyan>168</font>, <font color=darkcyan> 48</font>, <font color=darkcyan>128</font>, <font color=darkcyan>  1</font>, <font color=darkcyan>155</font>, <font color=darkcyan> 39</font>, <font color=darkcyan>101</font>,
+    <font color=darkcyan> 54</font>, <font color=darkcyan>150</font>, <font color=darkcyan>173</font>, <font color=darkcyan>174</font>, <font color=darkcyan>  9</font>, <font color=darkcyan> 76</font>, <font color=darkcyan> 55</font>, <font color=darkcyan> 77</font>, <font color=darkcyan>186</font>, <font color=darkcyan>213</font>,
+    <font color=darkcyan> 16</font>, <font color=darkcyan>175</font>, <font color=darkcyan> 14</font>, <font color=darkcyan>173</font>, <font color=darkcyan> 78</font>, <font color=darkcyan>228</font>, <font color=darkcyan>231</font>, <font color=darkcyan>254</font>, <font color=darkcyan>  4</font>, <font color=darkcyan>255</font>,
+    <font color=darkcyan> 23</font>, <font color=darkcyan> 34</font>, <font color=darkcyan>185</font>, <font color=darkcyan>192</font>, <font color=darkcyan>118</font>, <font color=darkcyan> 99</font>, <font color=darkcyan> 25</font>, <font color=darkcyan>112</font>, <font color=darkcyan> 51</font>, <font color=darkcyan>  6</font>,
+    <font color=darkcyan>235</font>, <font color=darkcyan> 13</font>, <font color=darkcyan>103</font>, <font color=darkcyan>137</font>, <font color=darkcyan> 67</font>, <font color=darkcyan>167</font>, <font color=darkcyan>240</font>, <font color=darkcyan> 40</font>, <font color=darkcyan>249</font>, <font color=darkcyan> 10</font>,
+    <font color=darkcyan>124</font>, <font color=darkcyan>166</font>, <font color=darkcyan> 89</font>, <font color=darkcyan>157</font>, <font color=darkcyan>228</font>, <font color=darkcyan> 73</font>, <font color=darkcyan> 28</font>, <font color=darkcyan>138</font>, <font color=darkcyan>188</font>, <font color=darkcyan> 39</font>,
+    <font color=darkcyan>152</font>, <font color=darkcyan> 31</font>, <font color=darkcyan> 40</font>, <font color=darkcyan>160</font>, <font color=darkcyan> 51</font>, <font color=darkcyan>117</font>, <font color=darkcyan>240</font>, <font color=darkcyan> 44</font>, <font color=darkcyan> 29</font>, <font color=darkcyan> 79</font>,
+    <font color=darkcyan>215</font>, <font color=darkcyan> 87</font>, <font color=darkcyan> 63</font>, <font color=darkcyan> 68</font>, <font color=darkcyan> 41</font>, <font color=darkcyan>  9</font>, <font color=darkcyan>110</font>, <font color=darkcyan> 33</font>, <font color=darkcyan>148</font>, <font color=darkcyan> 11</font>,
+    <font color=darkcyan>229</font>, <font color=darkcyan>137</font>, <font color=darkcyan> 56</font>, <font color=darkcyan>199</font>, <font color=darkcyan>242</font>, <font color=darkcyan>222</font>, <font color=darkcyan>  1</font>, <font color=darkcyan> 79</font>, <font color=darkcyan>239</font>, <font color=darkcyan>101</font>,
+    <font color=darkcyan> 53</font>, <font color=darkcyan>161</font>, <font color=darkcyan>116</font>, <font color=darkcyan>164</font>, <font color=darkcyan> 73</font>, <font color=darkcyan> 42</font>, <font color=darkcyan>203</font>, <font color=darkcyan> 15</font>, <font color=darkcyan>249</font>, <font color=darkcyan>136</font>,
+};
+
+<font color=green>// ソートするデータの数</font>
+<font color=blue>int</font> g_nNumOf = numof(g_anData);</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// SortData.h</font>
+<font color=blue>#ifndef</font> __SORTDATA_H__INCLUDED__
+<font color=blue>#define</font> __SORTDATA_H__INCLUDED__
+
+<font color=blue>extern int</font> g_anData[];  <font color=green>// ソートするデータ</font>
+<font color=blue>extern int</font> g_nNumOf;    <font color=green>// ソートするデータの数</font>
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// MainDefs.h</font>
+<font color=blue>#ifndef</font> __MAINDEFS_H__INCLUDED__
+<font color=blue>#define</font> __MAINDEFS_H__INCLUDED__
+
+<font color=green>// 配列の要素数を取得</font>
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>#endif</font></pre></td></tr>
+
+</table></center>
+
+<p>　このデータ g_anData を<font color=red>小さい方から大きい方へ</font>となるように並べ替えてみましょう。インデックスが増えるに連れて<font color=red>値が大きくなっていく</font>ので、このような順番を<font color=red>昇順</font>と呼びます。その逆は<font color=red>降順</font>です。</p>
+
+<p>　簡単に考えると、データを全部見て<font color=red>一番大きいの</font>を<font color=red>最後に</font>持っていき、次にそれを除いてデータを全部見て<font color=red>その中で一番大きいの</font>を<font color=red>最後から２番目</font>に置く、というような作業を<font color=red>（データの個数−１）回</font>すればいいですね。最後はデータが１個になるので、データの個数回まではする必要はありません。</p>
+
+<p>　一番大きいものを探し最後に置くという操作は、次のようにすることができます。先ず、頭の方から隣同士のデータを比較していきます。そして右の方（インデックスの大きい方）が大きいときはそのまま放っておき、左の方（インデックスの小さい方）が大きいときは<font color=red>データを交換</font>します。これを続けていくと、<font color=red>一番大きいデータが一番右にやってきますね</font>。</p>
+
+<p>　次は範囲を１つ狭めて、また頭から比較していきます。同じようにやっていくと、今度は<font color=red>次に大きいデータが右から２番目にやってきますね</font>。これを続けていくとデータをソートすることができます。</p>
+
+<p>　これを図にすると、下図のようになります。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0302401.gif" width=500 height=480 alt="最も単純なソートアルゴリズム"></td></tr>
+
+<tr><th>図．１　最も単純なソートアルゴリズム</th></tr>
+
+</table></center>
+
+<p>　一番大きいデータが泡が昇っていくかのように浮き出てくるので、このソート方法を<font color=red>バブルソート</font>と呼びます。</p>
+
+<p>　ということでプログラムを組んでみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// SortSub.h</font>
+<font color=blue>#ifndef</font> __SORTSUB_H__INCLUDED__
+<font color=blue>#define</font> __SORTSUB_H__INCLUDED__
+
+<font color=green>// 値の入れ替え</font>
+<font color=green>// temp 変数を仲介に、temp ← a ← b ← temp と
+// データを移せば入れ替え完了です</font>
+<font color=blue>inline void</font> Swap(<font color=blue>int</font>&amp; a, <font color=blue>int</font>&amp; b)
+{
+    <font color=blue>int</font> temp;
+    temp = a;
+    a = b;
+    b = temp;
+}
+
+<font color=green>// 配列の表示</font>
+<font color=blue>void</font> DispArray(<font color=blue>const int</font>* pnData, <font color=blue>int</font> nNumOf);
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// SortSub.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>void</font> DispArray(<font color=blue>const int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>const int</font> PER_LINE = <font color=darkcyan>10</font>;  <font color=green>// １行に表示する数</font>
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+    {
+        <font color=green>// %3d の 3 は、最低３文字表示するという意味です
+        // １のときは "  1" というように、左に空白が入ります</font>
+        printf(<font color=darkcyan>"%3d, "</font>, pnData[i]);
+        <font color=blue>if</font>(i % PER_LINE == PER_LINE - <font color=darkcyan>1</font>)
+            putchar(<font color=darkcyan>'\n'</font>);
+    }
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Sort1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortData.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortSub.h"</font>
+
+<font color=green>// バブルソート</font>
+<font color=blue>void</font> BubbleSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> iLoop;  <font color=green>// （データの個数−１）回回すための変数</font>
+    <font color=blue>int</font> iComp;  <font color=green>// 比較するときのループ変数</font>
+
+    <font color=green>// （データの個数−１）回回します
+    // 上の図を見れば、この回数も納得がいくでしょう</font>
+    <font color=blue>for</font>(iLoop = <font color=darkcyan>0</font>; iLoop &lt; nNumOf - <font color=darkcyan>1</font>; iLoop++)
+    {
+        <font color=green>// 比較を行い、大きい方のデータを左に持っていきます
+        // 初めは（データの個数−１）回で、一週毎に回数が減っていきます</font>
+        <font color=blue>for</font>(iComp = <font color=darkcyan>0</font>; iComp &lt; nNumOf - <font color=darkcyan>1</font> - iLoop; iComp++)
+        {
+            <font color=green>// 比較して、左の方が大きければ交換</font>
+            <font color=blue>if</font>(pnData[iComp] &gt; pnData[iComp + <font color=darkcyan>1</font>])
+                Swap(pnData[iComp], pnData[iComp + <font color=darkcyan>1</font>]);
+        }
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    BubbleSort(g_anData, g_nNumOf);
+    DispArray(g_anData, g_nNumOf);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>  1,   1,   4,   6,   9,   9,  10,  11,  13,  14,
+ 15,  16,  23,  25,  28,  29,  31,  33,  34,  39,
+ 39,  40,  40,  41,  42,  44,  48,  51,  51,  53,
+ 54,  55,  56,  63,  67,  68,  73,  73,  76,  77,
+ 78,  79,  79,  87,  89,  99,  99, 101, 101, 103,
+110, 112, 116, 117, 117, 118, 124, 128, 136, 137,
+137, 138, 148, 150, 152, 155, 157, 160, 161, 164,
+166, 167, 168, 169, 173, 173, 174, 175, 185, 186,
+188, 192, 199, 203, 213, 215, 222, 228, 228, 229,
+231, 235, 239, 240, 240, 242, 249, 249, 254, 255,</pre></td></tr>
+
+</table></center>
+
+<p>　はい、ソートできました。</p>
+
+<p>　このソート方法は最も単純なものです。そして、<font color=red>最も遅い</font>方法です。</p>
+
+<p>　しかし、データ数が少ないときは充分実用できます。ソート関数を自作して使いたいときは、簡単に作れる（＝バグの出にくい）バブルソートを使ってもいいでしょう。</p>
+
+<p>　他にも色々なソート方法が開発されています。それについては...次回以降にお話ししたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>大きいものを端に寄せていくとソートできる。</li>
+<li>このソート方法をバブルソートと呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03023.html" target="main">第２３章　call itself ３</a> | <a href="cpp03025.html" target="main">第２５章　たのしいソート２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.13</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

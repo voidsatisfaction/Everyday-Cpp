@@ -1,0 +1,187 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５０章 異姓同名 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５０章　異姓同名</font>
+</center>
+<hr>
+
+<p>　CAAA クラスのメンバ AAA と CBBB クラスのメンバ AAA とは区別がつきます。今回はこれと似たような仕組みについて話そうと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>namespace &lt;名前空間名&gt; { } で囲むと、その中の名前はその名前空間に属するようになる。</li>
+<li>ある名前空間に属する名前は &lt;名前空間名&gt;::&lt;名前&gt; のように使う。</li>
+<li>名前空間の指定を省略するときは using namespace &lt;名前空間名&gt;; と書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ある他人の作った<a href="../htmlword/words032.html" target="words">ライブラリ</a>を利用したいと思います。しかし、そのライブラリの中には CFile クラスがあるとします。この CFile を<font color=red>切り離して使えない</font>ようになっていれば、自分の CFile を使いたいときに困りますね。</p>
+
+<p>　こういう場合、自分の CFile の名前を CMyFile などに変えれば済む話ですが、CFile を全部 CMyFile に変えるのも面倒な話です。</p>
+
+<p>　こういったことを避けるために、普段から<font color=red>名前空間</font>という機構を使っておくと便利かもしれません。名前空間は、<font color=red>あるときは CMyFile のように、あるときは CFile のように使えるようにする機構</font>です。普段は CFile で使うようにしておいて、名前の衝突するときだけ CMyFile のような形で使えばいいわけです。</p>
+
+<hr>
+
+<p>　では、とりあえず実際に使っているプログラムを見てみて下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Name1.h</font>
+<font color=blue>#ifndef</font> __NAME1_H__010407_1554_70554750__INCLUDED__
+<font color=blue>#define</font> __NAME1_H__010407_1554_70554750__INCLUDED__
+
+<font color=red>namesapce</font> Name1
+{
+    <font color=blue>void</font> Func();
+}
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __NAME1_H__010407_1554_70554750__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Name1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>namesapce</font> Name1
+{
+    <font color=blue>void</font> Func()
+    {
+        cout &lt;&lt; <font color=darkcyan>"Name1::Func"</font> &lt;&lt; endl;
+    }
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Name2.h</font>
+<font color=blue>#ifndef</font> __NAME2_H__010407_1556_57951860__INCLUDED__
+<font color=blue>#define</font> __NAME2_H__010407_1556_57951860__INCLUDED__
+
+<font color=red>namesapce</font> Name2
+{
+    <font color=blue>void</font> Func();
+}
+
+<font color=blue>#endif</font> <font color=green>// __NAME2_H__010407_1556_57951860__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム４</th></tr>
+
+<tr><td><pre><font color=green>// Name2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>namesapce</font> Name2
+{
+    <font color=blue>void</font> Func()
+    {
+        cout &lt;&lt; <font color=darkcyan>"Name2::Func"</font> &lt;&lt; endl;
+    }
+}</pre></td></tr>
+
+<tr><th>プログラム５</th></tr>
+
+<tr><td><pre><font color=green>// Name3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Name1.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"Name2.h"</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=red>Name1::</font>Func();
+    <font color=red>Name2::</font>Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>Name1::Func
+Name2::Func</pre></td></tr>
+
+</table></center>
+
+<p>　<font color=red>namesapce</font> Name1 というのが<font color=red>名前空間の指定</font>になります。Name1 が<font color=red>名前空間名</font>になります。そのあとの { } で囲まれた中にある名前は <font color=red>Name1::&lt;名前&gt;</font> のように使うようになります。これがさっき言った<font color=red>「CMyFile のように使う」</font>にあたるわけです。</p>
+
+<p>　このように、ある共通した名前空間名を持つ空間のことを<font color=red>名前空間</font>と呼びます。名前空間が違えば、本来はオーバーロードできないはずの２つの void Func() も、２つとも定義することができます。</p>
+
+<p>　名前空間名を<font color=red>名字</font>のような感じに考えてもいいかも知れません。同じ「雅樹」でも「佐藤雅樹」と「加持雅樹」では区別がつきますね。</p>
+
+<hr>
+
+<p>　しかし、雅樹が１人しかいないのであれば、わざわざ名字を呼ぶ必要はありません。そこで、<font color=red>名前空間名を省略する</font>こともできます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム６</th></tr>
+
+<tr><td><pre><font color=green>// Name3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Name1.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"Name2.h"</font>
+
+<font color=red>using namespace Name1;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=red>Func</font>();
+    <font color=red>Name2::</font>Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>Name1::Func
+Name2::Func</pre></td></tr>
+
+</table></center>
+
+<p>　このように、<font color=red>using namespace &lt;名前空間名&gt;</font>と書くことで、以降可能な限り Name1 を省略することができるようになるのです。</p>
+
+<p>　では、両方とも省略できるようにしたらどうなるのでしょうか？　そのときは、Func とだけ書いてもどちらの Func かサッパリ分かりません。なので、名前空間名を指定してやる必要が出てきます。しかし、衝突しない限りは省略することができるわけです。</p>
+
+<p>　では、もう１つ、<font color=red>名前空間を指定していないところはどうなっているのでしょうか？</font>　それは名前無しの名前空間である<font color=red>グローバルネームスペース</font>に属することになります。つまり、グローバルネームスペースの関数を呼びたいときは <font color=red>::Func()</font> のように、<font color=red>名前空間名を書かずに :: だけを書きます</font>。<a href="../html01/cpp068.html" target="main">第１部第６８章</a>でグローバル変数を使うために :: つけましたが、これもグローバルネームスペースの指定をしていることになります。</p>
+
+<p>　グローバルネームスペースは最初から省略できるので、比較的名前が衝突しやすくなります。なるべく名前は何らかの名前空間に属すようにしておくのがいいと思います。</p>
+
+<p>　名前空間を作っておけば名前の衝突を気にする必要がほとんどなくなります。名前空間名自体が衝突すると...それはどうにもならないので（汗）、なるべく衝突しないような名前にして下さい。どうせ普段は省略できて、衝突することも滅多にないのが普通なので、少しくらいは変わった名前にしても構わないかもしれません。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>namespace &lt;名前空間名&gt; { } で囲むと、その中の名前はその名前空間に属するようになる。</li>
+<li>ある名前空間に属する名前は &lt;名前空間名&gt;::&lt;名前&gt; のように使う。</li>
+<li>名前空間の指定を省略するときは using namespace &lt;名前空間名&gt;; と書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　これで第２部は終了です。第４部からは std 名前空間やＳＴＬについて話していきたいと思います。もう言語の話からは離れて、ライブラリの使い方の話になりますね。クラスについての話では多重継承が残っていますが、これは高度な話になるので第３部で話したいと思います。</p>
+
+<p>　それでは、また第４部で会いましょう。</p>
+
+<hr>
+
+<p align=right><a href="cpp02049.html" target="main">第４９章　えっ！？　５</a> | <a href="../html04/cpp04001.html" target="main">第４部第１章　業界のスタンダード</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

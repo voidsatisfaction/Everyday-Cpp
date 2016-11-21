@@ -1,0 +1,121 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５章 コンテナ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５章　コンテナ</font>
+</center>
+<hr>
+
+<p>　今回はＳＴＬの中でも一番有名なのではと思われるコンテナについて話します。ＳＴＬは実はアルゴリズムが中心のライブラリなのですが...。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>vector で可変長配列が使える。</li>
+<li>いろいろなデータ構造に対してコンテナというクラス群が用意されている。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、<a href="../html02/cpp02037.html" target="main">第２部第３７章</a>で CArray という<font color=red>動的配列クラステンプレート</font>を作りました。しかし、このクラステンプレートは途中でサイズが変えられないなど不便な点も多いものでした。</p>
+
+<p>　第３７章であまり凝って作らなかった理由にはもちろん長くなってしまうからというのもあったのですが、もう１つ理由がありました。それは、既にＳＴＬにそういうクラスが用意されているからなのです。それが動的配列クラステンプレート <font color=red>vector</font> です。</p>
+
+<p>　先ず、どんなものかを実際に使って見てみましょう。<font color=red>ヘッダファイルは vector です。</font></p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Vector1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;vector&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>int</font> main()
+{
+    <font color=red>vector &lt;int&gt;</font> vct<font color=red>(10)</font>;
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; vct.<font color=red>size</font>(); i++)
+        vct<font color=red>[i]</font> = <font color=darkcyan>0</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; vct.size(); i++)
+        cout &lt;&lt; vct[i] &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+
+    vct.<font color=red>resize(5)</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; vct.<font color=red>size</font>(); i++)
+        vct<font color=red>[i]</font> = <font color=darkcyan>1</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; vct.size(); i++)
+        cout &lt;&lt; vct[i] &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0 0 0 0 0 0 0 0 0 0
+1 1 1 1 1</pre></td></tr>
+
+</table></center>
+
+<p>　先ず、vector はクラステンプレートなので、テンプレート引数を渡しています。これが<font color=red>配列要素の型</font>になります。ここでは int を渡しています。</p>
+
+<p>　次に、コンストラクタに 10 を渡しています。これは<font color=red>配列のデフォルトのサイズ</font>になります。他にも、別の vector で初期化したり、初期値を指定したりも出来ます。</p>
+
+<p>　で、次に for を使って vct[0] 〜 vct[9] に 0 を代入しています。ここで、size メンバ関数を使って<font color=red>配列のサイズを取得</font>しています。また、<font color=red>[ ] 演算子がオーバーロードされている</font>ことも分かります。で、次に中身を表示しています。</p>
+
+<p>　次に、resize メンバ関数を使って<font color=red>配列のサイズを変更</font>しています。そして同じようなことをしています。</p>
+
+<p>　と、これが vector なわけです。</p>
+
+<p>　この vector は動的配列クラステンプレートなので、配列はもちろん new を使って確保しています。上にはそのメモリを解放するようなコードはないように見えますが、実はこのメモリの解放は vector のデストラクタが自動的に行ってくれます。</p>
+
+<p>　また、resize によって配列が最初の時より拡張されたときは、新しくメモリが用意され、そこに中身がコピーされ、そして古いメモリが解放されます。縮小される場合はメモリを解放せず、サイズを保持しているメンバ変数の値を変え、場合によっては、使われなくなった要素のデストラクタが呼ばれます。</p>
+
+<p>　まぁ、そんな細かいことは置いておいて（実際はこのことを頭に入れてないと困ることもありますが）、<font color=red>vector を使えば簡単に動的可変長配列が使える</font>のです。</p>
+
+<hr>
+
+<p>　このようにＳＴＬでは、よく使うデータ構造に対してさまざまなクラステンプレートが作られています。<font color=red>配列</font>に対しては <font color=red>vector</font> 、<font color=red>リスト</font>（<a href="../html03/cpp03032.html" target="main">第３部第３２章</a>、<a href="../html03/cpp03033.html" target="main">第３３章</a>参照）に対しては <font color=red>list</font> 、<font color=red>キュー</font>に対しては <font color=red>deque 、queue 、priority_queue 、stack</font>、<font color=red>二分探索木</font>（<a href="../html03/cpp03035.html" target="main">第３部第３５章</a>参照）に対しては <font color=red>set 、map 、multimap 、multiset</font> 、そして<font color=red>文字列</font>に対しては <font color=red>string</font> という具合です。最近はハッシュ（<a href="../html03/cpp03036.html" target="main">第３部第３６章</a>参照）を使った hash_set 、hash_multiset、hash_map 、hash_multimap というのも追加されました。</p>
+
+<p>　これらのクラステンプレートのことを、ＳＴＬでは<font color=red>コンテナ</font>と呼びます。コンテナとは入れ物という意味で、まさにデータの入れ物であるわけです。</p>
+
+<p>　これらのデータ構造はよく使うもので、これらがライブラリとして提供されるのはとても嬉しいことです。テンプレートということもあり、別の型の実体を追加するごとにプログラムサイズは大きく増えてしまいますが、それを補ってあまりある魅力があると言えるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>vector で可変長配列が使える。</li>
+<li>いろいろなデータ構造に対してコンテナというクラス群が用意されている。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回のループ文にはアルゴリズムを使いませんでした。次回はアルゴリズムを使ってこのループ処理を行ってみましょう。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp04004.html" target="main">第４章　偽ポインタ</a> | <a href="cpp04006.html" target="main">第６章　コンテナ２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.7.19</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

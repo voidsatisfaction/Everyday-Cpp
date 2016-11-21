@@ -1,0 +1,196 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７章 代入文のリサイクル -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７章　代入文のリサイクル</font>
+</center>
+<hr>
+
+<p>　前回言った通り、宣言文とブロック文以外の文は「式にセミコロンをつけたもの」です。では、代入文はどうなのでしょうか？　代入文を式として利用した場合どうなるのでしょうか？　今回は、その代入文についてのお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>代入式は、代入される変数の代わりに使える。</li>
+<li>代入式の値は代入演算された後の値になる。</li>
+<li>後置インクリメントは特殊で、代入演算はできず、１増える前の値が使われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ず、代入文を式にセミコロンをつけたものと考えます。この式を代入式と呼びましょう。例えば、i = 0; の場合は i = 0 が代入式となります。</p>
+
+<p>　この代入式は普通の式と同じように使えるのでしょうか？　そして、使えるとすればどのようになるのでしょうか？　では、代入式を普通の式と同じように使ってみましょう。優先順位が気になるので、代入文はカッコで囲んでおきましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Assign1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a = <font color=darkcyan>0</font>, b = <font color=darkcyan>0</font>;
+
+    a = <font color=red>(b = 5)</font>;
+    cout &lt;&lt; <font color=darkcyan>"a = "</font> &lt;&lt; a &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; b &lt;&lt; endl &lt;&lt; endl;
+
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; <font color=red>(b += 3)</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; b &lt;&lt; endl &lt;&lt; endl;
+
+    <font color=red>(b = 1)</font> += a;
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; b &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a = 5
+b = 5
+
+b = 8
+b = 8
+
+b = 6</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　先ずは a = (b = 5); です。</p>
+
+<p>　初めに、a と b は０で初期化しておきました。その上で、次は a に (b = 5) を代入することにしたわけです。すると、a も b も５になっていますね。</p>
+
+<p>　どうやら、代入式の値は代入される値か、b の値かのどちらかのようです。このどちらかを試すために、次は (b += 3) の表示を試しています。</p>
+
+<p>　この前は b は５だったのですが、ここで表示されたのは８です。つまり、b + 3 の値です。さらに次に b を表示していますが、b の値は８になっています。</p>
+
+<p>　このことから分かるように、<font color=red>代入式の値は代入される変数の値</font>になり、その値は代入後の値が使われるようです。</p>
+
+<p><br></p>
+
+<p>　最後は (b = 1) += a; です。</p>
+
+<p>　コンパイルエラーが出るかと思いきや、何の問題もありませんでした。</p>
+
+<p>　で、表示された b の値は６です。このときの a の値は５でしたので、この６というのは 1 + a だと思われます。先ず b に１が代入され、その上で a が足されたのです。</p>
+
+<p><br></p>
+
+<p>　以上より、<font color=red>代入式は代入される変数の代わりになる</font>ということになります。そして、その時の値は<font color=red>代入された後の値</font>になるのです。丁度、代入される変数への<font color=red>参照</font>が返ってくるような感じですね。</p>
+
+<p>　前回の while 文は、このことを利用したのでも簡素になります。</p>
+
+<pre>while(<font color=red>(letter = fgetc(pf)) != EOF</font>)
+{
+    ... 処理 ...
+}</pre>
+
+<p>　この書き方もよく使われます。どちらを使うかは、趣味に任せるとしましょう。</p>
+
+<hr>
+
+<p>　さて、インクリメント演算子 (++) 、デクリメント演算子 (--) も代入演算子です。<a href="../html01/cpp01006.html" target="main">第１部第６章</a>で話したとおり、これは変数の前につけることも後につけることもできます。第１部第６章では触れませんでしたが、<font color=red>これらには違いがあります</font>。やはり、これもプログラムを作って確かめてみましょう。実験あるのみです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Assign2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a, b;
+
+    a = <font color=darkcyan>5</font>;
+    b = <font color=darkcyan>0</font>;
+    a = <font color=red>(++b)</font>;
+    cout &lt;&lt; <font color=darkcyan>"a = "</font> &lt;&lt; a &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; b &lt;&lt; endl &lt;&lt; endl;
+
+    a = <font color=darkcyan>5</font>;
+    b = <font color=darkcyan>0</font>;
+    a = <font color=red>(b++)</font>;
+    cout &lt;&lt; <font color=darkcyan>"a = "</font> &lt;&lt; a &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"b = "</font> &lt;&lt; b &lt;&lt; endl &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a = 1
+b = 1
+
+a = 0
+b = 1</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　先ずは ++ が前についた方を見てみましょう。</p>
+
+<pre>a = (++b);</pre>
+
+<p>　a は５で、b は０で初期化されています。上で話したとおりに考えると「先ず b が１になり、それが a に代入される」となります。つまり、両方とも１になるはずです。</p>
+
+<p>　実行結果を見てみると...両方とも１になっていますね。<font color=red>(++b) と (b += 1) とは等価である</font>ことになります。</p>
+
+<p><br></p>
+
+<p>　次は ++ が後についた方です。</p>
+
+<pre>a = (b++);</pre>
+
+<p>　a は５で、b は０で初期化されています。つまり、上で話したとおりに考えると「先ず b が１になり、それが a に代入される」となります。つまり、やはり両方とも１になるはずです。</p>
+
+<p>　実行結果を見てみると...何と、a は０になっています。どうやら、<font color=red>b が１増える前に a に代入された</font>ようです。</p>
+
+<p><br></p>
+
+<p>　このように、++ が<font color=red>前</font>についた方は、<font color=red>先に</font>インクリメントをします。このインクリメントを<font color=red>前置インクリメント</font>と呼びます。</p>
+
+<p>　一方、++ が<font color=red>後</font>についた方は、<font color=red>後で</font>インクリメントされます。このインクリメントを<font color=red>後置インクリメント</font>と呼びます。そしてこの性質のために、<font color=red>後置インクリメント式には代入演算を行えません</font>。(b++) = 1; はコンパイルエラーになります。</p>
+
+<p>　<font color=red>後置インクリメントは代入式の中でも特殊である</font>ことが分かります。しかし、前置、後置どちらがどちらになるかは、見た目から何となく判断できるようになっていますね。</p>
+
+<hr>
+
+<p>　今回のことをまとめると、</p>
+
+<font size=+2 color=red>
+<ul>
+<li>代入式は、代入される変数の代わりに使える。</li>
+<li>代入式の値は代入演算された後の値になる。</li>
+<li>後置インクリメントは特殊で、代入演算はできず、１増える前の値が使われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>となります。</p>
+
+<p>　やたらと代入文の再利用を行うとやはりプログラムが見づらくなるので、適度に使うようにしましょう。</p>
+
+<hr>
+
+<p align=right><a href="cpp03006.html" target="main">第６章　コンマ演算子</a> | <a href="cpp03008.html" target="main">第８章　アドレスを返す関数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

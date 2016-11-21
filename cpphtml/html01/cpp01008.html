@@ -1,0 +1,164 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第８章 void -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第８章　void</font>
+</center>
+<hr>
+
+<p>　Ｃ／Ｃ＋＋の関数は必ずしも引数を持ったり戻り値を持ったりしていなくても構いません。今回は引数も戻り値もない関数について説明します。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>戻り値のいらない時は、戻り値の型を void にする。</li>
+<li>引数のいらないときは、カッコの中を空にする。</li>
+<li>関数には必ずカッコがいる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のプログラムをもう一度見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Func1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> f(<font color=blue>int</font> x, <font color=blue>int</font> y)
+{
+    <font color=blue>return</font> <font color=darkcyan>2</font> * x + y;
+}
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"f(1 ,2) = "</font> &lt;&lt; f(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>) &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"f(182, 144) = "</font> &lt;&lt; f(<font color=darkcyan>182</font>, <font color=darkcyan>144</font>) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+</tbody></table></center>
+
+<p>　よく見て下さい。関数を<a href="../htmlword/words013.html" target="words">呼び出した</a>後にその答えを表示しました。ですが、表示を関数の中でやったので別にいいことがわかります。</p>
+
+<p>　しかし、そうなると戻り値を返す必要がなくなってしまいます。どうしたらよいのでしょうか。</p>
+
+<p>　答は簡単です。<font color=red>戻り値を返さなければいいのです。</font>そして、その時は<font color=red>戻り値の型を void にします</font>。void というのは、虚空、真空といった意味の言葉です。つまり、何もないことを示します。</p>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Func1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>void</font> f(<font color=blue>int</font> x, <font color=blue>int</font> y)
+{
+    cout &lt;&lt; <font color=darkcyan>"f("</font> &lt;&lt; x &lt;&lt; <font color=darkcyan>", "</font> &lt;&lt; y
+         &lt;&lt; <font color=darkcyan>") = "</font> &lt;&lt; <font color=darkcyan>2</font> * x + y &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    f(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    f(<font color=darkcyan>182</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>f(1, 2) = 4
+f(182, 144) = 508</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　値を返す必要がないので、<font color=red>return 文はいりません</font>。書いてもいいのですが、その時は return; のみにして、値を入れる必要はありません。</p>
+
+<p>　そして、呼び出すときもただ関数を書くだけで構いません。= がないと落ち着かないという人も、これに慣れてもらうしかありません。</p>
+
+<hr>
+
+<p>　戻り値をなくせるのなら、引数も無くすことができます。では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Func2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Hello()
+{
+    cout &lt;&lt; <font color=darkcyan>"やぁ、こんちは。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Hello();
+    Hello();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>やぁ、こんちは。
+やぁ、こんちは。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　何て意味のないプログラムなんでしょうか（笑）。今までの知識ではこの程度しかできませんが、引数なしの関数は結構よく使います。代表的なのは main です。</p>
+
+<p>　では、説明しましょう。</p>
+
+<pre>void Hello(){ ... }</pre>
+
+<p>　引数の部分を見てみま...って、何にもないですね。これでいいのです。<font color=red>カッコの中を空にすれば引数なしの関数の出来上がりです。この際、カッコを省略することはできません。</font>カッコは関数の目印なので省略してはいけません。</p>
+
+<p>　また、カッコの中に void と書いても構いません。</p>
+
+<p>　そして、関数を使う際もカッコは必ず必要です。ですが、カッコの中には何も書きません。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りでした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>戻り値のいらない時は、戻り値の型を void にする。</li>
+<li>引数のいらないときは、カッコの中を空にする。</li>
+<li>関数には必ずカッコがいる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01007.html" target="main">第７章　関数</a> | <a href="cpp01009.html" target="main">第９章　グローバル変数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.11</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

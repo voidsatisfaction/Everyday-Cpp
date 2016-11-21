@@ -1,0 +1,134 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３３章 ポインタ天国２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３３章　ポインタ天国２</font>
+</center>
+<hr>
+
+<p>　ポインタはアドレスを格納する変数です。で、格納できました。しかし、このアドレスの使い道って何なのでしょうか？　今回はそこを少し話してみます。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>アドレスに * をつけると、そこのメモリを扱える。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、前回ポインタに変数のアドレスを入れました。ですが、その後やったことといえば入れたアドレスを表示しただけでした。</p>
+
+<p>　これだけしかできないのではポインタの使い道は皆無に近いです。しかし、ポインタは重要な役割を持っています。その役割はポインタという名前に示されています。</p>
+
+<p>　ポインタといえば、黒板とかに書いてあることを指し示す棒とかレーザーのことですね。つまり、<font color=red>ポインタにはそのアドレスのメモリを指し示す能力があるのです</font>。</p>
+
+<p>　むぅ、表現が難しくなってしまいましたね。もっと簡単にいうと、<font color=red>そのアドレスにある変数の代わりになるのです</font>。</p>
+
+<p>　まぁ、いろいろ言うより実際に見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ptr2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a;
+    <font color=blue>int</font>* p = &a;
+
+    a = <font color=darkcyan>0</font>;
+    cout &lt;&lt; <font color=darkcyan>" a = "</font> &lt;&lt;  a &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"*p = "</font> &lt;&lt; <font color=red>*p</font> &lt;&lt; endl;
+
+    <font color=red>*p</font> = <font color=darkcyan>5</font>;
+    cout &lt;&lt; <font color=darkcyan>" a = "</font> &lt;&lt;  a &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"*p = "</font> &lt;&lt; <font color=red>*p</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre> a = 0
+*p = 0
+ a = 5
+*p = 5</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今度は int 型の変数のアドレスを入れることにします。なので、ポインタの型は int* になります。a のアドレスで初期化もしておきます。</p>
+
+<p>　それでは、上で言ったことを実際に見てみましょう。ポインタ p には a のアドレスが入っているので、p をどうにかしたら a の代わりに使えるようになるわけです。では、どうするのでしょうか？</p>
+
+<p>　これまた簡単です。<font color=red>p の前に * を付けるだけです。</font>つまり、*p は a と同じになります。その証拠を見てみましょう。</p>
+
+<p>　a に 0 を入れた後に a と *p をそれぞれ表示してみました。両方 0 になっています。</p>
+
+<p>　では、今度は *p に 5 を代入してみましょう。すると、a の値も同じ 5 に変わりました。<font color=red>a と *p は同じものになるので当然の結果です。</font></p>
+
+<p>　このように、ポインタを使って間接的に変数を扱うことを<font color=red>参照</font>と言います。</p>
+
+<hr>
+
+<p>　それでは、ポインタの定義部分を見て下さい。</p>
+
+<pre>int* p;</pre>
+
+<p>　初期化部分は省略しました。で、これは次のように書くこともできます。</p>
+
+<pre>int *p;
+int * p;
+int
+*
+p;</pre>
+
+<p>　つまり、* は間に入っていればあとはどうでもいいのです。そのうち、一番上のものを見て下さい。</p>
+
+<pre>int *p;</pre>
+
+<p>　これは *p という int 型の変数を定義しているようにも見えますね。<font color=red>*p は int 型になり、int 型の変数の代わりに使える</font>という雰囲気が出ていると思います。</p>
+
+<p>　書き方のことを言ったのでついでに言いますが、一度に２個以上のポインタを定義するときは、</p>
+
+<pre>int *p, *q;</pre>
+
+<p>のように、全部に * を付けます。int *p; と書く人はあまり問題ありませんが、int* p; と書いている人は付け忘れがあったりすることがあります。ちなみに筆者は int* p; の方が好きです。</p>
+
+<hr>
+
+<p>　さて、ポインタを使えば変数の複製を作ることができることがわかりました。しかし、変数などそのまま使えばいいじゃないか、と思うでしょう。ところがそうもいかない状況があるのです。それについてはまた次回にさせていただきます。</p>
+
+<p>　では、今回の要点は次の通りでした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>アドレスに * をつけると、そこのメモリを扱える。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はポインタを引数に取る関数について話していきます。ではまた次回。</p>
+
+<hr>
+
+<p align=right><a href="cpp01032.html" target="main">第３２章　ポインタ天国</a> | <a href="cpp01034.html" target="main">第３４章　ポインタ天国３</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.31</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

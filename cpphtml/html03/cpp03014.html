@@ -1,0 +1,203 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１４章 前へならえ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１４章　前へならえ</font>
+</center>
+<hr>
+
+<p>　構造体のサイズを確認してみたことはありますか？　構造体をファイルに保存したことはありますか？　やけにサイズが大きかったり、ゴミが保存されたりはしませんでしたか？　今回は、そういうことがなぜ起こるのかについてのお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体のメンバはぎっちり詰まっていないことがある。</li>
+<li>#pragma pack でアラインメントを変更できる。</li>
+<li>メンバ変数の構造体の先頭からの位置は offsetof マクロで取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　次のような構造体を考えてみましょう。</p>
+
+<pre>strcut SPerson
+{
+    char  szName[21];  // 名前
+    int   nAge;        // 年齢
+    char  nBirthmonth; // 誕生月
+    char  fSex;        // 性別
+};</pre>
+
+<p>　さて、問題です。この構造体のサイズはいくらになるでしょうか？</p>
+
+<p>　先ず、szName のサイズは２１バイトです。そして、nAge のサイズは（３２ビット機であれば）４バイトで、nBirthmonth と fSex のサイズはそれぞれ１バイトずつです。なので、合計２７バイトであると思われます。</p>
+
+<p>　さぁ、実際に確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Align1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>struct</font> SPerson
+{
+    <font color=blue>char</font>  szName[<font color=darkcyan>21</font>];  <font color=green>// 名前</font>
+    <font color=blue>int</font>   nAge;        <font color=green>// 年齢</font>
+    <font color=blue>char</font>  nBirthmonth; <font color=green>// 誕生月</font>
+    <font color=blue>char</font>  fSex;        <font color=green>// 性別</font>
+};
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"SPerson のサイズは "</font> &lt;&lt; <font color=blue>sizeof</font> SPerson
+         &lt;&lt; <font color=darkcyan>" バイトです。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>SPerson のサイズは 32 バイトです。</pre></td>
+</tr>
+
+</table></center>
+
+<p>　あれ？　５バイトも多いですね。これは一体どうしたことでしょうか？</p>
+
+<p>　確かにメンバのサイズの合計は２７バイトです。しかし、構造体のサイズは３２バイトである。つまり、<font color=red>どこかに５バイト余計なデータが入っている</font>ことになります。</p>
+
+<p>　このデータのことを<font color=red>パディング</font>（詰め物）と呼びます。実は、szName の後ろに３バイト、fSex の後ろに２バイト入っています。</p>
+
+<p>　このように、構造体のメンバは<font color=red>ぎっちりと詰まっているわけではないことがある</font>のです。しかし、<font color=red>こうなっていないこともあります</font>。そして、<font color=red>この詰まり方がちょっと違うこともありますし、違えることができることもあります</font>。</p>
+
+<p>　ということで、構造体のメンバがぎっちり詰まっていると仮定したプログラムは<font color=red>バグです</font>。ぎっちり詰めるようになっている環境で作っているとバグには気が付きませんが、いざ別の環境でコンパイルしてみるととんでもない動作を行うということもあるでしょう。</p>
+
+<p>　こうならないようにぎっちり詰めるように指定することもできるのですが、それは後で話します。</p>
+
+<hr>
+
+<p>　それでは、何でこんな変な詰め物を入れているのでしょうか？　それは、ＣＰＵの特性が関わっています。（なので、ＣＰＵによってはこのようなことをしても意味がないこともあるでしょう。）</p>
+
+<p>　多くの（推測）ＣＰＵは、メモリにアクセスするときには<font color=red>int のサイズごとにアクセスします</font>。例えば３２ビット機では、メモリを４バイトずつに区切ったその１つ１つの単位でアクセスするのです。この区切りを<font color=red>４バイト境界</font>と呼びます。１６ビット機では２バイト境界、６４ビット機では８バイト境界が重要になります。（面倒なので、今からは３２ビット機であるとして話します。）</p>
+
+<p>　このため、この４バイト境界をまたぐデータを扱うためには、<font color=red>メモリに２回アクセスしなければなりません</font>。つまり、この境界をまたがないようにデータを置いておくと、データのアクセスが速くなります。このことを<font color=red>アラインする</font>と呼びます。</p>
+
+<p>　<font color=red>構造体のデータがぎっちり詰まっていないのは、データがアラインされているからなのです。</font>変数の先頭は４バイト境界に揃えられているのが普通で、メンバ変数を構造体の先頭からアラインしておくと、実際にメモリ上に確保されたときもアラインされているようになります。</p>
+
+<p>　int は４バイトなので、４バイト境界に揃えられます。short は２バイトなので、２バイト境界に揃えたので問題ありません。char はバイト境界を気にしなくても、常に１回でアクセスできます。double は８バイトなので、一応同じように８バイト境界に揃えられます。</p>
+
+<p>　しかし、これらは<font color=red>コンパイラによって変わる</font>こともあるでしょう。<font color=red>コンパイラの設定</font>を変えることによって、変えることができることもあります。そして、<font color=red>ソースコード中で変える方法</font>も用意されていることもあります（用意されていないこともあります）。</p>
+
+<hr>
+
+<p>　このアラインする方法（アラインメント）を変える、つまり<font color=red>最大何バイト境界に揃えるか</font>を変える命令は <font color=red>#pragma</font> です。</p>
+
+<p>　#pragma というのは<font color=red>機種依存のいろいろな設定を行う命令</font>なので、<font color=red>この命令のできることはコンパイラによって異なります</font>。なので、#pragma でアラインメントを変えることができるコンパイラもあれば、変えられないコンパイラもあります。</p>
+
+<p>　#pragma の後にはさらに<font color=red>設定の種類を表す命令</font>がくるのですが、<font color=red>設定する項目が同じであっても</font>命令はコンパイラによって変わります（同じこともあるかもしれませんが）。自分はＶＣ＋＋を使っているので、例によってＶＣ＋＋を例にとって話します。</p>
+
+<p>　ＶＣ＋＋では <font color=red>#pragma pack</font> というものでアラインメントを変えられます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Align1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#pragma pack</font>(<font color=darkcyan>1</font>)
+<font color=blue>struct</font> SPerson
+{
+    <font color=blue>char</font>  szName[<font color=darkcyan>21</font>];  <font color=green>// 名前</font>
+    <font color=blue>int</font>   nAge;        <font color=green>// 年齢</font>
+    <font color=blue>char</font>  nBirthmonth; <font color=green>// 誕生月</font>
+    <font color=blue>char</font>  fSex;        <font color=green>// 性別</font>
+};
+<font color=blue>#pragma pack</font>()
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"SPerson のサイズは "</font> &lt;&lt; <font color=blue>sizeof</font> SPerson
+         &lt;&lt; <font color=darkcyan>" バイトです。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>SPerson のサイズは 27 バイトです。</pre></td>
+</tr>
+
+</table></center>
+
+<p>　<font color=red>#pragma pack(&lt;最大バイト単位&gt;)</font> でアラインメントを変えることができます。１，２，４，８，１６の中から選ぶことができます。</p>
+
+<p>　そして、<font color=red>#pragma pack()</font> で設定を元に戻せます。</p>
+
+<hr>
+
+<p>　次は、メンバ変数の構造体の先頭からの位置を取得してみましょう。例えば、</p>
+
+<pre>strcut SPerson
+{
+    char  szName[21];  // 名前
+    int   nAge;        // 年齢
+    char  nBirthmonth; // 誕生月
+    char  fSex;        // 性別
+};</pre>
+
+<p>の nBirthmonth はどうでしょうか？</p>
+
+<p>　えーと、sizeof szName + sizeof nAge でしょうか？　と、これでは<font color=red>あっていることも、間違っていることもあります</font>。これでは不正確ですね。<font color=red>バグ</font>です。</p>
+
+<p>　それとも、<a href="../html01/cpp01050.html" target="main">第１部第５０章</a>の４の倍数に揃えた値を求めるコードを使って、((sizeof szName + 3) &~ 3) + sizeof nAge でしょうか？　これも不正確ですね。</p>
+
+<p>　このようなときのために、stddef.h というヘッダファイルに <font color=red>offsetof</font> という<font color=red>マクロ</font>が定義されています。</p>
+
+<pre>offsetof(SPerson, nBirthmonth)</pre>
+
+<p>とすれば、<font color=red>nBirthmonth の SPerson の先頭からの位置</font>が取得できます。</p>
+
+<p>　このマクロの定義を見てみましょう。</p>
+
+<pre>#define offsetof(s,m)   (size_t)&(<font color=red>((s *)0)</font>->m)</pre>
+
+<p>　先ず、ヌルポインタを指定した構造体へのポインタでキャストしています。それから指定したメンバ変数を指定し、そのアドレスを取っています。最後に size_t（unsigned int の同義語で、sizeof の返す値の型を表す）でキャストしています。</p>
+
+<p>　つまり、「構造体の先頭アドレスを０としたときのメンバ変数のアドレス」を返しているわけです。もちろん、これは「メンバ変数の構造体の先頭からの位置」に相当します。うまいもんですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体のメンバはぎっちり詰まっていないことがある。</li>
+<li>#pragma pack でアラインメントを変更できる。</li>
+<li>メンバ変数の構造体の先頭からの位置は offsetof マクロで取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回はちょっと長かったですね。次回もどうなることやら（汗）。</p>
+
+<hr>
+
+<p align=right><a href="cpp03013.html" target="main">第１３章　精密作業</a> | <a href="cpp03015.html" target="main">第１５章　伸縮自在</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

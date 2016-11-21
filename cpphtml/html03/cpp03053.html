@@ -1,0 +1,404 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５３章 融合 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５３章　融合</font>
+</center>
+<hr>
+
+<p>　間接的に同じクラスを複数継承させる場合、メンバ変数はどうなるのでしょうか？　今回はそういう話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>同じクラスを複数継承した場合、その全てにメンバ変数が作られる。</li>
+<li>仮想継承されたクラス同士は、同時に複数継承されなくなる。</li>
+<li>継承するときに virtual をつければ仮想継承できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ずは、前回の多重継承をもうちょっとよく考えてみます。</p>
+
+<p>　では、前回の継承図をもう一度見てみましょう。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#F0A0A0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#F0A0A0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　このように、CFirstClass クラスは間接的に２つ継承されています。</p>
+
+<p>　この継承関係は多少複雑ですが、</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>に毛の生えた程度と考えればそう複雑というわけでもありません。</p>
+
+<p>　CNinja は CFirstClass を継承しています。つまり、CNinja は CFirstClass を拡張したクラスです。これは CMaster も同じです。これら CNinja と CMaster は CFirstClass を継承していて、確かに両方とも CFirstClass への参照へオブジェクトを渡せますが、これらは基本的に<font color=red>独立したクラス</font>です。</p>
+
+<p>　ここでいう「独立した」という意味は、CJohnin で２つを継承しても、<font color=red>CNinja の CFirstClass と CMaster の CFirstClass は別物である</font>という意味です。CNinja 経由で CFirstClass のメンバを呼んでも、CMaster の CFirstClass には影響を与えません。</p>
+
+<p>　これは CFirstClass にメンバ変数を持たせてやるとよく分かると思います。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">a : 0</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">a : 0</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　CNinja 経由で CFirstClass のメンバ変数 a を１に変えてみると、</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">a : 0</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#F0A0A0">a : 1</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>と、こうなります。</p>
+
+<p>　このように、<font color=red>CJohnin において２つの CFirstClass は独立して存在しています</font>。こういうイメージでしょうか？</p>
+
+<center><table border=0><tr><th bgcolor="#D0D0D0">
+
+<center><table border=0><tr>
+  <th width=10></th>
+  <th bgcolor="#B0B0B0">
+    <center><table border=0>
+      <tr>
+        <th width=10></th>
+        <th width=150 bgcolor="#F0A0A0">CFirstClass</th>
+        <th width=10></th>
+      </tr>
+    </table></center>
+    CMaster
+  </th>
+  <th width=10></th>
+  <th bgcolor="#B0B0B0">
+    <center><table border=0>
+      <tr>
+        <th width=10></th>
+        <th width=150 bgcolor="#F0A0A0">CFirstClass</th>
+        <th width=10></th>
+      </tr>
+    </table></center>
+    CNinja
+  </th>
+  <th width=10></th>
+</tr></table></center>
+
+CJohnin
+
+</th></tr></table></center>
+
+<hr>
+
+<p>　しかし、継承の方法をいろいろ考えた結果、次のような継承を行いたい場合が出てくるかもしれません。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#F0A0A0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　CFirstClass が１つになっています。つまり、<font color=red>CNinja 経由でも CMaster 経由でも、同じ CFirstClass を扱うようになる</font>わけです。</p>
+
+<p>　これがどういうことかは、やはりメンバ変数を考えると分かりやすいと思います。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">a : 0</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　このように、CFirstClass が１つしかないので、a は１つしかありません。先ず、<font color=red>CMaster 経由で a の値を調べる</font>と、もちろん<font color=red>０</font>となります。ここで <font color=red>CNinja 経由で a を変えて</font>...</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#F0A0A0">a : 1</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>↑</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#F0A0A0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>↑</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>もう一度<font color=red>CMaster 経由で a の値を調べる</font>と...</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#F0A0A0">a : 1</th>
+</tr>
+
+<tr>
+  <th align=center width=150>↓</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#F0A0A0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>↓</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>今度は<font color=red>１</font>になっているわけです。</p>
+
+<hr>
+
+<p>　では、こういった継承はどうやったらできるようになるのでしょうか？　前回までの方法ではこういった継承にはならないので、もうちょっと別の方法があることは分かると思います。</p>
+
+<p>　実は、こういった継承は<font color=red>仮想継承</font>という機構を使って行うことができます。<font color=red>仮想継承されたクラス同士は、同時に複数継承されなくなります。</font></p>
+
+<p>　つまりは、CNinja で CFirstClass を継承するときに仮想継承にして、CMaster で CFirstClass を継承するときに仮想継承にしておけば、CJohnin で CNinja と CMaster を継承しても CFirstClass は１つになるのです。</p>
+
+<p>　仮想継承するには、やはり <font color=red>virtual</font> キーワードを使います。</p>
+
+<pre><font color=blue>class</font> CNinja : <font color=blue>virtual</font> <font color=blue>public</font> CFirstClass
+{
+    ...
+};</pre>
+
+<p>　これで仮想継承できます。</p>
+
+<hr>
+
+<p>　一度に沢山話しても頭に入らないと思うので、今回は仮想継承の基本概念について話すだけにとどめ、実際のプログラムについては次回に話したいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>同じクラスを複数継承した場合、その全てにメンバ変数が作られる。</li>
+<li>仮想継承されたクラス同士は、同時に複数継承されなくなる。</li>
+<li>継承するときに virtual をつければ仮想継承できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　仮想継承は、お馴染みの iostream.h にある iostream というクラスで使われています。ios というクラスを仮想継承して istream と ostream を作り、それらを継承して iostream を作っています。仮想継承が実際にどう使われているかの例としてあげておきます。</p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03052.html" target="main">第５２章　多重継承事始２</a> | <a href="cpp03054.html" target="main">第５４章　融合２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.19</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

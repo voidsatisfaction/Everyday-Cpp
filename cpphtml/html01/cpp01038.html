@@ -1,0 +1,120 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３８章 参照のしくみ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３８章　参照のしくみ</font>
+</center>
+<hr>
+
+<p>　変数の参照はアドレスを使わないとできないと言いました。では、「参照」はどのようにして変数を参照しているのでしょうか？</p>
+
+<p>　ということで、今回は参照のしくみについて話していきたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>参照は変数（ポインタ）の一種である。</li>
+<li>参照はポインタと同じように、アドレスを使って変数を参照している。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<font color=red>変数の参照はアドレスを使わなければ不可能です。</font>すると、当然「参照」もアドレスを使っているに違いありません。</p>
+
+<p>　しかし、そうなると「参照」とポインタによる参照との違いはどうなるのでしょうか？</p>
+
+<p>　実は、<font color=red>文法的な違いのみ</font>です。& や * を付けなくていい、そのかわり「参照」自身に対する操作はできない、ただそれだけです。</p>
+
+<p>　「参照」という変数ができて、それにアドレスを入れ初期化する。すると「参照」はそのアドレスにある変数の代用品になる。こういうしくみなのです。ポインタと変わりないですね。</p>
+
+<p>　つまり、何が言いたかったかといえば、<font color=red>「参照も変数だよ。ポインタと同じようなものだよ」</font>ということです。</p>
+
+<hr>
+
+<p>　では、本当に参照という変数ができているのか確かめてみましょう。その方法としては、参照に入っているアドレスと、参照自身のアドレスを見ることが一番です。</p>
+
+<p>　「あれ？　さっき『参照』自身に対する操作はできないと言ったばかりじゃないか」と言いたいでしょうが、それはＣ＋＋言語での話です。詳しい話は抜きにしますが、<a href="../htmlword/words016.html" target="words">インラインアセンブラ</a>を使えば参照のアドレスを表示することができます。インラインアセンブラを使えば、参照自身を操作することができるのです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ref2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>char</font> format[]= <font color=darkcyan>"&a = %d\n r = %d\n&r = %d\n"</font>;
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>  a;
+    <font color=blue>int</font>& r = a;
+
+    <font color=green>// a のアドレスと、r の値と、r のアドレスを表示します</font>
+    <font color=blue>__asm</font>
+    {
+        push    <font color=darkcyan>0</font>
+        lea     eax, r
+        push    eax
+        push    r
+        lea     eax, a
+        push    eax
+        lea     eax, format
+        push    eax
+        call    printf
+        add     esp, <font color=darkcyan>20</font>
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>&a = 6618612
+ r = 6618612
+&r = 6618608</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　細かいことは抜きにしますが、これは、a のアドレスと、r に入ってるアドレスと、r 自身のアドレスを表示するプログラムです。</p>
+
+<p>　実際に r には a のアドレスが入っていて、r 自身にも別のアドレスが存在することが確認できました。</p>
+
+<p>　あ、こんなことは真似するもんじゃありませんよ（笑）。説明のためにやむなくしているだけですから。</p>
+
+<hr>
+
+<p>　今回はこれ以上することもないので、これで終わります。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>参照は変数（ポインタ）の一種である。</li>
+<li>参照はポインタと同じように、アドレスを使って変数を参照している。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01037.html" target="main">第３７章　参照</a> | <a href="cpp01039.html" target="main">第３９章　１＋１＝５？？</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.4.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

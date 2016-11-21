@@ -1,0 +1,148 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５２章 ファイルのススメ２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５２章　ファイルのススメ２</font>
+</center>
+<hr>
+
+<p>　前回はファイルへの書き込みを行いました。非常に簡単でしたね。今回は読み出しをやってみます。そして、前回説明しなかったフラグの説明も行います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>読み出しには、読み出しための場所を用意する必要がある。</li>
+<li>読み出しは r 、書き込みは w 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回 test.txt ファイルに "ファイルに書き込んじゃえ。" という文字列を書き込みました。今回は、これを読み出してみようと思います。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// File2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+    <font color=blue>char</font>  buffer[<font color=darkcyan>128</font>];
+
+    pFile = fopen(<font color=darkcyan>"test.txt"</font>, <font color=darkcyan>"r"</font>);
+    fgets(buffer, <font color=darkcyan>128</font>, pFile);
+    printf(buffer);
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>ファイルに書き込んじゃえ。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今回も、<font color=red>fgets</font> という関数で簡単に読み込むことが出来ました。この関数は<font color=red>ファイルからテキストを１行読み出す</font>関数です。最後には０（ヌルキャラクタ）がつきます。fgets で読み込んで、それを printf で表示しました。</p>
+
+<p>　ファイルからデータを読み出してそのデータを利用するには、<font color=red>ファイルからメモリにデータを読み出す</font>必要があります。つまり、読み出した<font color=red>データを入れるための場所</font>を用意してやる必要があるわけです。このような場所のことを<font color=red>バッファ</font>と呼びます。<font color=red>バッファは fgets の第１引数</font>に渡します。そして、<font color=red>バッファの大きさを第２引数</font>に渡します。</p>
+
+<p>　ここでは char buffer[128]; というバッファを作りました。１２８という数に特に意味はありませんが、多めにバッファをとっておけば期待通りに１行全部読み出せるだろう、というだけのことです。fgets では、バッファが足りない場合はバッファにおさまるだけを読み出します。バッファをオーバーして読み出すことはないので、安心を。</p>
+
+<hr>
+
+<p>　ファイルを開くときに、第２引数に "w", "r" といったフラグを指定しました。これらのフラグの意味を説明します。</p>
+
+<table align=center border=1>
+
+<tr>
+  <th>フラグ</th>
+  <th width=40%>ファイルがある場合</th>
+  <th width=40%>ファイルがない場合</th>
+</tr>
+
+<tr>
+  <th>r</th>
+  <td><font color=red>読み出し</font>モードで開きます。</td>
+  <td><font color=red>エラー</font>になります。</td>
+</tr>
+
+<tr>
+  <th>w</th>
+  <td>そのファイルの<font color=red>内容がなくなり</font>、<font color=red>書き込み</font>モードで開きます。</td>
+  <td>ファイルを<font color=red>作成</font>し、<font color=red>書き込み</font>モードで開きます。</td>
+</tr>
+
+<tr>
+  <th>a</th>
+  <td>ファイルの終端への書き込みモード（<font color=red>追加</font>モード）で開きます。</td>
+  <td>ファイルを<font color=red>作成</font>し、<font color=red>書き込み</font>モードで開きます。</td>
+</tr>
+
+<tr>
+  <th>r+</th>
+  <td><font color=red>読み出し</font>と<font color=red>書き込み</font>の両方のモードで開きます。</td>
+  <td><font color=red>エラー</font>になります。</td>
+</tr>
+
+<tr>
+  <th>w+</th>
+  <td>そのファイルの<font color=red>内容がなくなり</font>、<font color=red>読み出し</font>と<font color=red>書き込み</font>の両方のモードで開きます。</td>
+  <td>ファイルを<font color=red>作成</font>し、<font color=red>読み出し</font>と<font color=red>書き込み</font>の両方のモードで開きます。</td>
+</tr>
+
+<tr>
+  <th>a+</th>
+  <td><font color=red>読み出し</font>と<font color=red>追加</font>の両方のモードで開きます。追加時は新しいデータをファイルに書き込む前に EOF マーカー（0x1A) を削除し、書き込みが完了すると EOF マーカーが復元されます。</td>
+  <td>ファイルを<font color=red>作成</font>し、<font color=red>読み出し</font>と<font color=red>書き込み</font>の両方のモードで開きます。</td>
+</tr>
+
+</table>
+
+<p>　また、これらのフラグに続けて <font color=red><b>b</b></font> を書くと、ファイルを<font color=red>バイナリモード</font>で開きます。バイナリ、テキストモードについては、<a href="cpp01053.html" target="main">次回</a>に話します。</p>
+
+<p>　a は add（追加する）の a でしょう。追加モードでは、常にファイルの終端に書き込みます。上書きしようとしても、ファイルの終端からの書き込みになってしまいます。まさに追加モードですね。</p>
+
+<p>　このうち、<font color=red>とりあえず r と w だけ覚えておけば、あまり困ることはないでしょう</font>。r は read（読み出す）の r ですし、w は write（書き込む）の w ですから、覚えやすいです。まぁ、困ったときはヘルプに書いてありますので、そちらを見るといいでしょう。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。なんかこの２回内容が少なかったかもしれません。でも、別に手抜きってわけではありませんよ（笑）。この２回は、先ず簡単にファイル操作がどんなものかを見てもらうのが目的でした。次回からはファイルの２大モード、<font color=red>バイナリ</font>、<font color=red>テキスト</font>についての話をします。これは非常に重要なので、是非とも理解しておいて下さい。</p>
+
+<p>　では、今回の要点を復習しましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>読み出しには、読み出しための場所を用意する必要がある。</li>
+<li>読み出しは r 、書き込みは w 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01051.html" target="main">第５１章　ファイルのススメ</a> | <a href="cpp01053.html" target="main">第５３章　テキストとバイナリ</a></p>
+<p align=right><font size=-1><i>Last update was done on 6.14</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

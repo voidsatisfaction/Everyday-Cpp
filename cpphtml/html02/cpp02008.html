@@ -1,0 +1,190 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第８章 インライン関数・再び -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第８章　インライン関数・再び</font>
+</center>
+<hr>
+
+<p>　「メンバ変数はできる限りメンバ関数を通して使う」ように奨励しました。ですが、「メンバ変数の値を返すだけ」「メンバ変数の値を設定するだけ」という関数を作っても、その関数を呼ぶ時間が無駄な気がします。今回は、こういうときにピッタリな「アノ」機能が再登場します。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>inline をつけるとメンバ関数もインライン関数になる。</li>
+<li>クラスの宣言の中で実装してもインライン関数になる。</li>
+<li>インライン関数の実装はヘッダファイルで行う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　メンバ変数はメンバ関数を通して使うのが普通です。例えば、前々回の m_pnum というのもそうしていますね。こうすれば、<font color=red>変な要素を使われることがない</font>上に、<font color=red>m_pnum の値を変えられてしまうこともありません</font>。</p>
+
+<p>　もちろん、必ずそうしなくてはならないということではありませんが、そうした方がいい場合がほとんどというのが実際です。</p>
+
+<p>　ということで、前のクラスに次のようなメンバ関数を加えてみました。メモリの確保に成功したかどうかを返す関数と、配列の要素数を返す関数と、配列のサイズを返す関数の３つです。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=green>// NULL マクロは stddef.h で定義されています</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// その他の情報の取得</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Success();  <font color=green>// メモリの確保が成功したか</font>
+    <font color=blue>int</font> NumOf();     <font color=green>// 配列の要素数</font>
+    <font color=blue>int</font> SizeOf();    <font color=green>// 配列のサイズ</font>
+
+    <font color=green>// 他のメンバは省略します</font>
+};
+
+<font color=green>// メモリの確保が成功したか</font>
+<font color=blue>bool</font> CIntArray::Success()
+{
+    <font color=blue>return</font> m_pnum != NULL;
+}
+
+<font color=green>// 配列の要素数</font>
+<font color=blue>int</font> CIntArray::NumOf()
+{
+    <font color=blue>return</font> m_nNumOf;
+}
+
+<font color=green>// 配列のサイズ</font>
+<font color=blue>int</font> CIntArray::SizeOf()
+{
+    <font color=blue>return</font> m_nNumOf * <font color=blue>sizeof</font> *m_pnum;
+}</pre></td>
+</tr></table></center>
+
+<p>　...えらくすっきりした関数ですね。(^ ^;　プログラムの中の一服の清涼剤のような爽やかさを感じます。</p>
+
+<p>　しかし、関数というのはある場所に作られ、呼ぶたびに処理はそこに移動します。これには一瞬ですが時間が必要です。大きな処理なら気になりませんが、いくら何でもこれは無駄な気がします。</p>
+
+<p>　こういうときにはどうすればいいのでしたか？　そうです。<a href="../html01/cpp01066.html" target="main">第１部第６６章</a>でやった<font color=red>インライン関数</font>を使えばいいのです。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// その他の情報の取得</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Success();  <font color=green>// メモリの確保が成功したか</font>
+    <font color=blue>int</font> NumOf();     <font color=green>// 配列の要素数</font>
+    <font color=blue>int</font> SizeOf();    <font color=green>// 配列のサイズ</font>
+
+    <font color=green>// 他のメンバは省略します</font>
+};
+
+<font color=green>// メモリの確保が成功したか</font>
+<font color=red>inline</font> <font color=blue>bool</font> CIntArray::Success()
+{
+    <font color=blue>return</font> m_pnum != NULL;
+}
+
+<font color=green>// 配列の要素数</font>
+<font color=red>inline</font> <font color=blue>int</font> CIntArray::NumOf()
+{
+    <font color=blue>return</font> m_nNumOf;
+}
+
+<font color=green>// 配列のサイズ</font>
+<font color=red>inline</font> <font color=blue>int</font> CIntArray::SizeOf()
+{
+    <font color=blue>return</font> m_nNumOf * <font color=blue>sizeof</font> *m_pnum;
+}</pre></td>
+</tr></table></center>
+
+<p>　inline はクラスの宣言の中では書かず、<font color=red>実装の方にしか書きません</font>。</p>
+
+<p>　こうすれば、関数の中身は呼ばれるたびにそこに<font color=red>展開</font>されます。処理がそこに埋め込まれるのです。これで、関数を呼ぶときの時間を気にしてメンバ変数を public にするという必要はなくなります。</p>
+
+<p>　そして、クラスではインライン関数をよく使います。なのでかは知りませんが、インライン関数にする特別な書式が用意されています。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// その他の情報の取得</font>
+<font color=blue>public</font>:
+    <font color=green>// メモリの確保が成功したか</font>
+    <font color=blue>bool</font> Success()
+    {
+        <font color=blue>return</font> m_pnum != NULL;
+    }
+
+    <font color=green>// 配列の要素数</font>
+    <font color=blue>int</font> NumOf()
+    {
+        <font color=blue>return</font> m_nNumOf;
+    }
+
+    <font color=green>// 配列のサイズ</font>
+    <font color=blue>int</font> SizeOf()
+    {
+        <font color=blue>return</font> m_nNumOf * <font color=blue>sizeof</font> *m_pnum;
+    }
+
+    <font color=green>// 他のメンバは省略します</font>
+};</pre></td>
+</tr></table></center>
+
+<p>　何と、<font color=red>クラスの宣言の中で実装しています</font>。<font color=red>こうすれば、メンバ関数は inline と書かなくてもインライン関数になってくれます。</font></p>
+
+<p>　「クラスの中で宣言して、いろんなファイルで使いたいときに関数の二重定義にならないの？」と思うかもしれません。が、<a href="../html01/cpp01070.html" target="main">第１部第７０章</a>で言ったように、「インライン関数は内部リンケージになるので、定義をヘッダファイルに書いて公開」します。これで構わないのです。</p>
+
+<p>　クラスの宣言をヘッダファイルに書くときは、<font color=red>インライン関数はヘッダファイルで実装します</font>。クラス内で実装するときでも、クラス外で実装するときでも、どちらでもです。別のファイルにあったら、処理を埋め込みたくてもどんな処理を埋め込めばいいのかが分からないからですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>inline をつけるとメンバ関数もインライン関数になる。</li>
+<li>クラスの宣言の中で実装してもインライン関数になる。</li>
+<li>インライン関数の実装はヘッダファイルで行う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は、この CIntArray クラスにひそむ大きな問題点について暴露します。そして、その解決を行っていこうと思います。</p>
+
+<hr>
+
+<p align=right><a href="cpp02007.html" target="main">第７章　ファイルを分けよう</a> | <a href="cpp02009.html" target="main">第９章　コピー</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

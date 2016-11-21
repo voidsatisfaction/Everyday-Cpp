@@ -1,0 +1,226 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４８章 えっ！？　４ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４８章　えっ！？　４</font>
+</center>
+<hr>
+
+<p>　今回は例外を投げる場所を変えてみたいと思います。どこからでも投げていたようですが、「ここ」から投げるとどうなるのでしょうか？</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>catch ブロックからも例外を投げられる。</li>
+<li>catch ブロック内なら throw; で同じ例外を投げられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今まで例外を投げてきたのは、try ブロック内と、特に何もない場所だけでした。今回は <font color=red>catch ブロック内から例外を投げる</font>ことを考えてみましょう。</p>
+
+<p>　特に何もない場所で例外を投げる関数を catch ブロックから呼ぶことはできそうです。ということは、catch ブロックから例外を投げることはできそうですね。</p>
+
+<p>　しかし、その例外はどこでキャッチされるのでしょうか？　同じ try ブロックについている catch ブロックでしょうか？　それとも、その外の try ブロックについている catch ブロックでしょうか？　では、早速試してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Except3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func()
+{
+    <font color=blue>try</font>
+    {
+        <font color=blue>throw</font> 1;
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> nError)
+    {
+        <font color=red>throw "Error";</font>
+    }
+    <font color=blue>catch</font>(<font color=blue>char</font>* str)
+    {
+        <font color=green>// こっちでキャッチされるかな？</font>
+        cout &lt;&lt; "Func : " &lt;&lt; str &lt;&lt; endl;
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        Func();
+    }
+    <font color=blue>catch</font>(<font color=blue>char</font>* str)
+    {
+        <font color=green>// それともこっちかな？</font>
+        cout &lt;&lt; "main : " &lt;&lt; str &lt;&lt; endl;
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>main : Error</pre></td></tr>
+
+</table></center>
+
+<p>　無事、catch ブロックから例外を投げることができました。そして、catch ブロックから例外を投げても、その catch ブロックと同じ try についている catch ブロックではキャッチされませんでした。</p>
+
+<p>　例外はその try-catch ブロックの外、つまり main にある catch ブロックでキャッチされます。このように、<font color=red>例外は catch ブロックからなら、さらに外の try-catch ブロックに対して投げることができる</font>というわけです。</p>
+
+<hr>
+
+<p>　しかし、エラー処理でエラーが出るのはともかくとして、そのエラーの処理を外に任すというのもまた変な話です。そういう場合は catch ブロック内にまた try-catch ブロックを作ってやることになると思います。</p>
+
+<p>　それよりは、<font color=red>同じ例外をもう１度投げる</font>ことの方が多いと思います。その関数内でのエラー処理をして、それからその例外を外にも通知するというわけです。</p>
+
+<p>　つまり、こういう感じです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// Except4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func()
+{
+    <font color=blue>char</font>* buf1 = NULL;
+    <font color=blue>char</font>* buf2 = NULL;
+
+    <font color=blue>try</font>
+    {
+        buf1 = <font color=blue>new char</font>[<font color=darkcyan>0x7FFFFFFF</font>];
+        <font color=blue>if</font>(buf1 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>1</font>;
+
+        buf2 = <font color=blue>new char</font>[<font color=darkcyan>0x7FFFFFFF</font>];
+        <font color=blue>if</font>(buf2 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>2</font>;
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        <font color=blue>switch</font>(fError)
+        {
+        <font color=blue>case</font> <font color=darkcyan>2</font>:
+            <font color=blue>delete</font> [] buf1;
+        }
+        <font color=blue>throw</font> fError;
+    }
+
+    <font color=blue>delete</font> [] buf1;
+    <font color=blue>delete</font> [] buf2;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        Func();
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        cout &lt;&lt; <font color=darkcyan>"エラー終了しました。エラーコード "</font>
+             &lt;&lt; fError &lt;&lt; endl;
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　このように、<font color=red>例外が発生したことを外に知らせたいけど、内部でも終了処理が必要だ</font>、というときがあるということです。こういうときは、おそらく同じ例外を投げることになるでしょう。</p>
+
+<p>　このような場合を想定して、実は同じ例外を投げるときは特別な文法が存在します。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// Except4b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func()
+{
+    <font color=blue>char</font>* buf1 = NULL;
+    <font color=blue>char</font>* buf2 = NULL;
+
+    <font color=blue>try</font>
+    {
+        buf1 = <font color=blue>new char</font>[<font color=darkcyan>0x7FFFFFFF</font>];
+        <font color=blue>if</font>(buf1 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>1</font>;
+
+        buf2 = <font color=blue>new char</font>[<font color=darkcyan>0x7FFFFFFF</font>];
+        <font color=blue>if</font>(buf2 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>2</font>;
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        <font color=blue>switch</font>(fError)
+        {
+        <font color=blue>case</font> <font color=darkcyan>2</font>:
+            <font color=blue>delete</font> [] buf1;
+        }
+        <font color=red>throw;</font>
+    }
+
+    <font color=blue>delete</font> [] buf1;
+    <font color=blue>delete</font> [] buf2;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        Func();
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        cout &lt;&lt; <font color=darkcyan>"エラー終了しました。エラーコード "</font>
+             &lt;&lt; fError &lt;&lt; endl;
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　何と、<font color=red>throw 文に値を渡していません</font>。こうすると、<font color=red>今処理している例外と同じ例外を投げます</font>。簡単ですね。</p>
+
+<hr>
+
+<p>　例外処理に入ってから、何か異様に一章が短い気がします。次はもうちょっと長めにしてみましょうか。</p>
+
+<p>　それはともかく、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>catch ブロックからも例外を投げられる。</li>
+<li>catch ブロック内なら throw; で同じ例外を投げられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02047.html" target="main">第４７章　えっ！？　３</a> | <a href="cpp02049.html" target="main">第４９章　えっ！？　５</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.3.3</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

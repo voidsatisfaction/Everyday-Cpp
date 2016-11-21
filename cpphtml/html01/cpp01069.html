@@ -1,0 +1,255 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６９章 リンケージ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６９章　リンケージ</font>
+</center>
+<hr>
+
+<p>　１つのソースファイルで全てのプログラムを書くと、大きなプログラムになると大変なことになります。分業で開発するときにも、ファイルが１つだけというのは不便です。今回はソースファイルの分割方法...の前に、その時に必要なリンケージという概念について話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ファイルを越えて利用できるかどうかをリンケージと呼ぶ。</li>
+<li>そのファイルの外部でも利用できるものは外部リンケージを、そのファイルの内部でしか利用できないものは内部リンケージを持つと言う。</li>
+<li>変数宣言に extern をつけると別ファイルの外部リンケージのグローバル変数が扱える。</li>
+<li>関数のプロトタイプを書けば別ファイルの外部リンケージの関数が扱える。</li>
+<li>static をつければ内部リンケージになる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　グローバル変数と関数は、ファイルを越えて利用することができます。しかし、ファイルを越えて利用させたくないときは、ファイルを越えて利用できないようにすることもできます。こういった、<font color=red>ファイルを越えて利用できるかどうか</font>を<font color=red>リンケージ</font>と呼びます。</p>
+
+<p>　定義から分かるように、リンケージには２種類しかありません。その２つには外部リンケージ、内部リンケージという名前が付いています。そのファイルの<font color=red>外部でも利用できる</font>ものは<font color=red>外部リンケージ</font>を、そのファイルの<font color=red>内部でしか利用できない</font>ものは<font color=red>内部リンケージ</font>を持つと言います。</p>
+
+<p>　用語はともかく、Ｃ／Ｃ＋＋言語にはファイルを越えて利用できるかどうかと言う制限が存在しているわけです。</p>
+
+<hr>
+
+<p>　先ず、外部リンケージから話します。</p>
+
+<p>　<font color=red>外部リンケージを持たせるには、型に extern（外部）というのを加えます。</font>しかし、extern は普通省略できます。つまり、普通にグローバル変数や関数を宣言すれば、それは別のファイルでも利用できるわけです。</p>
+
+<p>　しかし、<font color=red>変数や関数は何らかの宣言をしなければ使えない</font>と前に言いました。つまり、何らかの宣言を行ってはじめて、そのファイルでも別ファイルの変数や関数を利用できるようになるわけです。</p>
+
+<p>　しかし、ここで問題になるのは二重定義の問題です。</p>
+
+<p>　ファイル１でグローバル変数 int a; を、ファイル２でもグローバル変数 int a; を定義するとします。すると、同じ名前の変数を２つ定義したので、a と使おうとしてもどちらの a なのか分かりません。なので、二重定義エラーが発生します。これは、変数の宣言が実体の定義を兼ねているからこうなるのです。</p>
+
+<p>　このように、<font color=red>変数の時には何でもかんでも extern を省略するわけにはいかない</font>のです。片方に extern をつければ二重定義エラーは出なくなります。<font color=red>extern が付いていれば、初期化しない限り実体は作られません。</font>つまり、<font color=red>１つは extern なしのものを書いておく</font>わけです。</p>
+
+<p>　あと、内部変数として extern の付いた変数を宣言することもできます。だたし、その変数は<font color=red>どこかでグローバル変数として宣言されていなければなりません</font>。</p>
+
+<p>　関数では、プロトタイプ宣言は実体の定義を兼ねていないので、<font color=red>プロトタイプ宣言をそのまま書けば、別ファイルでも使えるようになります</font>。</p>
+
+<p>　まとめると、次のプログラムのようになります。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th colspan=2>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Extern1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> a = <font color=darkcyan>2</font>;   <font color=green>// 実体</font>
+
+<font color=blue>void</font> Func()  <font color=green>// 実体</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"a = "</font> &lt;&lt; a &lt;&lt; endl;
+}</pre></td>
+
+<td><pre><font color=green>// Extern2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func();
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>extern int</font> a;
+
+    Func();
+    a = <font color=darkcyan>5</font>;
+    Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+<tr><th colspan=2>実行結果</th></tr>
+
+<tr><td colspan=2><pre>a = 2
+a = 5</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　小難しい理屈は置いておいて、最後に外部リンケージについてまとめます。</p>
+
+<font color=red>
+<ul>
+<li>変数宣言に extern をつけると、別ファイルの普通のグローバル変数が扱える。</li>
+<li>関数のプロトタイプを書けば、別ファイルの普通の関数が扱える。</li>
+</ul>
+</font>
+
+<p>　実用的には、これだけ覚えておけば充分でしょう。</p>
+
+<hr>
+
+<p>　次は、内部リンケージについてです。</p>
+
+<p>　<font color=red>内部リンケージを持たせるには、型に static を付け加えます。</font>「あれ？　static は静的な内部変数を宣言するときに使うんじゃなかったの？」と思うかも知れませんが、内部リンケージを持たせるときにもこの static を使います。</p>
+
+<p>　内部リンケージを持たせると、別ファイルでその変数を使うことができなくなります。内部リンケージでは static の省略とかができないので、これ以上あまり説明することはありません。なので、もう次のプログラムを見てやって下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th colspan=2>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Intern1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>static int</font> a = <font color=darkcyan>2</font>;
+
+<font color=blue>static void</font> Func1()
+{
+    cout &lt;&lt; <font color=darkcyan>"a(1) = "</font> &lt;&lt; a &lt;&lt; endl;
+}
+
+<font color=blue>void</font> Func2()
+{
+    Func1();
+}</pre></td>
+
+<td><pre><font color=green>// Intern2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>static int</font> a = <font color=darkcyan>9</font>;
+
+<font color=blue>void</font> Func1()
+{
+    cout &lt;&lt; <font color=darkcyan>"a(2) = "</font> &lt;&lt; a &lt;&lt; endl;
+}
+
+<font color=blue>void</font> Func2();
+
+<font color=blue>int</font> main()
+{
+    Func1();
+    Func2();
+    a = <font color=darkcyan>5</font>;
+    Func1();
+    Func2();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+<tr><th colspan=2>実行結果</th></tr>
+
+<tr><td colspan=2><pre>a(2) = 9
+a(1) = 2
+a(2) = 5
+a(1) = 2</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　Intern1.cpp では a と Func1 に、Intern2.cpp では a に内部リンケージを持たせました。</p>
+
+<p>　さて、main は Intern2.cpp にあるわけですから、<font color=red>main においては Intern1.cpp の a と Func1 は使えない</font>ことになります。</p>
+
+<p>　で、main には Func1 の呼び出しがありますが、ここでは Intern2.cpp にある、外部リンケージを持った Func1 を呼び出すことになります。</p>
+
+<p>　で、この Func1 では a を使おうとしています。この Func1 は Intern2.cpp にあるので、やはり <font color=red>Intern1.cpp の a は使えない</font>ことになります。ここでは、Intern2.cpp にある、内部リンケージを持った a のことになります。</p>
+
+<p>　以上より、初めの Func1 では a(2) = 9 と表示されるわけです。</p>
+
+<p><br></p>
+
+<p>　で、次は Func2 の呼び出しです。Func2 は Intern1.cpp で定義されていますが、これは外部リンケージを持っています。で、Intern2.cpp では Func2 のプロトタイプ宣言がされています。なので、ここでの Func2 の呼び出しは Intern1.cpp の Func2 を普通に呼び出すことになります。</p>
+
+<p>　で、この Func2 では Func1 を使おうとしています。しかし、Intern1.cpp では Func1 は２つ使える可能性があります。１つは Intern1.cpp にある内部リンケージを持った Func1 で、もう１つは Intern2.cpp にある外部リンケージを持った Func1 です。</p>
+
+<p>　しかし、この場合<font color=red>内部リンケージが優先されます</font>。Intern1.cpp に static のついていないプロトタイプを書いたところで、やはり内部リンケージを持った Func1 が優先されるのです。</p>
+
+<p>　なので、ここでは Intern1.cpp の Func1 が呼ばれます。</p>
+
+<p>　で、この Func1 でも a が使われています。これはもうわかりますね。Intern1.cpp の Func1 なので、Intern1.cpp にある a が使われます。</p>
+
+<p>　以上より、初めの Func2 では a(1) = 2 と表示されるわけです。</p>
+
+<p><br></p>
+
+<p>　ここで一旦まとめておきます。</p>
+
+<ul>
+<li>main で Func1 を呼ぶと Intern2.cpp の Func1 が呼ばれ、Intern2.cpp の a が表示される。</li>
+<li>main で Func2 を呼ぶと Intern1.cpp の Func1 が呼ばれ、Intern1.cpp の a が表示される。</li>
+</ul>
+
+<p><br></p>
+
+<p>　で、次に a に５を代入しています。main は Intern2.cpp にあるので、この a は Intern2.cpp の a になります。つまり、<font color=red>Intern1.cpp の a の値は変わらず</font>、<font color=red>Intern2.cpp の a の値だけが５になる</font>わけです。</p>
+
+<p>　では、これを確かめてみましょう。</p>
+
+<p>　次に Func1 を呼んでいます。これは Intern2.cpp の a を表示します。確かに５に変わっていることが分かりますね。</p>
+
+<p>　で、また次に Func2 を呼んでいます。これは Intern1.cpp の a を表示します。確かに数値は２のままで変わっていないことが分かります。</p>
+
+<p>　このように、内部リンケージ、外部リンケージという違いは、プログラムの動作に大きな影響を与えるのです。</p>
+
+<hr>
+
+<p>　ちなみに、extern や static のようなものを<font color=red>記憶クラス指定子</font>と呼びます。他には auto と register というのがありますが、ろくに使わないものなので（auto に至っては絶対使わない）ここでは話しません。</p>
+
+<p>　そして、extern, static, auto, register で決められるものを、まとめて<font color=red>記憶クラス</font>と呼びます。まぁ、もう用語は嫌でしょうから、これらは覚えておく必要はないでしょう。（自分も用語は嫌いです。）頭の片隅くらいに置いておけばいいでしょうか？</p>
+
+<hr>
+
+<p>　今回はかなりくどい章になってしまいました。もうちょっとすっきり書きたかったのですが、誤解があると困る章なので、ここまでくどくなってしまいました。</p>
+
+<p>　では、くどいようですが、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ファイルを越えて利用できるかどうかをリンケージと呼ぶ。</li>
+<li>そのファイルの外部でも利用できるものは外部リンケージを、そのファイルの内部でしか利用できないものは内部リンケージを持つと言う。</li>
+<li>変数宣言に extern をつけると別ファイルの外部リンケージのグローバル変数が扱える。</li>
+<li>関数のプロトタイプを書けば別ファイルの外部リンケージの関数が扱える。</li>
+<li>static をつければ内部リンケージになる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　ああ、要点もくどいです。</p>
+
+<p>　次回は、いよいよソースファイルの分割を行います。では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01068.html" target="main">第６８章　寿命</a> | <a href="cpp01070.html" target="main">第７０章　仰山のファイル</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

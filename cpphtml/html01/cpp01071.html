@@ -1,0 +1,186 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７１章 借りたら返す -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７１章　借りたら返す</font>
+</center>
+<hr>
+
+<p>　今までは、変数を作ることによってメモリを使用してきました。しかし、それだけでは不便なことがあります。その「不便なこと」については後の章で話すとして、今回はもう１つのメモリの確保法について話そうと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>new &lt;型&gt; でメモリを確保できる。</li>
+<li>結果は &lt;型&gt; へのポインタで受ける</li>
+<li>使い終わったら必ず delete &lt;アドレス&gt;; でメモリを解放する</li>
+<li>new に失敗すると NULL が返ってくる。</li>
+<li>メモリの確保が失敗する可能性を無視してはいけない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今までは変数を作ってメモリを利用してきましたが、実はメモリはもっと自由に利用することができます。</p>
+
+<p>　とりあえず、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// New1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>* p;
+
+    p = <font color=blue>new int</font>;
+
+    *p = <font color=darkcyan>0</font>;
+    cout &lt;&lt; *p &lt;&lt; endl;
+
+    <font color=blue>delete</font> p;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　何やら、ポインタを作ってますね。次に、それに <font color=red>new int</font> という謎のものを代入しています。</p>
+
+<p>　で、次に、何とこのポインタを使って参照を行っているではありませんか！　ポインタを変数のアドレスで初期化していないというのにですよ！　で、何事もなかったかのように *p を表示しています。</p>
+
+<p>　で、最後に何やら <font color=red>delete</font> という謎のまじないをして、プログラムが終わっています。謎だらけですね。</p>
+
+<p>　ポインタは参照先がきちんとしていないと使ってはダメなはずです。ということは、この <font color=red>new int</font> というのは<font color=red>参照可能な何らかのアドレス</font>を返すに違いありません。一体これは何者なのでしょうか？</p>
+
+<hr>
+
+<p>　実は、この new というのは<font color=red>メモリを確保する演算子</font>だったのです。しかし、「メモリを確保する」とはどういうことなのでしょうか？</p>
+
+<p>　メモリというのは、いろいろなプログラムが使用しています。しかし、メモリを好き勝手に使っていると、他のプログラムが、時には自分が使っていたメモリすらも横取りしてしまい、その値を壊してしまうことになるかもしれません。</p>
+
+<p>　そこで、メモリを使いたいときには「これだけメモリを使いたいんですけど...」とＯＳに頼む必要があるのです。それが「メモリを確保する」ということなのです。</p>
+
+<p>　関数や静的変数は、プログラムをメモリ上にロードするときにＯＳが確認します。試しにものすごい大きな静的変数を持つプログラムを作ってみて下さい。それをいくつも起動すると、いずれメモリが足りなくなって起動できなくなると思います。ＯＳが「もうメモリが足りないよ」と言ってくるのです。</p>
+
+<p>　自動変数は、あらかじめ自動変数用の領域が最初に用意され、そこに順次値を置いていくようになっています。つまりは、これもプログラムをメモリ上にロードするときにＯＳが確認するわけです。</p>
+
+<p>　一方この new というのは、<font color=red>プログラムを実行している最中に新たにメモリを確保したいとき</font>に使うのです。ＯＳが「使っていいよ」と言ってくれれば、そのメモリを使うことができるようになるわけです。このように、プログラムの実行中にメモリを確保することを<font color=red>「メモリを動的に確保する」</font>といいます。</p>
+
+<p>　そのメモリの位置、つまり<font color=red>アドレスは new が返してくれます</font>。これをポインタに入れておけば、新たに確保したメモリを使えるようになるわけですね。<a href="cpp01033.html" target="main">第３３章</a>で言ったように「アドレスに * をつけると、そこのメモリを扱える」ので、*p とすれば新たに確保したメモリを操作することができるのです。</p>
+
+<p>　この、new で確保できるメモリのある領域のことを<font color=red>フリーストア（またはヒープ）</font>と呼びます。</p>
+
+<p>　で、このメモリはあくまで「借り物」です。ジャイアンじゃないのですから、借りたものはきちんと返すのが筋です。借りっぱなしだと、<font color=red>他のプログラムがいつまでたってもそのメモリが使えなくなってしまいます</font>からね。そのメモリが必要な間は返す必要はありませんが、必要がなくなったらきちんとＯＳにメモリを返す必要があります。このことを<font color=red>「メモリを解放する」</font>と呼びます。</p>
+
+<p>　そのメモリを解放するための演算子が <font color=red>delete</font> なわけです。delete には確保したメモリのアドレスを渡します。これできちんとメモリが解放されて、プログラムをようやく正しく終わらせることができるわけです。</p>
+
+<p>　<font size=+4 color=red>new で確保したメモリは、最終的には全て delete で解放して下さい。</font>これは最上級に重要なことです。</p>
+
+<p>　例えば、new で確保して、そのアドレスを p というポインタに入れておくとします。で、この p を別の変数に保存したり、delete したりしないまま <font color=red>p の値を変えてしまう</font>と、<font color=red>もうこの領域は自分で開放することは二度とできなくなってしまいます</font>。他にも、<font color=red>自動変数でアドレスを受けた後にそのまま関数を抜けてしまう</font>と、やはりもう二度と解放できなくなってしまいます。こうした処理が何度も行われると、知らない間にメモリを食いつぶし、最後にはメモリが一杯になってしまうことさえあります。</p>
+
+<p>　このように、メモリを解放していないがために、その領域を再利用できなくなってしまうことを<font color=red>メモリリーク</font>と言います。メモリリークは原因箇所を特定することが難しく、<font size=+3 color=red>メモリリークはプログラムのバグにおいて３本の指に入る最悪なバグです。</font>借りたものはきちんと返さないといけないのです。このことは肝に銘じておいて下さい。</p>
+
+<hr>
+
+<p>　で、もうちょっと話すことがありますね。一体、さっきはどれだけのメモリを確保したのでしょうか？　そして、それはどのように指定することができるのでしょうか？</p>
+
+<p>　上のプログラムでは <font color=red>new int</font> と書きました。こうすると、<font color=red>int 型の変数が入るだけのメモリが確保されます</font>。new char とすると char 型の変数が入るだけのメモリが、new double とすると double 型の変数が入るだけのメモリが確保されます。</p>
+
+<p>　つまりは、<font color=red>new &lt;型&gt; とすればその型の変数が入るだけのメモリが確保される</font>のです。</p>
+
+<p>　この型には配列を指定することも、ポインタを指定することもできます。（配列を指定するときの話は次回に回します。）ただ、<font color=red>参照だけは作れません</font>。参照自体は操作できないということは、参照への参照、参照へのポインタは作れないということです。なので、メモリを確保しても使うことはできません。まぁ、初期化もできませんしね。</p>
+
+<p>　で、new int とすればそのアドレスは int* で、new char とすればそのアドレスは char* で受けます。このように、<font color=red>new &lt;型&gt; としたときは、そのアドレスは普通は &lt;型&gt; へのポインタで受けます</font>。</p>
+
+<p>　で、delete でメモリを解放するときには、この new から返ってきたアドレスを渡せばいいです。アドレスさえ正しければ、new のアドレスを受けたときのポインタを使わなくても構いません。</p>
+
+<hr>
+
+<p>　さて、メモリはＯＳに頼んで貸してもらうと言いました。このとき<font color=red>メモリが一杯</font>だとどうなるのでしょうか？　そのときは、ＯＳは「ちょっと貸せませんねぇ」と言ってきます。つまり、<font color=red>メモリの確保に失敗します</font>。</p>
+
+<p>　そういうときは、new は「例のアレ」を返してきます。そうです。<a href="cpp01063.html" target="main">第６３章</a>でやった<font color=red>ヌルポインタ</font>です。ここでも、ヌルポインタは失敗したときの目印として使われているわけですね。</p>
+
+<p>　なので、上のプログラムは正しくは次のように書き直す必要があるのです。</p>
+
+<center><table border=1>
+
+<tr>
+<td><pre><font color=green>// New1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>* p;
+
+    p = <font color=blue>new int</font>;
+    <font color=red>if(p == NULL)
+        return 0;</font>
+
+    *p = <font color=darkcyan>0</font>;
+    cout &lt;&lt; *p &lt;&lt; endl;
+
+    <font color=blue>delete</font> p;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+</table></center>
+
+<p>　この赤で書かれた部分がないと、メモリの確保に失敗したときエラーになってしまいますね。ファイルの時もそうでしたが、<font color=red>「メモリの確保は失敗することがある」</font>ということを<font color=red>必ず</font>考えてプログラムを組む必要があります。</p>
+
+<hr>
+
+<h4>補足</h4>
+
+<p>　C++ の新しい仕様では、new が失敗した場合の振る舞いが違います。具体的に言うと <font color=red>bad_alloc 例外が投げられる</font>わけですが、今の段階では例外を教えてないのでよく分からないと思います。新しいコンパイラを使ってる人は、多少大雑把に言うと、今のところは <font color=red>new 失敗時の処理を無視して構いません</font>（失敗した時点でプログラムが終了します）。</p>
+
+<p>　例外に関しては<a href="../html02/cpp02045.html" target="main">第２部第４５章</a>を、bad_alloc に関しては<a href="../html03/cpp03049.html" target="main">第３部第４９章</a>を参照してください。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>new &lt;型&gt; でメモリを確保できる。</li>
+<li>結果は &lt;型&gt; へのポインタで受ける</li>
+<li>使い終わったら必ず delete &lt;アドレス&gt;; でメモリを解放する</li>
+<li>new に失敗すると NULL が返ってくる。</li>
+<li>メモリの確保が失敗する可能性を無視してはいけない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　メモリの動的確保はプログラムにおいてとても重要です。その一方で、メモリリークの危険性を常にはらんでいます。new と delete の対応には充分気を回して下さい。</p>
+
+<p>　次回は配列の確保について話したいと思います。では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01070.html" target="main">第７０章　仰山のファイル</a> | <a href="cpp01072.html" target="main">第７２章　借りたら返す２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2004.1.22</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

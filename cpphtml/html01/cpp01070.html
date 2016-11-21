@@ -1,0 +1,197 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７０章 仰山のファイル -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７０章　仰山のファイル</font>
+</center>
+<hr>
+
+<p>　ソースファイルは別に１つである必要はありません。今回は、複数のソースファイルを扱う方法について話したいと思います。</p>
+
+<p>　例によって半分はＶＣ＋＋での話になります。現在バージョン６を使っているので、バージョン６での説明になります。二重定義防止についての話は共通の話なので、そこは読み飛ばさないで下さいね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ファイルを新規作成すれば、それだけで複数ソースのできあがり。</li>
+<li>あるソースで作った関数を公開したいときは、ヘッダファイルを作るとよい。</li>
+<li>const 変数とインライン関数は内部リンケージを持つ。</li>
+<li>ヘッダファイルには必ず二重定義防止コードを書く！！</li>
+<li>二重定義防止コードは<br>#ifndef &lt;固有なマクロ名&gt;<br>#define &lt;固有なマクロ名&gt;<br>...宣言...<br>#endif<br>となる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、プロジェクトへのファイルの追加、プロジェクトからのファイルの削除については<a href="cpp01004.html" target="main">第４章</a>で説明しました。新規作成についても説明しました。</p>
+
+<p>　このときはプロジェクトからファイルを全部なくしてからファイルを追加したり新規作成したりしました。では、<font color=red>ファイルを全部なくさずに追加したり新規作成したりする</font>とどうなるのでしょうか？</p>
+
+<p>　そうです。それでもう<font color=red>複数ソースファイルのプロジェクトのできあがり</font>なのです。<a href="cpp01027.html" target="main">第２７章</a>でもやったことがあるかもしれませんね。</p>
+
+<p>　しかし、第２７章ではソースファイルを２つ作ることはしませんでした。ソースファイルが２つあると、一体どうなるのでしょうか？　なんて、前回にもうソースファイルを２つ使って説明しましたね。<font color=red>リンケージさえ分かっていれば、もう話すことはほとんどありません。</font></p>
+
+<p>　ただ、どこかに main 関数がないといけない...というのは注意する必要もないでしょうか？　そうですね。<font color=red>main 関数は１つでなくてはいけない</font>、という方が注意することでしょうか。</p>
+
+<hr>
+
+<p>　前回の話で気が付いたかも知れませんが、ソースファイルが２つ以上あるとき、それらは<font color=red>別々に<a href="../htmlword/words014.html" target="words">コンパイル</a>されます</font>。</p>
+
+<p>　片方のソースファイルで宣言を行っても、もう片方のファイルではまた別に宣言を行わないといけないわけです。しかし、それでも二重定義エラーは起こるので、extern を付けたり、プロトタイプのみを書くようにしたりするのでしたね。</p>
+
+<p>　つまり、「ある（外部リンケージの）実体の定義が行われた」という情報は全ファイル中に１個しか存在できませんが、「ある（全く同一の）宣言が行われた」という情報は全ファイル中に何個あっても構わないのです。</p>
+
+<p>　このカラクリを解くカギは<a href="../htmlword/words015.html" target="words">リンク</a>という作業にあります。異なるファイルに同じ変数を定義したときの二重定義エラーをよく見ると、コンパイルエラーとは書いておらず、リンクエラーとなっていると思います。</p>
+
+<p>　先ず、コンパイルすると中間ファイルが作成されます。これを<font color=red>オブジェクトファイル</font>と呼びます。ここには、どんな変数が、どんな関数が定義され、それらがどんなリンケージを持っているかが書かれています。</p>
+
+<p>　しかし、コンパイルは各ソースファイル毎に<font color=red>全く独立に</font>行われるため、この段階では二重定義が起こっているのかどうかが全く分かりません。</p>
+
+<p>　で、リンクはこれを束ねて実行ファイルなどに変換する作業です。このときに、どんな変数が、どんな関数が定義されているかをチェックします。で、変数や関数が参照されているところに、リンケージを確認しながら実体の位置を書き込むわけです。異なるファイルに同じ変数を定義したときの二重定義は、この作業を行うときに発生するのです。</p>
+
+<p>　<font color=red>実体がいくつもあれば、このときに位置が確定しません。</font>なので、エラーがでるわけです。単純な話ですね。</p>
+
+<hr>
+
+<p>　さて、あるファイルである関数を作りました。この関数を別のファイルでも使いたいと思います。そんなときは、<a href="cpp01027.html" target="main">第２７章</a>で話したように<font color=red>ヘッダファイル</font>を利用すると便利です。（インクルードの機能については再確認しておくことを勧めます。）</p>
+
+<p>　ヘッダファイルに関数のプロトタイプや、extern 指定の変数宣言を書いておくわけです。それをインクルードすれば、いちいち毎回プロトタイプなどを書かずにすむわけですね。</p>
+
+<p>　同じように、ヘッダファイルにはよく使うマクロの定義なども書いておくと便利でしょう。あとは、const 定数や、インライン関数を書いておくといいでしょう。<font color=red>const 定数やインライン関数は内部リンケージになる</font>ので、定義をヘッダファイルに書いて公開します。（注：Ｃ言語では const 定数も外部リンケージです。）これらは（普通は）コンパイル時にデータが埋め込まれ、リンクは行われないからです。</p>
+
+<p>　こうやっていろいろ宣言や定義を書いていくと、ある問題が起こってきます。それは<font color=red>二重定義</font>の問題です。これはリンクの段階での二重定義ではなく、<font color=red>コンパイルの段階での</font>二重定義です。</p>
+
+<pre>#define ELEM(array)   (sizeof (array) / sizeof *(array))
+#define ELEM(array)   (sizeof (array) / sizeof *(array))</pre>
+
+<p>というやつです。ELEM を２回定義しようとしたので、二重定義になります。</p>
+
+<pre>#define ELEM(array)   (sizeof (array) / sizeof *(array))</pre>
+
+<p>とだけ書いてあるヘッダファイルを２回インクルードするとこうなります。ヘッダファイルでヘッダファイルをインクルードするということもあり、こういう事をしていると「いつの間にか２回インクルードしてしまっていた」ということも<font color=red>結構起こります</font>。</p>
+
+<p>　なので、<font size=+2 color=red>ヘッダファイルには<font size=+3>必ず</font>二重定義防止コードを書くことになっています</font>。お、文字がでかいです。ここはとても重要です。２回目以降のインクルードの時には、インクルードを行わないようにすることができるのです。</p>
+
+<p>　それには <font color=red>#ifndef と #define と #endif</font> を使います。おや、見慣れないものが出てきましたね。これら、<font color=red>先頭に # の付いた命令</font>は<font color=red>プリプロセッサディレクティブ</font>（プリプロセッサ指令）と呼びます。</p>
+
+<p>　#include や #define を見てもらえれば分かりますが、これらは<font color=red>コンパイラがソースファイルを解析する前にいろいろ処理したいときに使います</font>。処理するもの（プロセッサ）が処理を行う前（プリ）に送る指令（ディレクティブ）だから、プリプロセッサディレクティブなわけです。しかし、実際にはコンパイラに対する指令と考えても構いません。実際にそういうプリプロセッサディレクティブも存在します。</p>
+
+<p>　で、これらをどう使えば二重定義を防げるかですが、先ずは次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th colspan=2>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// DblDef1.h</font>
+<font color=red>#ifndef DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED
+#define DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED</font>
+
+<font color=blue>#define</font> ELEM(array)   (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=red>#endif // #ifndef DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED</font></pre></td>
+
+<td><pre><font color=green>// DblDef1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"DblDef.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"DblDef.h"</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　どうでしょうか？　実際にコンパイルしてみて下さい。二重定義が出ないでしょう？</p>
+
+<p>　次に、DblDef1.h の初めの方の #define 文を<a href="../htmlword/words025.html" target="words">コメントアウト</a>してみて下さい。こうしてコンパイルすると二重定義の警告が出るはずです。</p>
+
+<p>　この赤で書かれた部分が二重定義防止コードなわけです。簡単に書くと、次のようになります。</p>
+
+<pre><font color=red>#ifndef &lt;マクロ名&gt;
+#define &lt;マクロ名&gt;
+
+... ここに定義を書く ...
+
+#endif</font></pre>
+
+<p>　#ifndef 〜 #endif で囲まれた部分は、#ifndef の後にかかれた名前が<font color=red>定義されていなければコンパイルされ</font>、<font color=red>定義されていればコンパイルされません</font>。ifndef は if not defined（もし定義されていなければ）の略ですね。</p>
+
+<p>　実際にインクルードを展開したコードを書いてみると、以下のようになります。</p>
+
+<center><table border=1>
+
+<tr>
+<td><pre><font color=green>// DblDef1.cpp</font>
+<font color=blue>#ifndef</font> DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED
+<font color=blue>#define</font> DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED
+
+<font color=blue>#define</font> ELEM(array)   (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>#endif</font> <font color=green>// #ifndef DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED</font>
+<font color=red>#ifndef DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED</font>
+<font color=gray>#define DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED
+
+#define ELEM(array)   (sizeof (array) / sizeof *(array))</font>
+
+<font color=red>#endif // #ifndef DBLDEF1_H_fjds3l3kfj28adl9ja_INCLUDED</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+</table></center>
+
+<p>　１回目の #ifndef では、後続の名前は定義されていないので、#endif までを無事コンパイルできます。で、その中で「後続の名前」のマクロを定義しています。すると、２回目の #ifndef では後続の名前は定義されていて、#endif までは無視されます。</p>
+
+<p>　このようにして、二重定義を防ぐことができるのです。</p>
+
+<p>　注意する点は、「定義する名前は各ファイル毎に変える」という点です。それだけではなく、<font color=red>この名前はここでしか定義されないようにして下さい</font>。上で名前の中にランダムな文字を入れているのは用心のためです。</p>
+
+<p>　まぁ、<font color=red>仕組みがよく分からないなら、丸覚えしてしまって下さい</font>。分からないから使わないということだけは勘弁して下さい。</p>
+
+<p>　あと、最後に注意しておきますが、この二重定義防止コードはコンパイル時の二重定義を防止するだけです。<font color=red>リンク時の二重定義までは防止できない</font>ので、こういった二重定義が防止できなかったからといって文句を言うのはやめて下さいね。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ファイルを新規作成すれば、それだけで複数ソースのできあがり。</li>
+<li>あるソースで作った関数を公開したいときは、ヘッダファイルを作るとよい。</li>
+<li>const 変数とインライン関数は内部リンケージを持つ。</li>
+<li>ヘッダファイルには必ず二重定義防止コードを書く！！</li>
+<li>二重定義防止コードは<br>#ifndef &lt;固有なマクロ名&gt;<br>#define &lt;固有なマクロ名&gt;<br>...宣言...<br>#endif<br>となる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　何だか最近文字と用語が多くていけませんね。次回からは少し簡素にしたいものですが...どうなることやら。(_ _;</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01069.html" target="main">第６９章　リンケージ</a> | <a href="cpp01071.html" target="main">第７１章　借りたら返す</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,448 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２部 クラスを知ろう -</title>
+</head>
+
+<body bgcolor=white>
+
+<center>
+<font size=6>第２部　クラスを知ろう</font>
+</center>
+<hr>
+
+<p>　第２部では、主にＣ＋＋に特有な機能について話していきます。第１部でも「cout」、「参照」などＣ＋＋特有な機能も説明しましたが、ここではもっとＣ＋＋としての性質の強い「クラス」「テンプレート」「例外処理」「名前空間」などを中心に話を進めていこうと思います。</p>
+
+<p>　いよいよＣ＋＋らしくなってきたというところですね。</p>
+
+<hr>
+
+<center><table border=0 cellpadding=0>
+
+<tr>
+  <td valign=center align=left><a href="cpp02001.html">第１章　とにかく作ってみよう</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>クラスの基本</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02002.html">第２章　メンバ</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>メンバ関数</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02003.html">第３章　コンストラクタ</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>コンストラクタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02004.html">第４章　引数付きの構築</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>引数付きコンストラクタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02005.html">第５章　隠せ！</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>private アクセス指定子</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02006.html">第６章　デストラクタ</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>デストラクタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02007.html">第７章　ファイルを分けよう</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>分割コンパイル</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02008.html">第８章　インライン関数・再び</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>inline メンバ関数</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02009.html">第９章　コピー</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>コピーコンストラクタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02010.html">第１０章　不動の構え</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>const オブジェクト (1)</td>
+<tr>
+
+<tr>
+  <td colspan=5>　</td>
+</tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02011.html">第１１章　子孫</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>継承の基本</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02012.html">第１２章　第３のアクセス指定子</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>protected アクセス指定子</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02013.html">第１３章　関数のすげ替え</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>オーバーライド</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02014.html">第１４章　仮想関数</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>virtual 関数</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02015.html">第１５章　アップキャスト</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>派生元の型へのポインタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02016.html">第１６章　派生と構築</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>継承とコンストラクタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02017.html">第１７章　派生と構築２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>仮想関数とコンストラクタ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02018.html">第１８章　ピュア</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>純粋仮想関数</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02019.html">第１９章　動的オブジェクト</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>クラスの実体の動的確保</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02020.html">第２０章　デストラクタ（仮）</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>仮想デストラクタ</td>
+<tr>
+
+<tr>
+  <td colspan=5>　</td>
+</tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02021.html">第２１章　メンバの呼び分け</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>アクセス解決演算子</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02022.html">第２２章　メンバ定数</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>const オブジェクト (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02023.html">第２３章　同姓同名２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>演算子のオーバーロード (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02024.html">第２４章　同姓同名３</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>演算子のオーバーロード (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02025.html">第２５章　これ。</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>this ポインタ (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02026.html">第２６章　これ。２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>this ポインタ (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02027.html">第２７章　暗黙の了解</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>暗黙の型変換</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02028.html">第２８章　静かなるメンバ</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>静的メンバ変数 (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02029.html">第２９章　静かなるメンバ２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>静的メンバ変数 (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02030.html">第３０章　静かなるメンバ３</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>静的メンバ関数</td>
+<tr>
+
+<tr>
+  <td colspan=5>　</td>
+</tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02031.html">第３１章　冶金工場</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>関数テンプレートの基礎 (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02032.html">第３２章　冶金工場２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>関数テンプレートの基礎 (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02033.html">第３３章　冶金工場３</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>関数テンプレートの仕組み</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02034.html">第３４章　冶金工場４</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>関数テンプレートの明示的呼び出し</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02035.html">第３５章　冶金工場５</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>関数テンプレートの基礎 (3)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02036.html">第３６章　特注の鋳型</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>関数テンプレートのオーバーライド</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02037.html">第３７章　クラステンプレート</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>クラステンプレート (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02038.html">第３８章　クラステンプレート２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>クラステンプレート (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02039.html">第３９章　クラステンプレート３</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>クラステンプレートと静的メンバ</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02040.html">第４０章　シリアル入り</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>定数のテンプレート引数</td>
+<tr>
+
+<tr>
+  <td colspan=5>　</td>
+</tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02041.html">第４１章　キャスト</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>Ｃ＋＋のキャスト (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02042.html">第４２章　ダウンキャスト</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>Ｃ＋＋のキャスト (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02043.html">第４３章　心の友よ！</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>フレンド</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02044.html">第４４章　テンポラリ</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>テンポラリオブジェクト</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02045.html">第４５章　えっ！？</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>例外処理 (1)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02046.html">第４６章　えっ！？　２</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>例外処理 (2)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02047.html">第４７章　えっ！？　３</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>例外処理 (3)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02048.html">第４８章　えっ！？　４</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>例外処理 (4)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02049.html">第４９章　えっ！？　５</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>例外処理 (5)</td>
+<tr>
+
+<tr>
+  <td valign=center align=left><a href="cpp02050.html">第５０章　異姓同名</a></td>
+  <td width=20>　</td>
+  <td>……</td>
+  <td width=20>　</td>
+  <td valign=center align=left>名前空間</td>
+<tr>
+
+</table></center>
+
+<hr>
+
+<p align=right><font size=-1><i>Last update was done on 2004.1.26</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

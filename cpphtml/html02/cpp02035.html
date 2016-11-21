@@ -1,0 +1,195 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３５章 冶金工場５ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３５章　冶金工場５</font>
+</center>
+<hr>
+
+<p>　今回はテンプレートの強力さを見てみます。前回の終わりのヒントを元に試してみた人も改めて見ておいて下さい。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>TYPE にはクラスも指定できる。</li>
+<li>指定した演算ができなければコンパイルに失敗する。</li>
+<li>引数などで TYPE をそのまま使う必要はない。</li>
+<li>TYPE&amp; に即値を渡すと一時変数が作られ、渡される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ず最初に、関数テンプレート Max をもう一度見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 大きい方の値を返す関数</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE Max(TYPE a, TYPE b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　a と b とを比較し、大きな方を返すという処理を行っています。</p>
+
+<p>　ここで比較には &gt; という演算子を使っています。ということは、<font color=red>&gt; 演算子をオーバーロードしていたらクラスでも Max が使える</font>のではないでしょうか？</p>
+
+<p>　それではやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Temp4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>class</font> CStr
+{
+<font color=blue>private</font>:
+    <font color=blue>char</font> m_str[<font color=darkcyan>128</font>];
+
+<font color=blue>public</font>:
+    CStr(<font color=blue>const char</font>* str)
+    {
+        <font color=green>// strncpy はバッファサイズを考慮する
+        // 文字列コピー関数です
+        // バッファサイズを越えるものをコピーするときは、
+        // 最後にヌルターミネータは付きません</font>
+        strncpy(m_str, str, <font color=blue>sizeof</font> m_str);
+        m_str[(<font color=blue>sizeof</font> m_str) - <font color=darkcyan>1</font>] = <font color=darkcyan>0</font>;
+    }
+    <font color=blue>const char</font>* Get(){ <font color=blue>return</font> m_str; }
+    <font color=blue>bool</font> <font color=red>operator &gt;</font> (CStr&amp; rother)
+    {
+        <font color=blue>return</font> strcmp(m_str, rother.m_str) &gt; <font color=darkcyan>0</font>;
+    }
+};
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE Max(TYPE a, TYPE b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+
+<font color=blue>int</font> main()
+{
+    CStr str1(<font color=darkcyan>"Would you like to program?"</font>),
+         str2(<font color=darkcyan>"Would you love to program?"</font>);
+
+    cout &lt;&lt; Max(str1, str2).Get() &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>Would you love to program?</pre></td></tr>
+
+</table></center>
+
+<p>　何と、クラスのオブジェクトにも Max が使えてしまいました。</p>
+
+<p>　このように、<font color=red>&gt; 演算子さえ使えれば Max 関数は使える</font>のです。</p>
+
+<p>　では、operator &gt; 関数を削除してみましょう。&gt; 演算子が使えなければどうなるのでしょうか？</p>
+
+<center><table border=1>
+
+<tr><td><pre>Temp4.cpp(26) : 二項演算子 '&gt;' :
+        'class CStr' は、この演算子または定義済の演算子に適切な型への変換の定義を行いません。
+Temp4.cpp(34) : 'class CStr Max(class CStr,class CStr)' の参照を確認してください</pre></td></tr>
+
+</table></center>
+
+<p>　コンパイルエラーになりました。</p>
+
+<p>　つまり、<font color=red>&gt; 演算子が使えなければ実体化ができなくなる</font>のです。</p>
+
+<p>　これらのことは別に演算子に限ったことではなく、<font color=red>メンバなどにも適用できます</font>。つまり、a.Disp(); としておけば、Disp というメンバ関数を持っていればテンプレートは実体化でき、持っていなければ実体化できないということです。</p>
+
+<hr>
+
+<p>　クラスも渡せるということは、値渡しでなく参照渡しにしたいですね。しかし、上のコンパイルエラーの中にもあるように、そのままでは値渡しになってしまいます。</p>
+
+<p>　そういう場合は<font color=red>戻り値、引数の型を TYPE&amp; にしてしまえばいい</font>のです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 大きい方の値を返す関数（参照渡し）</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE<font color=red>&amp;</font> MaxR(TYPE<font color=red>&amp;</font> a, TYPE<font color=red>&amp;</font> b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　ここで注意することは<font color=red>テンプレート引数の所には &amp; を付けない</font>ということです。typename の次には名前だけしか書けません。</p>
+
+<br>
+
+<p>　もう１つ「即値を渡してもいいのか？」という疑問があると思います。MaxR(i, <font color=red>10</font>) のように使っても大丈夫なのか、ということです。</p>
+
+<p>　答を言ってしまうと、「大丈夫」です。即値は<font color=red>一時的に const 変数が作られ、その参照が渡される</font>という仕組みになります。つまり、上の例では TYPE は const int になり、結局 const int&amp; による比較が行われます。そして、この一時的な変数の寿命は <font color=red>MaxR を呼んだ文のセミコロンの所まで</font>です。参照が返ってくるからといって、そのアドレスを保持するようなことはできません。</p>
+
+<p>　最終的に、Max, MaxR 関数はサイズが大したことないということでインライン関数にして、こういう感じにするといいでしょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 大きい方の値を返す関数（値渡し）</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline</font> TYPE Max(TYPE a, TYPE b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+
+<font color=green>// 大きい方の値を返す関数（参照渡し）</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>inline</font> TYPE&amp; MaxR(TYPE&amp; a, TYPE&amp; b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　<font color=red>inline は template の後、戻り値の型の前に書きます。</font>これで Max, MaxR 関数の完成です。</p>
+
+<hr>
+
+<p>　では、今章のことをまとめてみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>TYPE にはクラスも指定できる。</li>
+<li>指定した演算ができなければコンパイルに失敗する。</li>
+<li>引数などで TYPE をそのまま使う必要はない。</li>
+<li>TYPE&amp; に即値を渡すと一時変数が作られ、渡される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回で Max 関数は終わりと思いきや、まだ１回続きます。それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02034.html" target="main">第３４章　冶金工場４</a> | <a href="cpp02036.html" target="main">第３６章　特注の鋳型</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

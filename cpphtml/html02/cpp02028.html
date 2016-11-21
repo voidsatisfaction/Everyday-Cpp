@@ -1,0 +1,218 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２８章 静かなるメンバ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２８章　静かなるメンバ</font>
+</center>
+<hr>
+
+<p>　今回は新しいクラスを作ります。が、特に意味のないクラスです。ちょっと説明的になってしまいますが、勘弁して下さい（汗）。</p>
+
+<p>　なお、数章後にまた CIntArray を改造するので、ソースは残しておくことをおすすめします。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ変数は実体を別に宣言する必要がある。</li>
+<li>静的メンバ変数はどれだけクラスを作っても共有される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回はメンバ変数に static を付けてみます。これがどんな意味を持つか、それを確認していきたいと思います。</p>
+
+<p>　今回使うクラスはこんな感じです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// SMember1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CNum
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_num;
+
+<font color=blue>public</font>:
+    CNum(<font color=blue>int</font> num){ m_num = num; }
+    <font color=blue>void</font> Disp()  { cout &lt;&lt; m_num &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> main()
+{
+    CNum a(<font color=darkcyan>100</font>), b(<font color=darkcyan>300</font>);
+    a.Disp();  b.Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>100
+300</pre></td></tr>
+
+</table></center>
+
+<p>　数値を保持してそれを表示するだけのクラスです。それ以上の意味はありません（汗）。このクラスがどうなっているかが分からない人は、もう一度講座を初めから読み直すことをおすすめします。</p>
+
+<p>　では、早速 m_num の型に static を付けてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>リンクエラー</th></tr>
+
+<tr><td><pre>Num1.obj : 外部シンボル "CNum::m_num" は未解決です</pre></td></tr>
+
+</table></center>
+
+<p>　あらら、リンクエラーが出てしまいました。コンパイルは通ったみたいですが、リンクは通らなかったみたいです。</p>
+
+<p>　このエラーは「実体がないよ」というエラーです。つまり、<font color=red>メンバ変数に static をつけると別に実体を作る必要がある</font>ということです。</p>
+
+<p>　それはこのようにします。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>class</font> CNum
+{
+<font color=blue>private</font>:
+    <font color=blue>static int</font> m_num;
+
+<font color=blue>public</font>:
+    CNum(<font color=blue>int</font> num){ m_num = num; }
+    <font color=blue>void</font> Disp()  { cout &lt;&lt; m_num &lt;&lt; endl; }
+};
+
+<font color=red>int CNum::m_num;</font></pre></td></tr>
+
+</table></center>
+
+<p>　メンバ関数を実装するときと同じような感じですね。</p>
+
+<pre>&lt;型&gt; &lt;クラス名&gt;::&lt;変数名&gt;;</pre>
+
+<p>とし、<font color=red>こちらには static はつけません</font>。</p>
+
+<p>　ファイルを分割するときは、これは <font color=red>cpp ファイルの方に書きます</font>。ヘッダファイルに書くと二重定義を引き起こします。</p>
+
+<p>　このようにすれば、メンバ変数に static を付けることができます。</p>
+
+<hr>
+
+<p>　では、メンバ変数に static を付けるとどうなるのでしょう？　実際にプログラムを実行してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Num1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CNum
+{
+<font color=blue>private</font>:
+    <font color=blue>static int</font> m_num;
+
+<font color=blue>public</font>:
+    CNum(<font color=blue>int</font> num){ m_num = num; }
+    <font color=blue>void</font> Disp()  { cout &lt;&lt; m_num &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> CNum::m_num;
+
+<font color=blue>int</font> main()
+{
+    CNum a(<font color=darkcyan>100</font>), b(<font color=darkcyan>300</font>);
+    a.Disp();  b.Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>300
+300</pre></td></tr>
+
+</table></center>
+
+<p>　a は 100 で初期化したにもかかわらず、両方とも 300 と表示されてしまいました。つまり、<font color=red>後に初期化した方の値が表示された</font>ことになります。</p>
+
+<p>　ある程度予想できると思いますが、このようになるのは <font color=red>static を付けたメンバ変数は実体が１つしかないから</font>です。実体は int CNum::m_num; のところで定義された１つしかありません。これは<font color=red>何個 CNum のインスタンスを作っても言えることです</font>。</p>
+
+<p>　ということで、a で m_num を 100 と初期化するも b のコンストラクタで 300 と上書きされ、a でも b でも 300 としか表示されなかったわけです。</p>
+
+<p><br></p>
+
+<p>　このようなメンバ変数を<font color=red>静的メンバ変数</font>と呼びます。</p>
+
+<hr>
+
+<p>　よくよく考えてみると、このプログラムは次のように書き換えることができます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Num1c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>int g_num;</font>
+
+<font color=blue>class</font> CNum
+{
+<font color=blue>public</font>:
+    CNum(<font color=blue>int</font> num){ g_num = num; }
+    <font color=blue>void</font> Disp()  { cout &lt;&lt; g_num &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> main()
+{
+    CNum a(<font color=darkcyan>100</font>), b(<font color=darkcyan>300</font>);
+    a.Disp();  b.Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>300
+300</pre></td></tr>
+
+</table></center>
+
+<p>　しかし、データのアクセス制限もできませんし、CNum と関係のある変数という意味合いも薄れます。インラインで利用しようとすると必然的にグローバル変数にする必要もあります。静的メンバにした方が安全で分かりやすいことがわかります。
+</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ変数は実体を別に宣言する必要がある。</li>
+<li>静的メンバ変数はどれだけクラスを作っても共有される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も静的メンバ変数をやりたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02027.html" target="main">第２７章　暗黙の了解</a> | <a href="cpp02029.html" target="main">第２９章　静かなるメンバ２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.10.21</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

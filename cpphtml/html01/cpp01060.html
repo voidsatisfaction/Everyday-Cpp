@@ -1,0 +1,195 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６０章 構造体３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６０章　構造体３</font>
+</center>
+<hr>
+
+<p>　構造体へのポインタを作ると、今までの方法だけだと、メンバを (*p).a のようにアクセスしないといけません。これはとても不格好ですね。今回はそういう話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体のメンバには &lt;アドレス&gt; -&gt; &lt;メンバ名&gt; でもアクセスできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のプログラムを、参照でなくポインタを使って書き直してみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Struct1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> ELEM(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>struct</font> SStudent
+{
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nJapanese;
+    <font color=blue>int</font>  nMath;
+    <font color=blue>int</font>  nEnglish;
+};
+
+<font color=blue>void</font> Disp(<font color=blue>const</font> SStudent* pstudent)
+{
+    cout &lt;&lt; <font color=darkcyan>"名前 : "</font>   &lt;&lt; <font color=red>(*pstudent).szName</font>    &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"　国語 : "</font> &lt;&lt; <font color=red>(*pstudent).nJapanese</font> &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"数学 : "</font>   &lt;&lt; <font color=red>(*pstudent).nMath</font>     &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"英語 : "</font>   &lt;&lt; <font color=red>(*pstudent).nEnglish</font>  &lt;&lt; <font color=darkcyan>" 点"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    SStudent students[] = {
+        { <font color=darkcyan>"赤井孝"</font>,   <font color=darkcyan>73</font>, <font color=darkcyan>98</font>, <font color=darkcyan>86</font>, },
+        { <font color=darkcyan>"笠井大介</font>", <font color=darkcyan>64</font>, <font color=darkcyan>45</font>, <font color=darkcyan>40</font>, },
+        { <font color=darkcyan>"吉田叶"</font>,   <font color=darkcyan>76</font>, <font color=darkcyan>78</font>, <font color=darkcyan>69</font>, },
+    };
+    <font color=blue>int</font>      i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i < ELEM(students); i++)
+        Disp(&students[i]);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　確かにできたことはできたのですが、<font color=red>(*pstudent).szName というのは何とも不格好です</font>。（*pstudent.szName としないのは、これは優先順位の関係上 *(pstudent.szName) と同じ事になるからです。）</p>
+
+<p>　これを解消するために、構造体のメンバへアクセスするためのもう１つの方法があります。それは、<font color=red>-&gt; 演算子を使う方法</font>です。</p>
+
+<p>　使い方は簡単です。先ず、以下のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Struct1c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> ELEM(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>struct</font> SStudent
+{
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nJapanese;
+    <font color=blue>int</font>  nMath;
+    <font color=blue>int</font>  nEnglish;
+};
+
+<font color=blue>void</font> Disp(<font color=blue>const</font> SStudent* pstudent)
+{
+    cout &lt;&lt; <font color=darkcyan>"名前 : "</font>   &lt;&lt; <font color=red>pstudent-&gt;szName</font>    &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"　国語 : "</font> &lt;&lt; <font color=red>pstudent-&gt;nJapanese</font> &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"数学 : "</font>   &lt;&lt; <font color=red>pstudent-&gt;nMath</font>     &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"英語 : "</font>   &lt;&lt; <font color=red>pstudent-&gt;nEnglish</font>  &lt;&lt; <font color=darkcyan>" 点"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    SStudent students[] = {
+        { <font color=darkcyan>"赤井孝"</font>,   <font color=darkcyan>73</font>, <font color=darkcyan>98</font>, <font color=darkcyan>86</font>, },
+        { <font color=darkcyan>"笠井大介</font>", <font color=darkcyan>64</font>, <font color=darkcyan>45</font>, <font color=darkcyan>40</font>, },
+        { <font color=darkcyan>"吉田叶"</font>,   <font color=darkcyan>76</font>, <font color=darkcyan>78</font>, <font color=darkcyan>69</font>, },
+    };
+    <font color=blue>int</font>      i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i < ELEM(students); i++)
+        Disp(&students[i]);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　<font color=red>pstudent-&gt;szName</font> というのがそれです。実に単純明快ですね。<font color=red>&lt;アドレス&gt; -&gt; &lt;メンバ名&gt; でメンバにアクセスできる</font>ということです。</p>
+
+<hr>
+
+<p>　今回はもうこれで話すことがなくなってしまったので、ちょっと構造体に関する補足をしておきます。</p>
+
+<p>　構造体はＣ言語とＣ＋＋では仕様が違います。Ｃ言語での制限は一応少し書いてきましたし、Ｃ＋＋の構造体は（第１部ではふれませんが）まだいろいろできることがあります。ここでは、Ｃ言語の構造体についてまとめてみようと思います。</p>
+
+<p>　先ず構造体の宣言は、Ｃ言語でも今まで説明したとおりでＯＫです。メンバへのアクセス方法もＣ言語、Ｃ＋＋で変わりありません。</p>
+
+<p>　ただ、構造体変数の宣言だけが少し変わってきます。</p>
+
+<pre><font color=red>struct</font> SStudent students[] = {
+    { "赤井孝",   73, 98, 86, },
+    { "笠井大介", 64, 45, 40, },
+    { "吉田叶",   76, 78, 69, },
+};</pre>
+
+<p>　このように、<font color=red>Ｃ言語では構造体変数の宣言の時にも struct を書く必要がある</font>のです。</p>
+
+<p>　そして、Ｃ＋＋では構造体にはまだいろいろできることがあるのですが、Ｃ言語ではここまでのことしかできません。しかし、<font color=red>実際にはＣ＋＋で構造体を使うというときでも、普通はこれ以上のことはしません</font>。これ以上のことをしたいときには、構造体ではなく「クラス」というものを使うのが普通です（クラスについては第２部で話します）。</p>
+
+<p>　で、やはり struct を書くのは面倒ということで、Ｃ言語にも struct を書かずにすむ方法があります。それは <font color=red>typedef</font> というものを使う方法です（typedef については第３部で話します）。</p>
+
+<pre><font color=red>typedef</font> struct dummy_SStudent
+{
+    char szName[16];
+    int  nJapanese;
+    int  nMath;
+    int  nEnglish;
+} <font color=red>SStudent</font>;</pre>
+
+<p>　こうすれば、Ｃ言語でも</p>
+
+<pre>SStudent students[] = {
+    { "赤井孝",   73, 98, 86, },
+    { "笠井大介", 64, 45, 40, },
+    { "吉田叶",   76, 78, 69, },
+};</pre>
+
+<p>とすることができます。詳しい意味は後に譲るとして、とりあえず今はこういう方法があるんだと思っておいて下さい。</p>
+
+<p>　この方法は<font color=red>Ｃ＋＋でも通用する</font>ので、<font color=red>Ｃ言語とＣ＋＋とのどちらでも使用できるソース</font>を書く必要があるときにこの方法をよく使います。</p>
+
+<p>　そして、逆もまた通用します。すなわち、<font color=red>Ｃ＋＋でも構造体変数の宣言時に struct を書いても構いません</font>。どちらでも使用できるソースにするためにどちらの方法を使うかは、趣味と状況に任せるとしましょう。</p>
+
+<hr>
+
+<p>　今回の要点です。Ｃ言語についての要点は割愛します。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体のメンバには &lt;アドレス&gt; -&gt; &lt;メンバ名&gt; でもアクセスできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は、構造体を離れ、すっかり忘れていた多次元配列について話します。では。</p>
+
+<hr>
+
+<p align=right><a href="cpp01059.html" target="main">第５９章　構造体２</a> | <a href="cpp01061.html" target="main">第６１章　多次元配列</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

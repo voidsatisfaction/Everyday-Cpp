@@ -1,0 +1,135 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１７章 派生と構築２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１７章　派生と構築２</font>
+</center>
+<hr>
+
+<p>　前回のコンストラクタがおかしくなったのは何故だったのでしょうか？　今回はそのことについて話したいと思います。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想関数はコンストラクタ内では正しく働かない。</li>
+<li>仮想関数テーブルの初期化はコンストラクタで行われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回、コンストラクタを使ったときに仮想関数の動作がおかしくなりました。何でこうなったんでしょうかね？</p>
+
+<p>　もう一度前回のおかしくなった部分を見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// File.h</font>
+<font color=blue>class</font> CFile
+{
+<font color=blue>public</font>:
+    CFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+};</pre></td></tr>
+
+<tr><td><pre><font color=green>// File.cpp</font>
+CFile::CFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    m_pfile = NULL;
+    m_bCopy = <font color=blue>false</font>;
+    Open(pszPath, pszFlags);
+}</pre></td></tr>
+
+<tr><td><pre><font color=green>// TextFile.h</font>
+<font color=blue>class</font> CTextFile
+{
+<font color=blue>public</font>:
+    CTextFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+};</pre></td></tr>
+
+<tr><td><pre><font color=green>// TextFile.cpp</font>
+CTextFile::CTextFile(<font color=blue>const char</font>* pszPath,
+                     <font color=blue>const char</font>* pszFlags) : CFile(pszPath, pszFlags)
+{
+}</pre></td></tr>
+
+</table></center>
+
+<p>　先ず、CFile のコンストラクタを呼びます。そして、その中でメンバを初期化して、Open 関数を呼んでいます。ここの Open 関数で ModifyFlags 関数が正しく呼ばれないのでした。</p>
+
+<p>　実は、これは<font color=red>仮想関数の初期化がコンストラクタで行われる</font>ということのせいなのです。</p>
+
+<p>　「仮想関数の初期化とは何？」と思うと思います。実は、仮想関数の呼び出しには<font color=red>「仮想関数テーブル」という隠しメンバ変数</font>を使っています。この初期化がコンストラクタで行われるということです。</p>
+
+<p>　つまり、CFile のコンストラクタ内では、まだ仮想関数テーブルは <font color=red>CFile によって初期化されただけ</font>なのです。なので、CFile の ModifyFlags が呼ばれてしまうというわけです。</p>
+
+<p>　で、CTextFile のコンストラクタに戻ってきたときに、やっと <font color=red>CTextFile による初期化</font>が行われるのです。仮想関数テーブルを<font color=red>上書き</font>してしまうわけですね。ここでようやく仮想関数が正しく呼ばれます。</p>
+
+<p>　つまり、上の CTextFile のコンストラクタはこういう風にしなければいけないわけです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// TextFile.cpp</font>
+CTextFile::CTextFile(<font color=blue>const char</font>* pszPath,
+                     <font color=blue>const char</font>* pszFlags)
+{
+    Open(pszPath, pszFlags);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　まとめると、</p>
+
+<ul>
+<li>コンストラクタでは、仮想関数は正しく働くとは限らない。</li>
+<li>必ず正しく働くのは、派生末端のコンストラクタ内のみ。</li>
+</ul>
+
+<p>ということです。</p>
+
+<hr>
+
+<p>　何故こうなっているかは、こう考えてみると分かります。</p>
+
+<p>　CTextFile に初期化するべき変数があったとします。そして、その変数を仮想関数内で使っているとします。</p>
+
+<p>　もし、CFile のコンストラクタ内でその仮想関数が呼べてしまうと、まだ CTextFile のコンストラクタは実行されていないので、<font color=red>初期化していない変数を使ってしまうことになります</font>。とても危ないですね。</p>
+
+<p>　なので、使えないようなっているわけです。面倒なようですが、理にはかなっているわけです。</p>
+
+<p>　ということで、<font size=+2 color=red>仮想関数をコンストラクタで使うときは十分注意して下さい</font>。</p>
+
+<hr>
+
+<p>　短いですが、今回はこれで終わりです。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想関数はコンストラクタ内では正しく働かない。</li>
+<li>仮想関数テーブルの初期化はコンストラクタで行われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は、仮想関数の中の仮想関数、純粋仮想関数について話したいと思います。</p>
+
+<p>　では、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp02016.html" target="main">第１６章　派生と構築</a> | <a href="cpp02018.html" target="main">第１８章　ピュア</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

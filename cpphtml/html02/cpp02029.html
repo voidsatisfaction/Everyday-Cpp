@@ -1,0 +1,296 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２９章 静かなるメンバ２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２９章　静かなるメンバ２</font>
+</center>
+<hr>
+
+<p>　前回で静的メンバ変数というものがどんなものかは分かったかもしれませんが、例えばどういうときに使えばいいのでしょうか？　今回はそこに迫ってみたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ変数は静的変数である。</li>
+<li>静的メンバ変数は実体の定義の部分で初期化する。</li>
+<li>静的メンバ変数は全実体で内容を共有したいときに使う。</li>
+<li>派生しても静的メンバ変数は１個しか作られない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は静的メンバ変数についてもうちょっと考えてみたいと思います。</p>
+
+<p>　静的メンバ変数を使えば、例えばどんなことができるでしょうか？　例えば、<font color=red>クラスの実体の数を数えておく</font>ことなどができるでしょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// SMember2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CNumOf
+{
+<font color=blue>private</font>:
+    <font color=blue>static int</font> m_nNumOf;  <font color=green>// CNumOf の全実体数</font>
+
+<font color=blue>public</font>:
+    CNumOf()   { m_nNumOf++; }
+    ~CNumOf()  { m_nNumOf--; }
+    <font color=blue>void</font> Disp(){ cout &lt;&lt; m_nNumOf &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> CNum::m_nNumOf;
+
+<font color=blue>int</font> main()
+{
+    CNumOf a, b, c;
+    a.Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　しかし、ここでふと疑問が浮かびます。<font color=red>m_nNumOf は初期化されているのでしょうか？</font></p>
+
+<p>　と、疑問が浮かんだら、とにかく実験してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>3</pre></td></tr>
+
+</table></center>
+
+<p>　3 と表示されました。ということは、どうやら<font color=red>０で初期化されている</font>のだと推測できます。</p>
+
+<p>　実は、これはたまたま０で初期化されてたのではなく、０で初期化されるようになっているから０で初期化されていたのです。</p>
+
+<p>　これは何かと似ている気がしませんが？　そうです。<font color=red>静的変数</font>の特徴と似ていますね。静的変数は、<font color=red>特に指定しなければ０で初期化される</font>のでしたね。「静的」と付いていることからわかるように、<font color=red>静的メンバ変数も静的変数なのです</font>。</p>
+
+<p>　ということは、静的メンバ変数を好きな値で初期化するには</p>
+
+<pre>int CNumOf::m_nNumOf <font color=red>= 10</font>;</pre>
+
+<p>とでき、この初期化が起こるのは<font color=red>プログラムの一番最初</font>だということが、芋づる的に分かります。</p>
+
+<p>　静的内部変数を思い出してみましょう。どこで何回関数を呼んでも、静的内部変数は同じメモリ領域を使うものでした。この特徴は静的メンバにも言え、<font color=red>どこで何個クラスの実体を作っても同じメモリ領域を使う</font>わけです。</p>
+
+<hr>
+
+<p>　では、静的メンバ変数を持ったクラスから派生するとどうなるのでしょうか？　派生クラスでは別の変数が用意されるのでしょうか？　それとも、派生クラスでも同じメモリ領域を使うのでしょうか？</p>
+
+<p>　答は後者です。<font color=red>派生クラスでも同じメモリ領域を使います。</font>静的メンバ変数は派生してすら１つしかできないのです。</p>
+
+<p>　このことを利用すると、<font color=red>そのクラスとその派生クラスの全実体を列挙することができます</font>。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Enum.h</font>
+<font color=blue>#define</font> ENUM_MAX_SIZE  <font color=darkcyan>32</font>
+
+<font color=blue>class</font> CEnum
+{
+<font color=blue>private</font>:
+    <font color=blue>static</font> CEnum* m_pThis[ENUM_MAX_SIZE];  <font color=green>// 実体へのポインタ</font>
+    <font color=blue>static int</font>    m_nNumOf;                <font color=green>// 実体数</font>
+
+<font color=blue>protected</font>:
+    <font color=blue>int</font> m_num;  <font color=green>// 何かの数値</font>
+
+<font color=blue>public</font>:
+    CEnum(<font color=blue>int</font> num);
+    <font color=blue>virtual</font> ~CEnum();
+
+    <font color=blue>virtual void</font> Disp();  <font color=green>// 何かを表示</font>
+    <font color=blue>void</font> DispAll();       <font color=green>// 全実体の何かを表示</font>
+};
+
+<font color=blue>class</font> CEnumChild : <font color=blue>public</font> CEnum
+{
+<font color=blue>private</font>:
+    <font color=blue>double</font> m_num2;  <font color=green>// 何かの数値２</font>
+
+<font color=blue>public</font>:
+    CEnumChild(<font color=blue>int</font> num, <font color=blue>double</font> num2);
+    <font color=blue>virtual void</font> Disp();  <font color=green>// 何かを表示</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Enum.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Enum.h"</font>
+
+<font color=green>// これは 0 (NULL) で初期化されます</font>
+CEnum* CEnum::m_pThis[ENUM_MAX_SIZE];  <font color=green>// 実体へのポインタ</font>
+<font color=blue>int</font>    CEnum::m_nNumOf;                <font color=green>// 実体数</font>
+
+CEnum::CEnum(<font color=blue>int</font> num)
+{
+    <font color=blue>int</font> i;
+
+    <font color=green>// 手抜きで可変長にはしません</font>
+    <font color=blue>if</font>(m_nNumOf == ENUM_MAX_SIZE)
+        <font color=blue>return</font>;
+
+    <font color=green>// NULL な場所を探す</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; ENUM_MAX_SIZE; i++)
+    {
+        <font color=blue>if</font>(m_pThis[i] == NULL)
+        {
+            m_pThis[i] = <font color=blue>this</font>;
+            <font color=blue>break</font>;
+        }
+    }
+    m_nNumOf++;
+
+    m_num = num;
+}
+
+CEnum::~CEnum()
+{
+    <font color=blue>int</font> i;
+
+    <font color=green>// 自分自身を表から削除する</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; ENUM_MAX_SIZE; i++)
+    {
+        <font color=blue>if</font>(m_pThis[i] == <font color=blue>this</font>)
+        {
+            m_pThis[i] = NULL;
+            <font color=blue>break</font>;
+        }
+    }
+}
+
+<font color=green>// 何かを表示</font>
+<font color=blue>void</font> CEnum::Disp()
+{
+    cout &lt;&lt; <font color=darkcyan>"CEnum だよ : "</font> &lt;&lt; m_num &lt;&lt; endl;
+}
+
+<font color=green>// 全実体の何かを表示</font>
+<font color=blue>void</font> CEnum::DispAll()
+{
+    <font color=blue>int</font> i;
+
+    <font color=green>// 全実体の Disp を呼ぶ</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; ENUM_MAX_SIZE; i++)
+    {
+        <font color=blue>if</font>(m_pThis[i] != NULL)
+            m_pThis[i]-&gt;Disp();
+    }
+}
+
+CEnumChild::CEnumChild(<font color=blue>int</font> num, <font color=blue>double</font> num2) : CEnum(num)
+{
+    m_num2 = num2;
+}
+
+<font color=green>// 何かを表示</font>
+<font color=blue>void</font> CEnumChild::Disp()
+{
+    cout &lt;&lt; <font color=darkcyan>"CEnumChild だよ : "</font> &lt;&lt; m_num
+         &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; m_num2 &lt;&lt; endl;
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// SMember3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Enum.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>const int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : No."</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+CEnum      a(<font color=darkcyan>1</font>);
+CEnumChild b(<font color=darkcyan>2</font>, <font color=darkcyan>2.5</font>);
+
+<font color=blue>int</font> main()
+{
+    a.DispAll();
+    Viss(<font color=darkcyan>1</font>);
+
+    CEnum      c(<font color=darkcyan>3</font>);
+    CEnumChild d(<font color=darkcyan>4</font>, <font color=darkcyan>4.5</font>);
+
+    a.DispAll();
+    Viss(<font color=darkcyan>2</font>);
+
+    {
+        CEnumChild e(<font color=darkcyan>5</font>, <font color=darkcyan>5.5</font>);
+
+        a.DispAll();
+        Viss(<font color=darkcyan>3</font>);
+    }
+    a.DispAll();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>CEnum だよ : 1
+CEnumChild だよ : 2 : 2.5
+Viss : No.1
+CEnum だよ : 1
+CEnumChild だよ : 2 : 2.5
+CEnum だよ : 3
+CEnumChild だよ : 4 : 4.5
+Viss : No.2
+CEnum だよ : 1
+CEnumChild だよ : 2 : 2.5
+CEnum だよ : 3
+CEnumChild だよ : 4 : 4.5
+CEnumChild だよ : 5 : 5.5
+Viss : No.3
+CEnum だよ : 1
+CEnumChild だよ : 2 : 2.5
+CEnum だよ : 3
+CEnumChild だよ : 4 : 4.5</pre></td></tr>
+
+</table></center>
+
+<p>　全実体の Disp を呼ぶことができました。静的メンバ変数を使うとこんなこともできてしまうのです。</p>
+
+<hr>
+
+<p>　それでは今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ変数は静的変数である。</li>
+<li>静的メンバ変数は実体の定義の部分で初期化する。</li>
+<li>静的メンバ変数は全実体で内容を共有したいときに使う。</li>
+<li>派生しても静的メンバ変数は１個しか作られない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も静的メンバについてです。でも今度は変数じゃなくて...。</p>
+
+<hr>
+
+<p align=right><a href="cpp02028.html" target="main">第２８章　静かなるメンバ</a> | <a href="cpp02030.html" target="main">第３０章　静かなるメンバ３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.10.22</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,295 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７章 ファイルを分けよう -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７章　ファイルを分けよう</font>
+</center>
+<hr>
+
+<p>　前回のプログラムは複数のファイルを利用していました。<a href="../html01/cpp01070.html" target="main">第１部第７０章</a>で話はしましたが、今まではあまりそういうことはしてこなかったので、ちょっと面食らった人もいたかと思います。</p>
+
+<p>　しかし、これからはコードが多くなってくることもあり、ファイルを分けて話をしていくことが多くなると思います。なので、ここでクラスを作るときに便利なファイルの分け方について話してみようと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>クラスの宣言をヘッダファイルにすると便利。</li>
+<li>クラスの実装部はソースファイルに書く。</li>
+<li>そのクラスを使いたいときはヘッダファイルをインクルードする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　クラスも構造体もそうですが、</p>
+
+<center><table border=1><tr>
+
+<td valign=top><pre><font color=green>// Test1.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+};
+
+CTest a;</pre></td>
+
+<td valign=top><pre><font color=green>// Test2.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+};
+
+CTest b;</pre></td>
+
+</tr></table></center>
+
+<p>としても二重定義にはなりません。あまつさえ、</p>
+
+<center><table border=1><tr>
+
+<td valign=top><pre><font color=green>// Test1.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+    <font color=blue>int</font> b;
+
+    <font color=blue>void</font> Func();
+};
+
+<font color=blue>void</font> CTest::Func()
+{
+    b = <font color=darkcyan>0</font>;
+}
+
+CTest a;</pre></td>
+
+<td valign=top><pre><font color=green>// Test2.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+CTest b;
+
+<font color=blue>int</font> main()
+{
+    b.Func();
+}</pre></td>
+
+</tr></table></center>
+
+<p>としても、何のエラーも出ません。Test2.cpp の方では CTest のメンバ変数として b は定義されていません。それなのに、この謎のメンバ変数が使えてしまうのです。（<font size=+2 color=red>危険</font>なので、実行はしません。）</p>
+
+<p>　しかし、</p>
+
+<center><table border=1><tr>
+
+<td valign=top><pre><font color=green>// Test1.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+<font color=blue>void</font> CTest::Func()
+{
+    a = <font color=darkcyan>0</font>;
+}
+
+CTest a;</pre></td>
+
+<td valign=top><pre><font color=green>// Test2.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+<font color=blue>void</font> CTest::Func()
+{
+    a = <font color=darkcyan>0</font>;
+}
+
+CTest b;
+
+<font color=blue>int</font> main()
+{
+    b.Func();
+}</pre></td>
+
+</tr></table></center>
+
+<p>とすると、CTest::Func の二重定義エラーになります。</p>
+
+<p>　このように、クラスの宣言は<font color=red>異なる</font>ファイルにあっても二重定義にはなりません。それどころか、<font color=red>そうしなければ２つ以上のファイルで使うことができません</font>。ただし、<font color=red>同じ</font>ファイルに２つ以上あるのはいけません。</p>
+
+<p>　なので、<font color=red>ヘッダファイルにクラスの宣言を書いておき、それをインクルードする</font>ようにすると便利です。</p>
+
+<p>　一方、その<font color=red>実装部はソースファイルに書きます</font>。ヘッダファイルに書くと最後の例と同じことになり、二重定義になるからです。だだし、</p>
+
+<center><table border=1><tr>
+
+<td valign=top><pre><font color=green>// Test1.cpp</font>
+<font color=blue>void</font> CTest::Func()
+{
+    a = <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre><font color=green>// Test2.cpp</font>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+CTest b;
+
+<font color=blue>int</font> main()
+{
+    b.Func();
+}</pre></td>
+
+</tr></table></center>
+
+<p>はエラーになります。実装するときにはクラスの宣言が必要なのです。なので、<font color=red>実装を行っているファイルの方でもヘッダファイルをインクルードする必要があります</font>。</p>
+
+<hr>
+
+<p>　まとめてみると、</p>
+
+<center><table border=1><tr>
+
+<td valign=top><pre><font color=green>// Test1.h</font>
+<font color=blue>#ifndef</font> __TEST1_H_INCLUDED__
+<font color=blue>#define</font> __TEST1_H_INCLUDED__
+
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+<font color=blue>#endif</font></pre></td>
+
+<td valign=top><pre><font color=green>// Test1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Test1.h"</font>
+
+<font color=blue>void</font> CTest::Func()
+{
+    a = <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre><font color=green>// Test2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Test1.h"</font>
+
+<font color=blue>int</font> main()
+{
+    CTest a;
+    a.Func();
+}</pre></td>
+
+</tr></table></center>
+
+<p>という感じになります。</p>
+
+<p>　<font color=red>Test1.h</font> で <font color=red>CTest の宣言</font>を行っていますね。そして、<font color=red>Test1.cpp</font> で<font color=red>その実装</font>をしています。で、Test1.cpp と Test2.cpp の両方で CTest の宣言が必要になるので、両ファイルとも <font color=red>Test1.h をインクルード</font>しています。</p>
+
+<p>　ワンパターンにこういう風にしていてもあまり問題はないとは思います。ですが、問題が出たときは頭の中でインクルードファイルを展開してみて下さい（<a href="../html01/cpp01027.html" target="main">第１部第２７章</a>参照）。</p>
+
+<center><table border=1><tr>
+
+<td valign=top><pre><font color=green>// Test1.cpp</font>
+<font color=green>// Test1.h</font>
+<font color=blue>#ifndef</font> __TEST1_H_INCLUDED__
+<font color=blue>#define</font> __TEST1_H_INCLUDED__
+
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+<font color=blue>#endif</font>
+
+<font color=blue>void</font> CTest::Func()
+{
+    a = <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre><font color=green>// Test2.cpp</font>
+<font color=green>// Test1.h</font>
+<font color=blue>#ifndef</font> __TEST1_H_INCLUDED__
+<font color=blue>#define</font> __TEST1_H_INCLUDED__
+
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> a;
+
+    <font color=blue>void</font> Func();
+};
+
+<font color=blue>#endif</font>
+
+<font color=blue>int</font> main()
+{
+    CTest a;
+    a.Func();
+}</pre></td>
+
+</tr></table></center>
+
+<p>　こうすれば、問題があった場合、どこが悪かったのかが分かってくると思います。（上のプログラムには問題はありませんが。）</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>クラスの宣言をヘッダファイルにすると便利。</li>
+<li>クラスの実装部はソースファイルに書く。</li>
+<li>そのクラスを使いたいときはヘッダファイルをインクルードする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　「さー、こうやって下さい」だけではいろいろ誤解する人が多いのでぐだぐだ言ってきましたが、要はこれだけのことをしていれば構いません。</p>
+
+<p>　しかし、ちょっと例外があったりします。それはまた次回に話します。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02006.html" target="main">第６章　デストラクタ</a> | <a href="cpp02008.html" target="main">第８章　インライン関数・再び</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３４章 ポインタ天国３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３４章　ポインタ天国３</font>
+</center>
+<hr>
+
+<p>　前回ポインタを使って変数を参照する方法について話しました。参照とは間接的に変数を扱うことでした。ですが、変数を間接的に使うことのメリットとは何なのでしょうか？　今回はこんなことについて話していきます。</p>
+
+<hr>
+
+<p>　今回の要点はこんな感じです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数は、新たに変数が作られ、それに値が代入されるという仕組み。</li>
+<li>引数をポインタにすると別の関数の内部変数を操作できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　では、いきなりですが次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ptr3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> ChangeToShohwa(<font color=blue>int</font> x)
+{
+    <font color=blue>if</font>(<font color=darkcyan>1926</font> &lt; x && x &lt; <font color=darkcyan>1989</font>)
+        x -= <font color=darkcyan>1925</font>;
+    <font color=blue>else</font>
+        x = <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> Shohwa()
+{
+    <font color=blue>int</font> nYear;
+
+    cout &lt;&lt; <font color=darkcyan>"西暦を入力して下さい &gt; "</font>;
+    cin &gt;&gt; nYear;
+
+    ChangeToShohwa(nYear);
+    <font color=blue>if</font>(nYear)
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和 "</font> &lt;&lt; nYear
+             &lt;&lt; <font color=darkcyan>" 年です。"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和ではありません。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Shohwa();
+    Shohwa();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>西暦を入力して下さい &gt; 1945
+その年は昭和 1945 年です。
+西暦を入力して下さい &gt; 1192
+その年は昭和 1192 年です。
+</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　例の昭和プログラムを改造したものですが、何か結果がむちゃくちゃですね。</p>
+
+<p>　どこを改造したかといえば、<font color=red>ChangeToShohwa の引数を直接操作して nYear の値を変更しようとしている</font>ところです。ですが、それは<font size=+2 color=red>失敗</font>に終わりました。<font color=red>引数は、新たに変数が作られ、それに値が代入されるという仕組みになっているからです。</font></p>
+
+<p>　考えてみて下さい。上のは引数が変数ですが、ChangeToShohwa(1979); のようにただの値が入れられることもあるのです。</p>
+
+<p>　1979 は変数でなく定数なので変更できません。1979 -= 1925; がエラーを起こすことからわかるでしょう。これだけでも直接操作できないことがわかるでしょう。</p>
+
+<p>　こんな時にポインタを使うのです。では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ptr3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> ChangeToShohwa(<font color=red>int* p</font>)
+{
+    <font color=blue>if</font>(<font color=darkcyan>1926</font> &lt; <font color=red>*p</font> && <font color=red>*p</font> &lt; <font color=darkcyan>1989</font>)
+        <font color=red>*p</font> -= <font color=darkcyan>1925</font>;
+    <font color=blue>else</font>
+        <font color=red>*p</font> = <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> Shohwa()
+{
+    <font color=blue>int</font> nYear;
+
+    cout &lt;&lt; <font color=darkcyan>"西暦を入力して下さい &gt; "</font>;
+    cin &gt;&gt; nYear;
+
+    ChangeToShohwa(<font color=red>&nYear</font>);
+    <font color=blue>if</font>(nYear)
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和 "</font> &lt;&lt; nYear
+             &lt;&lt; <font color=darkcyan>" 年です。"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和ではありません。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Shohwa();
+    Shohwa();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>西暦を入力して下さい &gt; 1945
+その年は昭和 20 年です。
+西暦を入力して下さい &gt; 1192
+その年は昭和ではありません。
+</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今度は<font size=+2 color=red>成功</font>しました。では、その仕組みを説明しましょう。</p>
+
+<p>　引数が int* p となっています。ポインタです。で、この関数を呼び出している方は ChangeToShohwa(&nYear); と、アドレスを渡しています。</p>
+
+<p>　さっき言ったように、変数（ポインタ）p が新たに作られて、nYear のアドレスをこれに代入しています。つまり、<font color=red>*p は nYear の複製になります</font>。</p>
+
+<p>　何と、普通では使えないはずの変数、つまり<font color=red>別の関数の内部変数を操作することができるようになりました</font>。もうこうなったら変更し放題です。*p を使って nYear を変更してやりましょう。</p>
+
+<p>　あ、もちろん ChangeToShohwa(1979); のようなことはできません。引数に入れるのはアドレスで、西暦そのものではないからです。</p>
+
+<p>　このように、関数を越えて内部変数を操作する必要があるときにポインタを使います。そして、アドレスを渡すことを<font color=red>参照渡し</font>といいます。</p>
+
+<p>　一方、普通の、ただ値を渡すことを<font color=red>値渡し</font>と言います。</p>
+
+<hr>
+
+<p>　今回はやっと素直に終わりました。これでポインタの基礎の基礎は終わりです。</p>
+
+<p>　では、今回の要点をもう一度見てみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>引数は、新たに変数が作られ、それに値が代入されるという仕組み。</li>
+<li>引数をポインタにすると別の関数の内部変数を操作できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は配列変数についてもう一度見ていきます。ではまた次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01033.html" target="main">第３３章　ポインタ天国２</a> | <a href="cpp01035.html" target="main">第３５章　配列再考</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.31</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

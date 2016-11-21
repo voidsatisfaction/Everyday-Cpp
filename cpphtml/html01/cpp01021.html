@@ -1,0 +1,163 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２１章 ビットとバイト -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２１章　ビットとバイト</font>
+</center>
+<hr>
+
+<p>　今回はコンピューターの記憶単位について話していきます。型の大きさもこの記憶単位に大きく関わってきます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>１ビットは０か１。</li>
+<li>１バイトは８ビット。</li>
+<li>操作、記憶する際の最小単位はバイト。</li>
+<li>変数には大きさがある。</li>
+<li>(&lt;型&gt;) を前に付けると型を変更できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　コンピューターはどのようにデータを表現しているか知っていますか？　実は０か１の集まりで表現しています。何らかの形で聞いた人も多いと思います。知らない人もそういうもんだと思って下さい。</p>
+
+<p>　つまり、コンピューターはデータを２進数で扱っているのです。そして、この１桁にあたる<font color=red>大きさ</font>を<font color=red>１ビット</font>と言います。</p>
+
+<p>　これらのことはよく電球を例に説明されます。ということで、ここでもそうしてみます。</p>
+
+<hr>
+
+<table border=2 align=right><tr><td><img src="images/0102101.gif"></td></tr></table>
+
+<p>　先ず、電球を３つ用意します。それぞれにスイッチを用意して、単独に点けたり消したりできるようにします。そして、電球に右から１、２、３と番号をつけます。</p>
+
+<p>　これで数値を表現してみましょう。電球が消えている時は０で、点いている時は電球１は１、電球２は２、電球３は４とします。</p>
+
+<p><br clear=right><br></p>
+
+<table border=2 align=right><tr><td><img src="images/0102102.gif"></td></tr></table>
+
+<p>　右図のようなときはどうでしょうか。</p>
+
+<p>　電球１と３は点いています。ですが、電球２は消えています。</p>
+
+<p>　つまり、１＋４＝５となります。</p>
+
+<p><br clear=right><br></p>
+
+<table border=2 align=right><tr><td><img src="images/0102103.gif"></td></tr></table>
+
+<p>　次はどうでしょうか。すべての電球が消えていますね。つまり、これは０になります。</p>
+
+<p><br clear=right><br></p>
+
+<table border=2 align=right><tr><td><img src="images/0102104.gif"></td></tr></table>
+
+<p>　次はどうでしょうか。電球１と２が点いています。ですが、電球３は消えています。</p>
+
+<p>　つまり、１＋２＝３となります。</p>
+
+<p><br clear=right><br></p>
+
+<p>　こうしてみると分かるとおり、電球を３個用意すれば、全部消えているときの０から全部点いているときの１＋２＋４＝７までの数値を表現することができるのです。</p>
+
+<p>　この電球の個数がビット数にあたります。そして、点いている時を１、消えているときを０と考えると、２進数を電球の羅列で表現していることになります。</p>
+
+<p>　この例からもわかるとおり、３ビットでは０〜７の数値を表現することができます。</p>
+
+<p>　また、これを−４〜３や９００〜９０７などのように解釈することも可能です。つまり、<font color=red>３ビットでは８個のデータを表現できる</font>と言えばよいでしょう。</p>
+
+<hr>
+
+<p>　このように、１つの数値を表現するには大抵数ビット必要です。なので、ビット単位で情報を管理するよりは数ビット単位でデータを管理するほうが楽です。</p>
+
+<p>　そこで、よく８ビット単位でデータを扱います。８ビットでは 00000000 〜 11111111、つまり<font color=red>２５６個のデータを表現することができます</font>。</p>
+
+<p>　このよく使う<font color=red>８ビットという単位を別に１バイトと言います</font>。このバイトというのもよく聞きますね。このファイルは何バイトだとか、ハードディスクの容量は何メガバイトだとか言うと思います。</p>
+
+<p>　ファイルの容量をバイト単位で表現しているとおり、<font color=red>記憶、操作する際の単位はバイトが標準です</font>。通常ビット単位では扱えません。</p>
+
+<hr>
+
+<p>　コンピューターの扱うデータは大抵バイト単位で扱っているというのなら、変数もバイト単位で扱っていることになります。</p>
+
+<p>　そして、<font color=red>変数に入れられる数の範囲は、その大きさによって制限されることになります</font>。もちろん計算の過程や結果も制限されます。</p>
+
+<p>　以下に型に対応した大きさと、とりうる値の範囲を書いておきます。但し、環境によっては値が異なる場合もあります。各環境での上限・下限を取得する方法もありますが、ここでは割愛します。</p>
+
+<table border=2 align=center>
+<colgroup><col valign=middle><col valign=middle><col valign=middle></colgroup>
+<tbody>
+<tr><th bgcolor=lightgreen>型</th><th bgcolor=lightgreen>大きさ</th><th bgcolor=lightgreen>範囲</th></tr>
+<tr><th colspan=3 bgcolor=yellow>整数型</th></tr>
+<tr><td bgcolor=cyan>char<br>signed char</td><td bgcolor=cyan>１バイト</td><td bgcolor=cyan>−１２８〜１２７</td></tr>
+<tr><td bgcolor=cyan>unsigned char</td><td bgcolor=cyan>１バイト</td><td bgcolor=cyan>０〜２５５</td></tr>
+<tr><td bgcolor=cyan>int（３２ビット機）<br>signed int（３２ビット機）<br>long<br>signed long<br>long int<br>signed long int</td><td bgcolor=cyan>４バイト</td><td bgcolor=cyan>-2147483648〜2147483647</td></tr>
+<tr><td bgcolor=cyan>unsigned int（３２ビット機）<br>unsigned long<br>unsigned long int</td><td bgcolor=cyan>４バイト</td><td bgcolor=cyan>０〜4294967295</td></tr>
+<tr><td bgcolor=cyan>short<br>signed short<br>short int<br>signed short int<br>int（１６ビット機）<br>signed int（１６ビット機）</td><td bgcolor=cyan>２バイト</td><td bgcolor=cyan>-32768〜32767</td></tr>
+<tr><td bgcolor=cyan>unsigned short<br>unsigned short int<br>unsigned int（１６ビット機）</td><td bgcolor=cyan>２バイト</td><td bgcolor=cyan>０〜65535</td></tr>
+<tr><td bgcolor=cyan>bool（C++ のみの型）</td><td bgcolor=cyan>１バイト</td><td bgcolor=cyan>０（false）か１（true）</td></tr>
+<tr><th colspan=3 bgcolor=yellow>小数型</th></tr>
+<tr><td bgcolor=cyan>float</td><td bgcolor=cyan>４バイト</td><td bgcolor=cyan>±1.2×10の-34乗〜±3.4×10の34乗（有効数字７桁）</td></tr>
+<tr><td bgcolor=cyan>double<br>long double（３２ビット機）</td><td bgcolor=cyan>８バイト</td><td bgcolor=cyan>±2.2×10の-308乗〜±1.8×10の308乗（有効数字15桁）</td></tr>
+<tr><td bgcolor=cyan>long double（１６ビット機）</td><td bgcolor=cyan>１０バイト</td><td bgcolor=cyan>±3.4×10の-4932乗〜±1.2×10の4932乗（有効数字19桁）</td></tr>
+</tbody>
+</table>
+
+<p>　例えば、</p>
+
+<pre>char a;</pre>
+
+<p>であるときは、a には−１２８から１２７の数値しか入れられません。それ以外の数値を入れようとすると、下１バイト、つまり２進数での下８桁が適用されます。</p>
+
+<hr>
+
+<p>　最後に<font color=red>型キャスト</font>について話します。</p>
+
+<p>　型キャストとは、型を変更するものです。例えば、</p>
+
+<pre>int a;
+char b = -1;
+
+a = <font color=red>(unsgined char)</font>b;</pre>
+
+<p>とすれば、b の値、つまり -1 を unsigned char に変換して、それを a に代入することになります。細かいことは話しませんが、char の -1 は unsigned char の 255 にあたります。つまり、<font color=red>a には -1 でなく 255 が入ります</font>。</p>
+
+<hr>
+
+<p>　以下が今回の要点でした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>１ビットは０か１。</li>
+<li>１バイトは８ビット。</li>
+<li>操作、記憶する際の最小単位はバイト。</li>
+<li>変数には大きさがある。</li>
+<li>(&lt;型&gt;) を前に付けると型を変更できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01020.html" target="main">第２０章　多条件分岐</a> | <a href="cpp01022.html" target="main">第２２章　文字とは</a></p>
+<p align=right><font size=-1><i>Last update was done on 2005.2.16</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

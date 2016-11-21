@@ -1,0 +1,156 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２６章 これ。２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２６章　これ。２</font>
+</center>
+<hr>
+
+<p>　今回も this を使ってみたいと思います。今回のを見る前に、<a href="../html03/cpp03008.html" target="main">第３部第８章</a>も見ておくといいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>代入演算子は *this を返すとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="cpp02023.html" target="main">第２３章</a>でやった<font color=red>代入演算子のオーバーロード</font>を思い返してみて下さい。</p>
+
+<p>　<a href="../html03/cpp03008.html" target="main">第３部第８章</a>でやったように、代入演算子は再利用できます。例えば、</p>
+
+<pre>int n1, n2;
+n1 = n2 = 0;</pre>
+
+<p>　では、先ず n2 = 0 が行われて、次に n1 = n2 が行われます。これは、n2 = 0 が <font color=red>n2 への参照を返している</font>と考えることができるのでしたね。</p>
+
+<p>　しかし、第２３章のように戻り値を void にしているとこういうことができません。</p>
+
+<pre>CIntArray a1(1), a2(2), a3(3);
+a1 = a2 = a3;  // エラー：void は代入できません</pre>
+
+<p>　ということで、a2 = a3 が <font color=red>a2 への参照を返す</font>ようにすればいいわけです。a2 は<font color=red>左項</font>なので、メンバ関数を呼びだす<font color=red>オブジェクト自身</font>になりますね。</p>
+
+<p>　ということは、次のようにしてやればいいわけです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// コピー</font>
+<font color=blue>public</font>:
+    <font color=green>// = 演算子によるコピー</font>
+    <font color=red>CIntArray&amp;</font> <font color=blue>operator</font> =(<font color=blue>const</font> CIntArray&amp; rother);
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=green>// = 演算子によるコピー</font>
+<font color=red>CIntArray&amp;</font> CIntArray::<font color=blue>operator</font> =(<font color=blue>const</font> CIntArray&amp; rother)
+{
+    Copy(rother);
+    <font color=blue>return</font> <font color=red>*this</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　this はオブジェクトの<font color=red>アドレス</font>です。しかし、参照を返すときは文法的には<font color=red>実体</font>をそのまま返す形にしないといけません。なので、* をつける必要がありますね。</p>
+
+<p>　これで a1 = a2= a3; が実行できるようになりました。では、実際にやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// TestAry.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=blue>void</font> DispArray(<font color=blue>const</font> CIntArray&amp; array)
+{
+    <font color=blue>int</font> i;
+
+    cout &lt;&lt; <font color=darkcyan>"要素数 : "</font> &lt;&lt; array.NumOf() &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"要素 : "</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; array.NumOf(); i++)
+        cout &lt;&lt; array[i] &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CIntArray a1(<font color=darkcyan>1</font>), a2(<font color=darkcyan>1</font>), a3(<font color=darkcyan>10</font>);
+    <font color=blue>int</font>       i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; a3.NumOf(); i++)
+        a3[i] = i;
+
+    a1 = a2 = a3;  <font color=green>// 例の代入</font>
+
+    DispArray(a1);
+    DispArray(a2);
+    DispArray(a3);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>コンストラクタが呼ばれました。要素数は 1 です。
+コンストラクタが呼ばれました。要素数は 1 です。
+コンストラクタが呼ばれました。要素数は 10 です。
+要素数 : 10
+要素 : 0 1 2 3 4 5 6 7 8 9
+
+要素数 : 10
+要素 : 0 1 2 3 4 5 6 7 8 9
+
+要素数 : 10
+要素 : 0 1 2 3 4 5 6 7 8 9
+
+デストラクタが呼ばれました。要素数は 10 でした。
+デストラクタが呼ばれました。要素数は 10 でした。
+デストラクタが呼ばれました。要素数は 10 でした。</pre></td></tr>
+
+</table></center>
+
+<p>　代入すると、要素数は１から１０に増えています。そして、要素も３つとも a3 に代入した通りのものが表示されています。きちんとコピーが行われていますね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>代入演算子は *this を返すとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02025.html" target="main">第２５章　これ。</a> | <a href="cpp02027.html" target="main">第２７章　暗黙の了解</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.30</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５６章 クロスキャスト -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５６章　クロスキャスト</font>
+</center>
+<hr>
+
+<p>　今回は、<a href="../html02/cpp02042.html" target="main">第２部第４２章</a>で名前だけ話した「クロスキャスト」について話したいと思います。一体クロスキャストとは何なのでしょうか...。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>多重継承した親同士の間のキャストをクロスキャストと呼ぶ。</li>
+<li>クロスキャストには dynamic_cast を使うべし。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　継承の関わるキャストは大まかに分けて<font color=red>３つ</font>あります。そのうちの２つについては今までに話してきました。アップキャストとダウンキャストですね。もう１つのキャストについて話す前に、アップキャストとダウンキャストについてもう一度話したいと思います。</p>
+
+<p>　先ず、アップキャストは<font color=red>派生</font>クラスの<font color=red>ポインタ（参照）</font>から<font color=red>基底</font>クラスの<font color=red>ポインタ（参照）</font>へのキャストでした。例えば CFile の継承関係で考えると、</p>
+
+<pre>CBinaryFile* pBin;
+CFile* pFile = (CFile*)pBin;</pre>
+
+<p>これがアップキャストになります。なぜアップキャストと呼ぶかは、下の<font color=red>継承木</font>を見れば一目瞭然です。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#F0B0B0">CFile</th>
+</tr>
+
+<tr>
+  <th align=center width=150><font color=red>↑</font></th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#D0B0B0">CBinaryFile</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CTextFile</th>
+</tr>
+
+</table></center>
+
+<p>　継承木とは継承関係を木構造で表示したものです。基底クラスを上に、派生クラスを下に書きます。ということで、アップキャストは<font color=red>下の方にあるクラスから上の方にあるクラスへのキャスト</font>になり、アップ（上への）キャストと呼ぶわけです。</p>
+
+<p>　同じく、ダウンキャストは継承木の<font color=red>上の方にあるクラスから下の方にあるクラスへのキャスト</font>で、ダウン（下への）キャストと呼ぶわけです。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#D0B0B0">CFile</th>
+</tr>
+
+<tr>
+  <th align=center width=150><font color=red>↓</font></th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#F0B0B0">CBinaryFile</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CTextFile</th>
+</tr>
+
+</table></center>
+
+<hr>
+
+<p>　さて、これ以外にももう１つだけキャストの方法が考えられます。上の継承木を見て</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#D8B0B0">CFile</th>
+</tr>
+
+<tr>
+  <th align=center width=150><font color=red>↑</font></th>
+  <td width=10></td>
+  <th align=center width=150><font color=red>↓</font></th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#C0B0B0">CBinaryFile</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#F0B0B0">CTextFile</th>
+</tr>
+
+</table></center>
+
+<p>というキャストを考えた人はいませんか？　しかし、これは<font color=red>非常に危険なキャスト</font>であって、<font color=red>こんなことをしてはいけません</font>。CBinaryFile になくて CTextFile にあるメンバを使うときに危険なことになります。</p>
+
+<p>　ただ、考え方自体は近いのです。アップダウン（上下）にではなく、<font color=red>左右のキャスト</font>がまだある可能性があるということですね。上のがダメであれば、もう可能性は１つしか残っていません。こんな感じですね。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#C0B0B0">CNinja</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#F0B0B0">CMaster</th>
+</tr>
+
+<tr>
+  <th align=center width=150><font color=red>↓</font></th>
+  <td width=10></td>
+  <th align=center width=150><font color=red>↑</font></th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#D8B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　これがもう１つのキャスト<font color=red>「クロスキャスト」</font>です。</p>
+
+<p>　「なんだ、これも危険なんじゃないか？」と思った人もいるでしょう。確かに、次のように <font color=red>CNinja のオブジェクトを使ってキャストすると危険です</font>。</p>
+
+<pre>CNinja   ninja;
+CNinja*  pNinja = &amp;ninja;
+CMaster* pMaster = (CMaster*)pNinja;  <font color=red>// 危険！</font></pre>
+
+<p>　しかし、<font color=red>CNinja* に CJohnin のオブジェクトへのアドレスが入っている場合は問題ありません</font>。</p>
+
+<pre>CJohnin  johnin;
+CNinja*  pNinja = &amp;johnin;
+CMaster* pMaster = (CMaster*)pNinja;  <font color=green>// ＯＫ</font></pre>
+
+<p>　CJohnin* は CNinja* にも CMaster* にもアップキャストできるわけですから、CJohnin* を CNinja* にキャストしたものであれば、CMaster* へキャストしても問題ないことが分かるでしょう。これがクロスキャストなのです。</p>
+
+<hr>
+
+<p>　簡単にいうと、クロスキャストは<font color=red>ダウンキャストしてアップキャストする</font>ことです。ダウンキャストを伴う以上危険性はありますが、これはダウンキャストと同じ方法で回避することが出来ます。<a href="../html02/cpp02042.html" target="main">第２部第４２章</a>に話した <font color=red>dynamic_cast</font> ですね。ランタイムタイプ情報（ＲＴＴＩ）を有効にするのも忘れてはいけません。</p>
+
+<p>　この dynamic_cast を使えば、<font color=red>ポインタで危険なキャストを行ったときは NULL が返ってきます</font>。<a href="cpp03050.html" target="main">第５０章</a>でちょっと話しましたが、参照でのキャストで失敗したときは std::bad_cast 例外が投げられます。</p>
+
+<p>　例を挙げると、こんな感じですね...。</p>
+
+<pre>CNinja   ninja;
+CJohnin  johnin;
+CNinja*  pNinja;
+CMaster* pMaster;
+
+pNinja = &amp;ninja;
+pMaster = <font color=red>dynamic_cast&lt;CMaster*&gt;(pNinja)</font>;  <font color=green>// pMaster は NULL になります</font>
+
+pNinja = &amp;johnin;
+pMaster = <font color=red>dynamic_cast&lt;CMaster*&gt;(pNinja)</font>;  <font color=green>// pMaster には johnin のアドレスが入ります</font>
+</pre>
+
+<p>　これで、安心してクロスキャストができるわけですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>多重継承した親同士の間のキャストをクロスキャストと呼ぶ。</li>
+<li>クロスキャストには dynamic_cast を使うべし。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回で多重継承に関する話題は終わりです。次回からはまた細々とマニアックな話題を続けていこうと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03055.html" target="main">第５５章　融合３</a> | <a href="cpp03057.html" target="main">第５７章　メンバ関数ポインタ天国</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.6.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

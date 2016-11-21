@@ -1,0 +1,337 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１８章 ピュア -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１８章　ピュア</font>
+</center>
+<hr>
+
+<p>　CFile はバイナリモードでファイルを扱うクラスでした。そして、それから派生して CTextFile というテキストモードでファイルを扱うクラスを作りました。今回はこの派生方法を見直してみたいと思います。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想関数のプロトタイプに０を代入すると、実装しなくて良くなる。</li>
+<li>実装を持たない仮想関数を純粋仮想関数と呼ぶ。</li>
+<li>純粋仮想関数を持つクラスは抽象クラスと呼ばれ、実体を作ることができない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　CFile はバイナリモードでファイルを扱うクラスです。そして、CTextFile はテキストモードでファイルを扱うクラスです。そして、CTextFile は CFile から派生しています。</p>
+
+<p>　図にするとこんな感じです。</p>
+
+<center><table border=0>
+
+<tr>
+  <th bgcolor="#B0B0B0">CFile</th>
+</tr>
+
+<tr>
+  <th>｜</th>
+</tr>
+
+<tr>
+  <th width=150 bgcolor="#B0B0B0">CTextFile</th>
+</tr>
+
+</table></center>
+
+<p>　しかし、このままではバイナリモードで扱うときの独自の機能を付けたいときでも、その機能は CTextFile にも継承されてしまいます。これは困ります。</p>
+
+<p>　ということで、<font color=red>バイナリモードでファイルを扱うクラス CBinaryFile クラスを別に作る</font>ことにします。</p>
+
+<p>　しかし、ファイルを扱うクラスなのでやはり CFile クラスから派生したいと思います。こういう継承をするわけです。</p>
+
+<center><table border=0>
+
+<tr>
+  <th colspan=3 bgcolor="#B0B0B0">CFile</th>
+</tr>
+
+<tr>
+  <th colspan=3>／　　　　　　＼</th>
+</tr>
+
+<tr>
+  <th width=150 bgcolor="#B0B0B0">CBinaryFile</th>
+  <td width=10></td>
+  <th width=150 bgcolor="#B0B0B0">CTextFile</th>
+</tr>
+
+</table></center>
+
+<p>　こうすると、CBinaryFile にメンバを追加しても CTextFile に影響はありませんね。</p>
+
+<p>　では、実際にやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td valign=top><pre><font color=green>// BinFile.h</font>
+<font color=blue>#ifndef</font> __BINFILE_H__INCLUDED__
+<font color=blue>#define</font> __BINFILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=blue>class</font> CBinaryFile : <font color=blue>public</font> CFile
+{
+    <font color=green>// コンストラクタ</font>
+<font color=blue>public</font>:
+    CBinaryFile();
+    CBinaryFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+    CBinaryFile(<font color=blue>const</font> CBinaryFile&amp; rother);
+
+    <font color=green>// ファイルの読み書き</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> ReadAndDump(<font color=blue>char</font>* bufHex, <font color=blue>char</font>* bufASCII, <font color=blue>int</font> nLength);
+            <font color=green>// ダンプ文字列にして読み出し</font>
+};
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td valign=top><pre><font color=green>// BinFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;ctype.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+
+<font color=green>// デフォルトコンストラクタ</font>
+CBinaryFile::CBinaryFile()
+{
+}
+
+<font color=green>// 構築と同時にファイルを開く</font>
+CBinaryFile::CBinaryFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    Open(pszPath, pszFlags);
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CBinaryFile::CBinaryFile(<font color=blue>const</font> CBinaryFile&amp; rother) : CFile(rother)
+{
+}
+
+<font color=green>// ダンプ文字列にして読み出し
+// ダンプについては<a href="../html01/cpp01055.html" target="main">第１部第５５章</a>と<a href="../html03/cpp03015.html" target="main">第３部第１５章</a>を参照して下さい
+// bufHex のサイズは nLength * 3 + 1
+// bufASCII のサイズは nLength + 1 にします</font>
+<font color=blue>int</font> CBinaryFile::ReadAndDump(<font color=blue>char</font>* bufHex, <font color=blue>char</font>* bufASCII, <font color=blue>int</font> nLength)
+{
+    <font color=blue>int</font> nRead;  <font color=green>// 読み出しバイト数</font>
+    <font color=blue>int</font> i;      <font color=green>// ループ変数</font>
+
+    <font color=green>// 読み込み</font>
+    nRead = Read(bufASCII, nLength);
+    memset(bufASCII + nRead, <font color=darkcyan>' '</font>, nLength - nRead);
+    bufASCII[nLength] = <font color=darkcyan>0</font>;
+
+    <font color=green>// １６進表示の文字列を作成</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nRead; i++)
+    {
+        <font color=green>// sprintf については<a href="../html01/cpp01024.html" target="main">第１部第２４章</a>を参照して下さい
+        // unsigned char でキャストしていることについては
+        // <a href="../html03/cpp03016.html" target="main">第３部第１６章</a>を参照して下さい</font>
+        sprintf(&bufHex[i * <font color=darkcyan>3</font>], <font color=darkcyan>"%02X "</font>, (<font color=blue>unsigned char</font>)bufASCII[i]);
+    }
+    memset(&bufHex[i * <font color=darkcyan>3</font>], <font color=darkcyan>' '</font>, (nLength - nRead) * <font color=darkcyan>3</font>);
+    bufHex[nLength * <font color=darkcyan>3</font>] = <font color=darkcyan>0</font>;
+
+    <font color=green>// 表示できない文字を '.' に変換</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nRead; i++)
+    {
+        <font color=green>// isprint は表示できる文字かを確認する関数です
+        // 全角文字は変になりますが、無視します
+        // unsigned char でキャストしないと
+        // 0x80 〜 0xFF がマイナスになってしまいます
+        // 必要なヘッダファイルは ctype.h です</font>
+        <font color=blue>if</font>(isprint((<font color=blue>unsigned char</font>)bufASCII[i]) == <font color=darkcyan>0</font>)
+            bufASCII[i] = <font color=darkcyan>'.'</font>;
+    }
+
+    <font color=blue>return</font> nRead;
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>int</font> main()
+{
+    CTextFile   txt(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(txt.IsValid() == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    txt.WriteString(<font color=darkcyan>"He sang, \"まったり　まったり　まったりな〜♪\""</font>);
+    txt.Close();
+
+    CBinaryFile bin(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(bin.IsValid() == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    <font color=blue>const int</font> READLENGTH = <font color=darkcyan>16</font>;
+    <font color=blue>char</font> bufHex[READLENGTH * <font color=darkcyan>3</font> + <font color=darkcyan>1</font>];
+    <font color=blue>char</font> bufASCII[READLENGTH + <font color=darkcyan>1</font>];
+    <font color=blue>int</font> nRead;
+
+    <font color=blue>do</font>
+    {
+        nRead = bin.ReadAndDump(bufHex, bufASCII, READLENGTH);
+        cout &lt;&lt; bufHex &lt;&lt; bufASCII &lt;&lt; endl;
+    }
+    <font color=blue>while</font>(nRead == READLENGTH);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>CFile::Open
+CTextFile::ModifyFlags
+CFile::Open
+CFile::ModifyFlags
+48 65 20 73 61 6E 67 2C 20 22 82 DC 82 C1 82 BD He sang, "......
+82 E8 81 40 82 DC 82 C1 82 BD 82 E8 81 40 82 DC ...@.........@..
+82 C1 82 BD 82 E8 82 C8 81 60 81 F4 22          .........`.."</pre></td></tr>
+
+</table></center>
+
+<p>　こうして、バイナリモードでファイルを扱うクラス CBinaryFile が作れました。</p>
+
+<hr>
+
+<p>　しかし、こうなると <font color=red>ModifyFlags 関数は CFile には不要</font>です。</p>
+
+<p>　CFile はただのファイルを扱うクラスに成り下がってしまい、「バイナリモードで」ということをわざわざ CFile で実装する必要はありません。CFile の ModifyFlags でやっている処理は、CBinaryFile クラスで実装した方が良さそうです。</p>
+
+<p>　そうすると、CFile の ModifyFlags は不要になってしまいますね。ところが、<font color=red>仮想関数を使うためには残しておく必要があります</font>。完全になくしてしまっては CFile の Open から呼び出すことが出来なくなります。</p>
+
+<p>　ということで、中身をほとんど消して定義しておきました。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// File.cpp</font>
+<font color=green>// フラグの調整</font>
+<font color=blue>bool</font> CFile::ModifyFlags(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    <font color=blue>return false</font>;  <font color=green>// 常に失敗</font>
+}</pre></td></tr>
+
+<tr><td><pre><font color=green>// BinFile.h</font>
+<font color=blue>class</font> CBinaryFile : <font color=blue>public</font> CFile
+{
+    <font color=green>// フラグの調整</font>
+<font color=blue>private</font>:
+    <font color=blue>virtual bool</font> ModifyFlags(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+};</pre></td></tr>
+
+<tr><td><pre><font color=green>// BinFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=green>// フラグの調整</font>
+<font color=blue>bool</font> CBinaryFile::ModifyFlags(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    <font color=green>// 以前に CFile で実装していた中身をここにコピー
+    // ただし、cout の部分の文字列を CBinaryFile::ModifyFlags に変えること</font>
+}</pre></td></tr>
+
+</table></center>
+
+<p>　こうして、意味のある実装が出来ました。</p>
+
+<hr>
+
+<p>　そして、更に突き詰めて考えると <font color=red>CFile 自体を直接使うこともありません</font>。バイナリモードでは CBinaryFile を、テキストモードでは CTextFile を使えばいいのですから、CFile を使うことはなくなります。</p>
+
+<p>　このように、<font color=red>実体は作らない</font>が、<font color=red>基底クラスとして必要となるクラス</font>というのもたまにあります。こういうときは、上の CFile::ModifyFlags を次のようにすることが出来ます。</p>
+
+<center><table border=1><tr>
+
+<td><pre><font color=green>// File.h</font>
+<font color=blue>class</font> CFile
+{
+    <font color=green>// フラグの調整（純粋仮想関数）</font>
+<font color=blue>private</font>:
+    <font color=blue>virtual bool</font> ModifyFlags(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags) <font color=red>= 0</font>;
+};</pre></td>
+
+</tr></table></center>
+
+<p>　<font size=+1 color=red>何と、クラス宣言内の ModifyFlags に０が代入されています！</font>　そして、<font size=+1 color=red>何と、この関数の実装はどこでも行いません！</font></p>
+
+<p>　不気味な書式に感じるとは思いますが、こうすれば実装する必要のない<font color=red>仮想関数</font>の<font color=red>実装をする必要がなくなります</font>。その代わり、<font color=red>こういう関数を持つクラスの実体は作れません</font>。純粋仮想関数を呼ぶ処理が書けないからですね。</p>
+
+<p>　このような仮想関数を<font color=red>純粋仮想関数</font>と、そして純粋仮想関数を持つクラスを<font color=red>抽象クラス</font>と呼びます。</p>
+
+<p>　純粋仮想関数をオーバーライドし忘れていると、そのクラスまで抽象クラスになってしまいます。そこは注意して下さいね。</p>
+
+<hr>
+
+<p>　では、最後にファイルを扱うクラスの役割をまとめてみましょう。</p>
+
+<table border=0>
+
+<tr>
+  <td align=left colspan=2><b>CFile</b>（抽象クラス）</td>
+  <td>ファイルを扱うクラスの最基底クラス。ファイルを扱うクラスに共通する処理をここに書く。</td>
+</tr>
+
+<tr>
+  <td>　├→</td>
+  <td align=left><b>CBinaryFile</b></td>
+  <td>バイナリモードでファイルを扱うクラス。バイナリモードでしか使わない処理をここに書く。</td>
+</tr>
+
+<tr>
+  <td>　└→</td>
+  <td align=left><b>CTextFile</b></td>
+  <td>テキストモードでファイルを扱うクラス。テキストモードでしか使わない処理をここに書く。</td>
+</tr>
+
+</table>
+
+<p>　これからは、これらのクラスをこのように扱っていきたいと思います。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想関数のプロトタイプに０を代入すると、実装しなくて良くなる。</li>
+<li>実装を持たない仮想関数を純粋仮想関数と呼ぶ。</li>
+<li>純粋仮想関数を持つクラスは抽象クラスと呼ばれ、実体を作ることができない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02017.html" target="main">第１７章　派生と構築２</a> | <a href="cpp02019.html" target="main">第１９章　動的オブジェクト</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,274 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３３章 数珠繋ぎ２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３３章　数珠繋ぎ２</font>
+</center>
+<hr>
+
+<p>　今回もリストのお話です。しかし、前回とはちょっとだけ違います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>次の要素へのポインタのみを持つリストを単方向リストと呼ぶ。</li>
+<li>加えて前の要素へのポインタも持つリストを双方向リストと呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<table align=right border=1>
+
+<tr><td><img src="images/0302601.gif" width=270 height=480 alt="挿入法"></td></tr>
+
+<tr><th>図．１　挿入法</th></tr>
+
+</table>
+
+<p>　リストは、ポインタを介してデータを数珠繋ぎにしたものでした。今回はこのリストのソートをやってみたいと思います。</p>
+
+<p>　前回言ったように、リストのソートには挿入法（<a href="cpp03026.html" target="main">第２６章</a>参照）が使えます。しかし、前回のリストを挿入法でソートしようと思っても、実はかなり面倒なことになります。それは、<font color=red>後ろからも要素をたどっていくことができない</font>からです。</p>
+
+<p>　図．１の通りの順番で考えると、挿入箇所を探すのに逆にリストをたどっていく必要があります。左右対称にして考えるとしても、挿入する要素の位置を毎回探す必要があります。</p>
+
+<p><br clear=right><br></p>
+
+<p>　しかし、後ろから要素をたどっていく必要があるのなら、<font color=red>後ろからも要素をたどれるようにすればいい</font>のです。実現は簡単です。次の要素へのポインタだけでなく、<font color=red>前の要素へのポインタも持っておけばいいのです</font>。</p>
+
+<p>　図にするとこんな感じです。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0303301.gif" width=400 height=230 alt="後ろからもたどれるリスト"></td></tr>
+
+<tr><th>図．２　後ろからもたどれるリスト</th></tr>
+
+</table></center>
+
+<p>　リストの各要素は<font color=red>２つのポインタ</font>を持っています。１つはこの要素の<font color=red>前の要素</font>への、もう１つは<font color=red>次の要素</font>へのポインタです。</p>
+
+<p>　先ず、赤色の要素があります。前の要素はないので、１つ目のポインタには要素がないことを表す値を入れておきます。そして、次の要素は黄色の要素なので、２つ目のポインタには黄色の要素のアドレスを入れておきます。次は黄色の要素です。前の要素は赤色の要素なので、１つ目のポインタには赤色の要素のアドレスを、同じようにして２つ目のポインタには緑色の要素のアドレスを入れます。このように水色の要素まで数珠繋ぎにしたものが図．２の上のリストです。</p>
+
+<p>　水色の要素のアドレスもどこかに保存しておけば、図からも分かるようにリストを後からたどっていくことができます。このように、前からも後からもたどっていくことができるリストのことを<font color=red>双方向リスト</font>と呼びます。これに対し、前回のように一方通行にしかたどれないリストは<font color=red>単方向リスト</font>と呼びます。</p>
+
+<p>　ここで、黄色の要素と緑色の要素の間に紫色の要素を入れることにします。先ず、紫色の要素の１つ目のポインタには黄色の、２つ目のポインタには緑色の要素のアドレスを入れます。そして、次に黄色の要素の２つ目のポインタと緑色の要素の１つ目のポインタに紫色の要素のアドレスを入れます。こうして要素の挿入が完了します。これが図．２の下のリストです。</p>
+
+<p>　要素を追加・削除するときに操作するポインタが増えますが、後からたどることができるという利点を考えると大したことではありません。</p>
+
+<hr>
+
+<p>　では、実際に双方向リストを使って挿入ソートをやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// List2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;time.h&gt;</font>
+
+<font color=blue>struct</font> SList
+{
+    <font color=blue>int</font>    value;  <font color=green>// 値</font>
+
+    SList* pPrev;  <font color=green>// 前の要素</font>
+    SList* pNext;  <font color=green>// 次の要素</font>
+};
+
+<font color=blue>bool</font> InitList(SList* pFirst);     <font color=green>// 初期化</font>
+<font color=blue>void</font> SortList(SList* pFirst);     <font color=green>// ソート</font>
+<font color=blue>void</font> DispList(SList* pFirst);     <font color=green>// 表示</font>
+<font color=blue>void</font> RevDispList(SList* pFirst);  <font color=green>// 逆から表示</font>
+<font color=blue>void</font> FreeList(SList* pFirst);     <font color=green>// 解放</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=green>// 始めと終わりを表す特殊な要素</font>
+    SList list;
+
+    srand((<font color=blue>unsigned</font>)time(NULL));
+    <font color=blue>if</font>(InitList(&amp;list))
+    {
+        SortList(&amp;list);
+        DispList(&amp;list);
+        RevDispList(&amp;list);
+    }
+    FreeList(&amp;list);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// リストの初期化</font>
+<font color=blue>bool</font> InitList(SList* pFirst)
+{
+    <font color=blue>bool</font>   bRet = <font color=blue>true</font>;  <font color=green>// 戻り値</font>
+    SList* pNew;   <font color=green>// 新しい要素へのポインタ</font>
+    SList* pPrev;  <font color=green>// 前の要素</font>
+    <font color=blue>int</font>    i;
+
+    <font color=green>// i = 0 の時、pPrev は pFirst になります
+    // pFirst の pNext に
+    // 初めの要素へのアドレスを格納します</font>
+    pPrev = pFirst;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>32</font>; i++)
+    {
+        pNew = <font color=blue>new</font> SList;
+        <font color=green>// メモリの確保に失敗したら、
+        // 要素を確保せずに終了</font>
+        <font color=blue>if</font>(pNew == NULL)
+        {
+            bRet = <font color=blue>false</font>;
+            <font color=blue>break</font>;
+        }
+
+        pPrev-&gt;pNext = pNew;
+        pNew-&gt;pPrev  = pPrev;
+
+        pNew-&gt;value = rand() % <font color=darkcyan>256</font>;
+        pPrev = pNew;
+    }
+    <font color=green>// ここでは pPrev が最後の要素になり、
+    // その pNext には pFirst を入れて終わりを示します
+    // そして、pFirst の pPrev に
+    // 最後の要素へのアドレスを格納し、
+    // 後ろから要素を参照していけるようにします</font>
+    pPrev-&gt;pNext  = pFirst;
+    pFirst-&gt;pPrev = pPrev;
+
+    <font color=blue>return</font> bRet;
+}
+
+<font color=green>// ソート</font>
+<font color=blue>void</font> SortList(SList* pFirst)
+{
+    <font color=green>// 要素数が０か１のときはソート不要</font>
+    <font color=blue>if</font>(pFirst-&gt;pNext == pFirst-&gt;pPrev)
+        <font color=blue>return</font>;
+
+    SList* pInsert;     <font color=green>// 挿入する要素</font>
+    SList* pFind;       <font color=green>// 挿入位置</font>
+    SList* pInsNext;    <font color=green>// 次の要素</font>
+
+    <font color=blue>for</font>(pInsert = pFirst-&gt;pNext-&gt;pNext; pInsert != pFirst; pInsert = pInsNext)
+    {
+        <font color=green>// 要素の差し替えがあるので初めに退避</font>
+        pInsNext = pInsert-&gt;pNext;
+
+        <font color=blue>for</font>(pFind = pFirst-&gt;pNext; pFind != pInsert; pFind = pFind-&gt;pNext)
+        {
+            <font color=green>// 挿入位置が決まったら挿入する</font>
+            <font color=blue>if</font>(pInsert-&gt;value &lt; pFind-&gt;value)
+            {
+                <font color=green>// pInsert を一旦リストから外す</font>
+                pInsert-&gt;pPrev-&gt;pNext = pInsert-&gt;pNext;
+                pInsert-&gt;pNext-&gt;pPrev = pInsert-&gt;pPrev;
+
+                <font color=green>// pInsert の左右を変更</font>
+                pInsert-&gt;pPrev         = pFind-&gt;pPrev;
+                pInsert-&gt;pNext         = pFind;
+
+                <font color=green>// pInsert をリストに組み込む</font>
+                pFind-&gt;pPrev-&gt;pNext = pInsert;
+                pFind-&gt;pPrev           = pInsert;
+
+                <font color=green>// 次の要素の挿入に移る</font>
+                <font color=blue>break</font>;
+            }
+        }
+    }
+}
+
+<font color=green>// リストの内容を表示</font>
+<font color=blue>void</font> DispList(SList* pFirst)
+{
+    SList* pNow;  <font color=green>// リストの要素</font>
+    <font color=blue>int</font>    i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>, pNow = pFirst-&gt;pNext;
+        pNow != pFirst; pNow = pNow-&gt;pNext, i++)
+    {
+        printf(<font color=darkcyan>"%03d "</font>, pNow-&gt;value);
+        <font color=blue>if</font>(i % <font color=darkcyan>16</font> == <font color=darkcyan>15</font>)
+            putchar(<font color=darkcyan>'\n'</font>);
+    }
+}
+
+<font color=green>// リストの内容を逆から表示</font>
+<font color=blue>void</font> RevDispList(SList* pFirst)
+{
+    SList* pNow;  <font color=green>// リストの要素</font>
+    <font color=blue>int</font>    i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>, pNow = pFirst-&gt;pPrev;
+        pNow != pFirst; pNow = pNow-&gt;pPrev, i++)
+    {
+        printf(<font color=darkcyan>"%03d "</font>, pNow-&gt;value);
+        <font color=blue>if</font>(i % <font color=darkcyan>16</font> == <font color=darkcyan>15</font>)
+            putchar(<font color=darkcyan>'\n'</font>);
+    }
+}
+
+<font color=blue>void</font> FreeList(SList* pFirst)
+{
+    SList* pNow;  <font color=green>// リストの要素</font>
+
+    <font color=blue>for</font>(pNow = pFirst-&gt;pNext; pNow != pFirst; )
+    {
+        SList* pTemp = pNow-&gt;pNext;  <font color=green>// 一時的に退避</font>
+        <font color=blue>delete</font> pNow;
+
+        <font color=green>// この時点では pNow-&gt;pNext は削除されています</font>
+        pNow = pTemp;
+    }
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>009 013 021 023 029 042 068 071 071 077 123 134 151 155 169 171
+172 179 180 183 184 185 186 188 191 197 200 224 226 235 246 253
+253 246 235 226 224 200 197 191 188 186 185 184 183 180 179 172
+171 169 155 151 134 123 077 071 071 068 042 029 023 021 013 009</pre></td></tr>
+
+</table></center>
+
+<p>　はい。挿入法でソートを行うことができました。今回のように挿入ソートを行いたいときなどは、双方向リストを使う必要があるのです。</p>
+
+<p>　さらに、<font color=red>内容を逆順で表示する</font>こともできました。多少構造は複雑になりますが双方向リストは使い勝手がよく、よく使うことになるでしょう。</p>
+
+<p>　もちろん、後からたどる必要が全くない場合には単方向リストで充分です。場合によって使い分けるようにするといいでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>次の要素へのポインタのみを持つリストを単方向リストと呼ぶ。</li>
+<li>加えて前の要素へのポインタも持つリストを双方向リストと呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　何か短かったですね。こういう回もたまにはいいでしょう。ということで、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03032.html" target="main">第３２章　数珠繋ぎ</a> | <a href="cpp03034.html" target="main">第３４章　大樹の如く</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

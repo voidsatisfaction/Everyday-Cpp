@@ -1,0 +1,427 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４９章 えっ！？ ５ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４９章　えっ！？　５</font>
+</center>
+<hr>
+
+<p>　例外は全く同じ型の catch でしか受け取れないのでしょうか？　今回はそういうお話です。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>例外はアップキャスト可能。</li>
+<li>例外処理はあくまで例外処理に使うべし。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ファイルのエラーに対して、今まで int 型の例外を投げてきました。しかし、今回はクラスを投げることにします。クラスにすれば、エラーの系統毎に型を変えることができますし、エラーメッセージの処理もそのクラスに任せるなんて事もできます。</p>
+
+<p>　CException という基底クラスを作って、そこから各クラスを作ることにします。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Exception.h</font>
+<font color=blue>#ifndef</font> __EXCEPTION_H__010330_0353_57951860__INCLUDED__
+<font color=blue>#define</font> __EXCEPTION_H__010330_0353_57951860__INCLUDED__
+
+<font color=blue>class</font> CException
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_nErrorCode;
+<font color=blue>public</font>:
+    CException(<font color=blue>unsigned</font> nErrorCode);
+    <font color=blue>virtual</font> ~CException();
+<font color=blue>public</font>:
+    <font color=blue>virtual unsigned</font> GetErrorCode();
+    <font color=blue>virtual void</font> DispErrorString();
+};
+
+<font color=blue>inline</font> CException::CException(<font color=blue>unsigned</font> nErrorCode)
+{
+    m_nErrorCode = nErrorCode;
+}
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __EXCEPTION_H__010330_0353_57951860__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Exception.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Exception.h"</font>
+
+CException::~CException()
+{
+}
+
+<font color=blue>unsigned</font> CException::GetErrorCode()
+{
+    <font color=blue>return</font> m_nErrorCode;
+}
+
+<font color=blue>void</font> CException::DispErrorString()
+{
+    cout &lt;&lt; <font color=darkcyan>"An error has occured."</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"The error number is "</font>
+         &lt;&lt; GetErrorCode() &lt;&lt; <font color=darkcyan>'.'</font> &lt;&lt; endl;
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// FileException.h</font>
+<font color=blue>#ifndef</font> __FILEEXCEPTION_H__010330_0427_30194800__INCLUDED__
+<font color=blue>#define</font> __FILEEXCEPTION_H__010330_0427_30194800__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>"Exception.h"</font>
+
+<font color=blue>class</font> CFileException : <font color=blue>public</font> CException
+{
+<font color=blue>public</font>:
+    CFileException(<font color=blue>unsigned</font> nErrorCode);
+<font color=blue>public</font>:
+    <font color=blue>virtual unsigned</font> GetErrorCode();
+    <font color=blue>virtual void</font> DispErrorString();
+
+    <font color=green>// エラーコード</font>
+<font color=blue>public</font>:
+    <font color=blue>enum</font> ErrorCode
+    {
+        NoError,
+        NotOpened,
+        FailToRead,
+        FailToWrite,
+        LastError,
+    };
+};
+
+<font color=blue>inline</font> CFileException::CFileException(<font color=blue>unsigned</font> nErrorCode)
+    : CException(nErrorCode)
+{
+}
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __FILEEXCEPTION_H__010330_0427_30194800__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム４</th></tr>
+
+<tr><td><pre><font color=green>// FileException.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"FileException.h"</font>
+
+<font color=blue>unsigned</font> CFileException::GetErrorCode()
+{
+    <font color=blue>unsigned</font> nErrorCode = CException::GetErrorCode();
+    <font color=blue>return</font> (nErrorCode &gt;= LastError ? NoError : nErrorCode);
+}
+
+<font color=blue>void</font> CFileException::DispErrorString()
+{
+    <font color=blue>static const char</font>* apszError[] = {
+        <font color=darkcyan>"予期しないエラーです。"</font>,
+        <font color=darkcyan>"ファイルが開かれていません。"</font>,
+        <font color=darkcyan>"ファイルからの読み出しに失敗しました。"</font>,
+        <font color=darkcyan>"ファイルへの書き込みに失敗しました。"</font>,
+    };
+
+    cout &lt;&lt; apszError[GetErrorCode()] &lt;&lt; endl;
+}</pre></td></tr>
+
+<tr><th>プログラム５</th></tr>
+
+<tr><td><pre><font color=green>// File.cpp</font>
+<font color=red>// 前のものからの変更分しか書きません。あしからず
+// 尚、Open は今まで通り例外を投げない仕様にします</font>
+<font color=blue>#include</font> <font color=darkcyan>"FileException.h"</font>
+
+<font color=green>// ファイルから読み出す</font>
+size_t CFile::Read(<font color=blue>void</font>* pData, size_t nSize)
+{
+    <font color=green>// テンポラリオブジェクト（<a href="cpp02044.html" target="main">第４４章</a>参照）を投げます</font>
+    <font color=blue>if</font>(IsValid() == <font color=blue>false</font>)
+        <font color=blue>throw</font> CFileException(CFileException::NotOpened);
+
+    <font color=blue>int</font> nReadSize = fread(pData, <font color=darkcyan>1</font>, nSize, m_pfile);
+    <font color=blue>if</font>(nReadSize != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nReadSize;
+    <font color=blue>else if</font>(Eof())
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    <font color=blue>else</font>
+        <font color=blue>throw</font> CFileException(CFileException::FailToRead);
+}
+
+<font color=green>// ファイルに書き込む</font>
+size_t CFile::Read(<font color=blue>const void</font>* pData, size_t nSize)
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>false</font>)
+        <font color=blue>throw</font> CFileException(CFileException::NotOpened);
+
+    <font color=blue>int</font> nWriteSize = fwrite(pData, <font color=darkcyan>1</font>, nSize, m_pfile);
+    <font color=blue>if</font>(nWriteSize == nSize)
+        <font color=blue>return</font> nReadSize;
+    <font color=blue>else</font>
+        <font color=blue>throw</font> CFileException(CFileException::FailToWrite);
+}</pre></td></tr>
+
+<tr><th>プログラム６</th></tr>
+
+<tr><td><pre><font color=green>// Main.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        CTextFile file;
+        <font color=blue>const int</font> nBufSize = <font color=darkcyan>1024</font>;
+        <font color=blue>char</font>      buffer[nBufSize];
+
+        <font color=green>// 書き込みモードでオープン</font>
+        <font color=blue>if</font>(file.Open(<font color=darkcyan>"test.txt"</font>, <font color=darkcyan>"w"</font>))
+            <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+        <font color=green>// 書き込みモードなのに読み出そうとしてみます</font>
+        file.Read(buffer, nBufSize);
+    }
+    <font color=blue>catch</font>(CFileException e)
+    {
+        e.DispErrorString();
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>CTextFile::CTextFile 1
+CTextFile::~CTextFile
+ファイルからの読み出しに失敗しました。</pre></td></tr>
+
+</table></center>
+
+<p>　CException クラスは<font color=red>エラーコード</font>を保存するクラスです。コンストラクタでエラーコードを渡します。そのエラーコードは GetErrorCode で取得でき、また DispErrorString ではエラーメッセージを表示することができます。このクラスを<font color=red>全ての例外クラスの基本クラス</font>とします。</p>
+
+<p>　次に、ファイル用の例外クラス <font color=red>CFileException</font> クラスを CException クラスから派生させています。CFileException クラスの中では、エラーコード用の列挙子も定義しています。この列挙子をクラスの外から使うときには、static メンバのときと同じように <font color=red>CFileExcpetion::NoError</font> と使います。</p>
+
+<p>　そして、CFile の Read と Write で、<font color=red>エラー発生時に例外を投げる</font>ようにしています。ファイルが開かれていないときと、読み出し／書き込みサイズが０のときがエラーです。ただし、読み出しの場合はファイルの終端に達している可能性もあるので、Eof でチェックしておく必要があります。</p>
+
+<p>　そして、ようやく main 関数です。test.txt ファイルを書き込み用に開いて、そこであえて Read 関数を呼びます。するとエラーが発生し、throw してくれるというわけです。</p>
+
+<hr>
+
+<p>　次に、ファイル以外でも例外クラスを作りたいと思います。例えば、メモリの確保が失敗したとき用の例外クラス CMemException を作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム７</th></tr>
+
+<tr><td><pre><font color=green>// MemException.h</font>
+<font color=blue>#ifndef</font> __MEMEXCEPTION_H__010330_0605_01401764__INCLUDED__
+<font color=blue>#define</font> __MEMEXCEPTION_H__010330_0605_01401764__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>"Exception.h"</font>
+
+<font color=blue>class</font> CMemException : <font color=blue>public</font> CException
+{
+<font color=blue>public</font>:
+    CMemException(<font color=blue>unsigned</font> nErrorCode);
+<font color=blue>public</font>:
+    <font color=blue>virtual unsigned</font> GetErrorCode();
+    <font color=blue>virtual void</font> DispErrorString();
+
+    <font color=green>// エラーコード</font>
+<font color=blue>public</font>:
+    <font color=blue>enum</font> ErrorCode
+    {
+        NoError,
+        FailToAlloc,
+        LastError,
+    };
+};
+
+<font color=blue>inline</font> CMemException::CMemException(<font color=blue>unsigned</font> nErrorCode)
+    : CException(nErrorCode)
+{
+}
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __MEMEXCEPTION_H__010330_0605_01401764__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム８</th></tr>
+
+<tr><td><pre><font color=green>// MemException.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"MemException.h"</font>
+
+<font color=blue>unsigned</font> CMemException::GetErrorCode()
+{
+    <font color=blue>unsigned</font> nErrorCode = CException::GetErrorCode();
+    <font color=blue>return</font> (nErrorCode &gt;= LastError ? NoError : nErrorCode);
+}
+
+<font color=blue>void</font> CMemException::DispErrorString()
+{
+    <font color=blue>static const char</font>* apszError[] = {
+        <font color=darkcyan>"予期しないエラーです。"</font>,
+        <font color=darkcyan>"メモリの確保に失敗しました。"</font>,
+    };
+
+    cout &lt;&lt; apszError[GetErrorCode()] &lt;&lt; endl;
+}</pre></td></tr>
+
+<tr><th>プログラム９</th></tr>
+
+<tr><td><pre><font color=green>// Main2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"FileException.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"MemException.h"</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(<font color=blue>true</font>)
+    {
+        <font color=blue>try</font>
+        {
+            <font color=blue>int</font> fError;
+
+            cout &lt;&lt; <font color=darkcyan>"どっちのエラーを出す？ (1/2/else) &gt; "</font> &lt;&lt; flush;
+            cin &gt;&gt; fError;
+
+            <font color=blue>if</font>(fError == <font color=darkcyan>1</font>)
+                <font color=blue>throw</font> CFileException(CFileException::FailToRead);
+            <font color=blue>else if</font>(fError == <font color=darkcyan>2</font>)
+                <font color=blue>throw</font> CMemException(CMemException::FailToAlloc);
+            <font color=blue>else</font>
+                <font color=blue>break</font>;
+        }
+        <font color=blue>catch</font>(CFileException e)
+        {
+            e.DispErrorString();
+        }
+        <font color=blue>catch</font>(CMemException e)
+        {
+            e.DispErrorString();
+        }
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>どっちのエラーを出す？ (1/2/else) &gt; 1
+ファイルからの読み出しに失敗しました。
+どっちのエラーを出す？ (1/2/else) &gt; 2
+メモリの確保に失敗しました。
+どっちのエラーを出す？ (1/2/else) &gt; 3</pre></td></tr>
+
+</table></center>
+
+<p>　メモリ用のといっておきながら、全く関係ないところで例外を投げています（汗）。例なので見逃して下さい。</p>
+
+<p>　ここで、CFileException の例外と CMemException の例外とで別々のエラー処理を行う場合はこのままでいいのですが、同じエラー処理をしたので構わない場合があるでしょう。同じ CException クラスから派生しているので、もしなんとかなるのであれば CException* などで受けることができると推測できます。アップキャストと同じ要領です。</p>
+
+<p>　では、実際に試してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１０</th></tr>
+
+<tr><td><pre><font color=green>// Main2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"FileException.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"MemException.h"</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(<font color=blue>true</font>)
+    {
+        <font color=blue>try</font>
+        {
+            <font color=blue>int</font> fError;
+
+            cout &lt;&lt; <font color=darkcyan>"どっちのエラーを出す？ (1/2/else) &gt; "</font> &lt;&lt; flush;
+            cin &gt;&gt; fError;
+
+            <font color=green>// new して投げます</font>
+            <font color=blue>if</font>(fError == <font color=darkcyan>1</font>)
+                <font color=blue>throw</font> <font color=red>new</font> CFileException(CFileException::FailToRead);
+            <font color=blue>else if</font>(fError == <font color=darkcyan>2</font>)
+                <font color=blue>throw</font> <font color=red>new</font> CMemException(CMemException::FailToAlloc);
+            <font color=blue>else</font>
+                <font color=blue>break</font>;
+        }
+        <font color=blue>catch</font>(<font color=red>CException*</font> p)
+        {
+            <font color=blue>if</font>(p != NULL)
+            {
+                p->DispErrorString();
+                <font color=red>delete p;</font>  <font color=green>// delete を忘れずに</font>
+            }
+        }
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>どっちのエラーを出す？ (1/2/else) &gt; 1
+ファイルからの読み出しに失敗しました。
+どっちのエラーを出す？ (1/2/else) &gt; 2
+メモリの確保に失敗しました。
+どっちのエラーを出す？ (1/2/else) &gt; 3</pre></td></tr>
+
+</table></center>
+
+<p>　無事、CException* で例外をキャッチすることができました。</p>
+
+<p>　このように、<font color=red>例外は基底クラスへのポインタ、参照でもキャッチすることができる</font>のです。</p>
+
+<hr>
+
+<p>　最後に、「尚、Open は今まで通り例外を投げない仕様にします」と言った理由について話して終わりにしたいと思います。</p>
+
+<p>　例外処理はあくまで通常起こらないようなエラー、起こる頻度の低いエラーを処理するために用意された機構です。なので、ファイルのオープンのようにある程度頻度の高いエラーを処理する際にはあまり使いません。</p>
+
+<p>　理由は２つあります。１つは、後の処理を飛ばす必要のない、つまり致命的なエラーでない場合、if 文の方が簡潔に書くことができるからです。一文だけを try-catch ブロックで囲むよりも、if 文の方が簡単ですよね。</p>
+
+<p>　そしてもう１つは、パフォーマンスの問題です。例外処理は少々遅い処理です。普通はあまり気になることはないのですが、かといって無駄に使いすぎることもないでしょう。</p>
+
+<p>　しかし、ファイルのオープンという処理は try-catch で処理した方が楽なこともあります。そういう場合の時のために、例外を投げるようにも、投げないようにもできるようにすると便利かもしれませんね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>例外はアップキャスト可能。</li>
+<li>例外処理はあくまで例外処理に使うべし。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回でひとまず例外処理は終わりです。次回第５０章で第２部は終わりになります。少し軽めの内容になると思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02048.html" target="main">第４８章　えっ！？　４</a> | <a href="cpp02050.html" target="main">第５０章　異姓同名</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２５章 これ。 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２５章　これ。</font>
+</center>
+<hr>
+
+<p>　前々回に予告したとおり、今回はメンバ関数を呼びだしたオブジェクトを参照する方法について話します。それでは。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>this で、メンバ関数を呼びだしたオブジェクトのアドレスを取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前々回の配列をコピーする関数で、自分自身はコピーしないようにする処理がありました。</p>
+
+<pre>// 自分自身はコピーしない
+if(m_pnum == rother.m_pnum)
+    return true;</pre>
+
+<p>　そうそう、これです。</p>
+
+<p>　違うオブジェクトではそれぞれ別なところに配列を確保しているので、これで判定できるというものです。両方 NULL なときでも引っかかりますが、その時はコピーは不要です。</p>
+
+<p>　しかし、自分自身かどうかをメンバで確認するというのは不便です。今回は<font color=red>たまたま</font>確認できるようなメンバがありましたが、そういうメンバのないこともあります。</p>
+
+<p>　ここで考えられるのは、<font color=red>メンバのアドレス</font>を確認するというものです。同じオブジェクトの同じメンバのアドレスは同じですね。</p>
+
+<pre>if(<font color=red>&amp;</font>m_pnum == <font color=red>&amp;</font>rother.m_pnum)
+    return true;</pre>
+
+<p>　しかし、何か回りくどい気がします。</p>
+
+<hr>
+
+<p>　ここで、第２章で言ったことを思い出してみて下さい。</p>
+
+<blockquote>
+<p>「メンバ関数を呼ぶときに<font color=red>オブジェクトのアドレスを渡し</font>、メンバ関数ではそのアドレスを使って szName を利用しているのです。」</p>
+</blockquote>
+
+<p>　メンバ変数のアドレスが取得できるのは、オブジェクト自身のアドレスが分かっているからです。ということは、メンバ関数を呼んだオブジェクトのアドレスを<font color=red>直接</font>取得できても良さそうですね。そうなると、それと &amp;rother を比べれば判定できます。</p>
+
+<p>　その自分自身のアドレスというのは <font color=red>this</font> というもので取得できます。これを <font color=red>this ポインタ</font>と呼びます。これを使えば、</p>
+
+<pre>if(<font color=red>this</font> == &amp;rother)
+    return true;</pre>
+
+<p>　となるわけです。これですっきりしましたね。</p>
+
+<hr>
+
+<p>　では、実際に this ポインタがメンバ関数を呼んだ関数のアドレスになっているのかを確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+
+<td valign=top><pre><font color=green>// This1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CTest
+{
+    <font color=blue>int</font> a[<font color=darkcyan>100</font>];
+<font color=blue>public</font>:
+    CTest* RetThis(){ <font color=blue>return</font> <font color=red>this</font>; }
+};
+
+<font color=blue>int</font> main()
+{
+    CTest test1, test2;
+
+    cout &lt;&lt; <font color=darkcyan>"test1 : "</font> &lt;&lt; &amp;test1 &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"test2 : "</font> &lt;&lt; &amp;test2 &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"test1 : "</font> &lt;&lt; test1.RetThis() &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"test2 : "</font> &lt;&lt; test2.RetThis() &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>test1 : 0x0065FC68
+test2 : 0x0065FAD8
+test1 : 0x0065FC68
+test2 : 0x0065FAD8</pre></td>
+
+</tr>
+
+</table></center>
+
+<p>　期待通りの結果になりましたね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>this で、メンバ関数を呼びだしたオブジェクトのアドレスを取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も this ポインタについてのお話です。１つにしても良かったのですが、やっぱり２つに分けました。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02024.html" target="main">第２４章　同姓同名３</a> | <a href="cpp02026.html" target="main">第２６章　これ。２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.30</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

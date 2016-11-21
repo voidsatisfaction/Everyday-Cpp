@@ -1,0 +1,164 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６章 コンマ演算子 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６章　コンマ演算子</font>
+</center>
+<hr>
+
+<p>　今まで、いろいろな演算子について話してきました。今回は一風変わった演算子について話してみようと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>&lt;式１&gt;, &lt;式２&gt; の値は &lt;式２&gt; になる。</li>
+<li>コンマ演算子は優先順位が異常に低い。</li>
+<li>コンマ演算子を使えば複文を単文にできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のプログラムの for 文をもう一度見てみましょう。</p>
+
+<pre>for(i = 0; i < 8; i++)
+{
+    if(fscanf(pf1, "%d", &num1) == EOF ||
+    fscanf(pf2, "%d", &num2) == EOF)
+    {
+        fputc('\n', pf3);
+        goto LAST;
+    }
+
+    fprintf(pf3, "%d ", num1 + num2);
+    nNumbers++;
+}</pre>
+
+<p>　最後に nNumbers++; というのがありますね。しかしこれ、感覚的には for 文の i++ のところに入れてしまいたい気もします。ところが、for 文のループ文（i++ のあるところ）には文は<font color=red>１つ</font>しか置けません。</p>
+
+<p>　では、これは叶わぬ願いなのでしょうか？　それは違います。ここで<font color=red>コンマ演算子</font>というものを使えば、それは実現できます。「コンマ演算子」と大層な名前がついていますが、何て事はない、<font color=red>ただの ,</font> です。</p>
+
+<pre>for(i = 0; i < 8; <font color=red>i++, nNumbers++</font>)
+{
+    if(fscanf(pf1, "%d", &num1) == EOF ||
+    fscanf(pf2, "%d", &num2) == EOF)
+    {
+        fputc('\n', pf3);
+        goto LAST;
+    }
+
+    fprintf(pf3, "%d ", num1 + num2);
+}</pre>
+
+<p>　このように、コンマで区切れば<font color=red>全体で１文</font>と判断されるようになるのです。</p>
+
+<hr>
+
+<p>　しかし、これはコンマ演算子の応用法であって、その真の意味を表してはいません。コンマ演算子の真の意味は、次のようなものです。</p>
+
+<pre>a = (b, c);</pre>
+
+<p>　...何だか座標を代入しているような感じですね。このとき、<font color=red>b, c の値は c になります</font>。そして、その型は c の型になります。b の型は何でも構いません。これがコンマ演算子の真の意味です。</p>
+
+<p>　つまり、ここでは a には c の値が代入されるのです。カッコでくくっているのは、ただ単に<font color=red>コンマ演算子の優先順位は異常に低い</font>からです。</p>
+
+<p>　そして、代入などを行わないのであれば、別に c が値でなくても構いません。つまり、戻り値の型が void の関数を c にもってきても構わないのです。</p>
+
+<p>　また、b に関数などがあると、それはもちろん実行されます。b を完全に無視するのではなく、その<font color=red>値だけを無視する</font>わけです。</p>
+
+<hr>
+
+<p>　コンマ演算子の利用法として多いのが、上でやった for 文での利用法でしょう。初期化文を２つにするというのにも使うことがあります。</p>
+
+<p>　上の説明から、<font color=red>&lt;式１&gt;, &lt;式２&gt; も <font color=red>式</font>になる</font>ことが分かります。</p>
+
+<p>　<font color=red>宣言文とブロック文（ブロックも文と見なします）を除けば</font>、文はただ式にセミコロンをつけただけのものです。戻り値の型が void の関数を呼ぶという文であってもそうです。なので、セミコロンを除いた文をコンマで繋げば、あとはこれにセミコロンをつけると全体で１文になるということが分かるでしょう。</p>
+
+<p><br></p>
+
+<p>　そして、他にも while 文での利用法があります。例えば、<font color=red>ある変数にある関数から値を代入し、さらにその値をループの条件にしたい</font>というときがあるでしょう。それは、ファイル操作などでよく起こります。</p>
+
+<p>　例えば、ファイルから１バイトずつ読み出していき、その値を元に何か処理をしたいと思います。すると、コンマ演算子を使わなければ次のようになります。</p>
+
+<pre>while(1)
+{
+    letter = fgetc(pf);
+    if(letter == EOF)
+        break;
+
+    ... 処理 ...
+}</pre>
+
+<p>　fgetc はファイルから１バイト読み出す関数です。ファイルの終わりに達したとき、またはエラーが出たときには EOF が返されます。</p>
+
+<p>　ファイルの終わりに達するとループを終わるわけですが、while 文は無限ループにしてあります。これでは while 文の意義があまりないような気がします。</p>
+
+<p>　かといって、この条件を while 文のカッコに書いてしまうと、次のように fgetc をもう１個書くことになります。これでは無駄な気がします。</p>
+
+<pre>letter = fgetc(pf);
+while(letter != EOF)
+{
+    ... 処理 ...
+
+    letter = fgetc(pf);
+}</pre>
+
+<p>　そこでコンマ演算子の登場です。</p>
+
+<pre>while(<font color=red>letter = fgetc(pf), letter != EOF</font>)
+{
+    ... 処理 ...
+}</pre>
+
+<p>　while 文のカッコの中は次のようになっています。</p>
+
+<pre>letter = fgetc(pf), letter != EOF</pre>
+
+<p>　先ずは letter = fgetc(pf) が実行されます。これでファイルから１バイト読み出されます。</p>
+
+<p>　そして、次に letter != EOF が実行されます。<font color=red>条件式は真か偽かを返す式です。</font>そして、条件式がコンマ演算子の後に来ているので、while 文のカッコの中の値はこの<font color=red>条件式の値</font>になります。</p>
+
+<p>　つまり、<font color=red>ループの条件は letter != EOF になります</font>。</p>
+
+<p>　こうすれば、while 文を活かしつつ fgetc が１つですむようになります。</p>
+
+<p><br></p>
+
+<p>　コンマ演算子はやたらめったら使うとプログラムが分かりにくくなります。しかし、有効に使えばプログラムは分かりやすく、さらにきれいになります。この辺は goto 文と似たところがありますね。</p>
+
+<p>　マイナーな響きのあるコンマ演算子ですが、有効に利用してやって下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>&lt;式１&gt;, &lt;式２&gt; の値は &lt;式２&gt; になる。</li>
+<li>コンマ演算子は優先順位が異常に低い。</li>
+<li>コンマ演算子を使えば複文を単文にできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は a = b = 0; のようなことをやります。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03005.html" target="main">第５章　飛んでいきな</a> | <a href="cpp03007.html" target="main">第７章　代入文のリサイクル</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

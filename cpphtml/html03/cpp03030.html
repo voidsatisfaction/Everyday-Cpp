@@ -1,0 +1,234 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３０章 高速探索 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３０章　高速探索</font>
+</center>
+<hr>
+
+<p>　今回は、ソートされた配列の中からある値を見つけだすということをします。地道な方法と、速い方法とを比べてみましょう。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ある値を昇順ソート列の真ん中の要素と比較して、それより大きければそれ以降に、小さければそれ以前に目的の要素がある。</li>
+<li>これを続ければ高速に探索でき、この探索法を二分探索と呼ぶ。</li>
+<li>最悪でも [log<sub>2</sub>N] + 1 回で探索が終わる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ある<font color=red>ソート列</font>を用意してみます。その中から<font color=red>ある値を見つけだしたい</font>と思います。</p>
+
+<p>　簡単に考えれば、先頭から順に探していけばいいですね。この探索方法を<font color=red>線形探索</font>と呼びます。しかし、探す配列が小さければその速度も気になることはありませんが、配列が非常に大きくなってくるとちょっと気になります。</p>
+
+<p>　そこで、高速に探索する方法があります。それが<font color=red>二分探索</font>（バイナリサーチ）です。</p>
+
+<p>　先ず、配列が<font color=red>昇順</font>でソートされているとします。そして、見つけたい値と、配列の<font color=red>中央の要素</font>とを比較します。</p>
+
+<p>　これで見つかればめっけものですが、そうはいかないことが多いでしょう。その場合、配列の要素よりも<font color=red>大きい</font>か、<font color=red>小さい</font>か、ということになります。</p>
+
+<p>　もう分かった人もいるかもしれませんが、配列は昇順ソートされているので<font color=red>大きいときはそれ以降に、小さいときはそれ以前にしか目的の要素はありません</font>。降順ならその逆ですね。</p>
+
+<p>　ということは、値を探す場所は配列全体の<font color=red>半分</font>でよくなります。</p>
+
+<p>　次に、またこの半分の所の中央の要素と比較します。すると、<font color=red>また探索範囲は半分になります</font>。これを、値が見つかるまで続ければ探索完了です。探索範囲をどんどん半分にしていくので、二分探索という名前が付いています。</p>
+
+<p>　この方法をちょっと図にしてみましょう。</p>
+
+<center>
+<table border=1>
+
+<tr><td><img src="images/0303001.gif" width=510 height=310 alt="二分探索"></td></tr>
+
+<tr><th>図．１　二分探索</th></tr>
+
+</table>
+</center>
+
+<hr>
+
+<p>　二分探索には <font color=red>bsearch</font> という関数が用意されています（stdlib.h ヘッダファイルが必要です）。</p>
+
+<pre><font color=blue>void</font>* bsearch(<font color=blue>const void</font>* pKey, <font color=blue>const void</font>* pBase, size_t num, size_t width,
+              <font color=blue>int</font> (*fpCompare)(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2));</pre>
+
+<p>　pKey には探す値を入れている<font color=red>変数のアドレス</font>を、pBase には<font color=red>配列</font>を、num には配列の<font color=red>要素数</font>を、width には<font color=red>１要素のサイズ</font>を渡します。そして fpCompare には qsort と同じく<font color=red>比較関数</font>を渡します。使い方は qsort とほとんど同じなので、詳しい説明は割愛します。</p>
+
+<p>　普段は（バグの可能性を無くすために）これを使うことを奨めます。ですが、今回は敢えて二分探索ルーチンを作ってみましょう。</p>
+
+<p>　配列の中に２つ以上同じ値があるとどれをとっていいか分からなくなるので、配列は同じ値が２度出ないように作ります。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Bsearch1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>#define</font> numof(array) (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>void</font> SetData(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf);
+<font color=blue>bool</font> InputAndSearch(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf);
+<font color=blue>int</font> BinSearch(<font color=blue>int</font> num, <font color=blue>const int</font>* pnData, <font color=blue>int</font> nNumOf);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> anData[<font color=darkcyan>1024</font>];
+
+    SetData(anData, numof(anData));
+    <font color=blue>while</font>(InputAndSearch(anData, numof(anData)));
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// 昇順ソートされたデータのセット</font>
+<font color=blue>void</font> SetData(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> i;
+
+    pnData[<font color=darkcyan>0</font>] = <font color=darkcyan>1</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>1</font>; i &lt; nNumOf; i++)
+    {
+        <font color=green>// １〜５の値を前の要素に足します</font>
+        pnData[i] = pnData[i - <font color=darkcyan>1</font>] + (rand() % <font color=darkcyan>5</font> + <font color=darkcyan>1</font>);
+    }
+}
+
+<font color=green>// 入力と探索</font>
+<font color=blue>bool</font> InputAndSearch(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> nSearch;  <font color=green>// 探す値</font>
+    <font color=blue>int</font> iResult;  <font color=green>// 探索結果</font>
+
+    cout &lt;&lt; <font color=darkcyan>"探す値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; nSearch;
+    <font color=blue>if</font>(nSearch &lt;= <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    iResult = BinSearch(nSearch, pnData, nNumOf);
+    <font color=blue>if</font>(iResult == -<font color=darkcyan>1</font>)
+        cout &lt;&lt; <font color=darkcyan>"見つかりませんでした..."</font> &lt;&lt; endl &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; iResult + <font color=darkcyan>1</font> &lt;&lt; <font color=darkcyan>" 番目に見つかりました！ ("</font>
+             &lt;&lt; pnData[iResult] &lt;&lt; <font color=darkcyan>")"</font> &lt;&lt; endl &lt;&lt; endl;
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 二分探索
+// 探す値、配列、要素数を渡します
+// 見つからなければ -1 を返します</font>
+<font color=blue>int</font> BinSearch(<font color=blue>int</font> num, <font color=blue>const int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> iFirst = <font color=darkcyan>0</font>;           <font color=green>// 探索範囲の最初の要素</font>
+    <font color=blue>int</font> iLast  = nNumOf - <font color=darkcyan>1</font>;  <font color=green>// 探索範囲の最後の要素</font>
+    <font color=blue>int</font> iComp;                <font color=green>// 比較する要素</font>
+    <font color=blue>int</font> nComped;              <font color=green>// 比較結果</font>
+
+    <font color=green>// 探索範囲がなくなったら終了</font>
+    <font color=blue>while</font>(iLast - iFirst &gt; <font color=darkcyan>0</font>)
+    {
+        iComp = (iFirst + iLast) / <font color=darkcyan>2</font>;  <font color=green>// 平均値をとる</font>
+        nComped = pnData[iComp] - num;
+
+        <font color=green>// 要素との差が０なら探索終了</font>
+        <font color=blue>if</font>(nComped == <font color=darkcyan>0</font>)
+            <font color=blue>return</font> iComp;
+        <font color=green>// 探す値の方が大きいときは、iFirst を進める</font>
+        <font color=blue>if</font>(nComped &lt; <font color=darkcyan>0</font>)
+            iFirst = iComp + <font color=darkcyan>1</font>;
+        <font color=green>// 逆の時は iLast を戻す</font>
+        <font color=blue>else</font>
+            iLast  = iComp - <font color=darkcyan>1</font>;
+    }
+
+    <font color=green>// iLast が iFirst の前にきてしまったとき、
+    // もしくは残った要素と探す値が一致しないとき、
+    // 配列にはその要素は存在しない
+    // ショートサーキット（<a href="cpp03002.html" target="main">第２章</a>参照）を使っている点にも注意</font>
+    <font color=blue>if</font>(iLast - iFirst &lt; <font color=darkcyan>0</font> || pnData[iFirst] != num)
+        <font color=blue>return</font> -<font color=darkcyan>1</font>;
+    <font color=blue>return</font> iFirst;
+}
+</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>探す値を入力して下さい > 342
+112 番目に見つかりました！ (342)
+
+探す値を入力して下さい > 383
+見つかりませんでした...
+
+探す値を入力して下さい > 888
+293 番目に見つかりました！ (888)
+
+探す値を入力して下さい > 475
+見つかりませんでした...
+
+探す値を入力して下さい > 0</pre></td></tr>
+
+</table></center>
+
+<p>　確かに探索できているようですね。</p>
+
+<hr>
+
+<p>　二分探索を使うと、例え配列の要素数が<font color=red>２<sup>３２</sup></font>（４２９４９６７２９６）という巨大なものであっても、<font color=red>最悪３３回</font>で探索が完了します。</p>
+
+<p>　探索領域は１回につき半分になるわけですから、２<sup>３２</sup>は２<sup>３１</sup>になります（正確には比較した要素を除くので少しずれます）。２回目には２<sup>３０</sup>、３回目には２<sup>２９</sup>となり、結局３１回目には２<sup>１</sup>＝２となり、３２回目に１となります。最後に、その１つを探索して終わりです。</p>
+
+<p>　配列の一番最後に目的の要素がある時を考えると、地道に最初から探していると<font color=red>２<sup>３２</sup>回目に見つかることになります</font>。最悪２<sup>３２</sup>回ということです。平均でも２<sup>３１</sup>回です。二分探索を使えば最悪３３回で、劇的な差があることがあります。</p>
+
+<p>　２<sup>３２</sup>というあり得ないほど大きな配列でさえ最悪３３回で見つかるのですから、普通の配列ならもっと速く見つかるわけです。Ｎ要素の配列を探索するとき、最悪でも <font color=red>[log<sub>2</sub>N] + 1 回</font>、つまりＣ／Ｃ＋＋でいうところの <font color=red>(int)(log(N) / log(2)) + 1 回</font>で見つかります。２の何乗に近いかを考えて、最悪でもその値くらいになると考えると分かりやすいでしょう。</p>
+
+<p>　例えば、名前で昇順ソートされた会員データ（構造体）の配列があるとします。同姓同名の人は、会員番号順でソートします。会員が１０万人いるとするとき、名前と会員番号からある会員のデータを探索したいとすると、先頭から探したのでは大変だということが分かります。しかも、名前、つまり文字列の比較は数値の比較よりも時間がかかります。</p>
+
+<p>　そこで二分探索を使うと、１０万は２<sup>１６</sup>（６５５３６）と２<sup>１７</sup>（１３１０７２）の間にあるので、最悪でも１７回くらいの比較で探索は終了することになります。劇的に処理が減ることが分かりますね。</p>
+
+<hr>
+
+<p>　二分探索を使う時には２点注意することがあります。</p>
+
+<p>　１つ目は、もちろんのことですが、<font color=red>配列がソートされていなければならない</font>という点です。常にソートされている保証がなければ、qsort とセットで使うようにするといいでしょう。</p>
+
+<p>　<font color=red>ソートできないような状況では二分探索は使えません。</font>おとなしく線形探索を使いましょう。</p>
+
+<p>　２つ目は、<font color=red>同じ値の要素が２つ以上あると困る</font>という点です。そのうちのどれに当たるかが分からないのです。見つかった地点から左右に展開して、同じ値がどこからどこまであるかを確認すると良いでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ある値を昇順ソート列の真ん中の要素と比較して、それより大きければそれ以降に、小さければそれ以前に目的の要素がある。</li>
+<li>これを続ければ高速に探索でき、この探索法を二分探索と呼ぶ。</li>
+<li>最悪でも [log<sub>2</sub>N] + 1 回で探索が終わる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03029.html" target="main">第２９章　たのしいソート６</a> | <a href="cpp03031.html" target="main">第３１章　出鱈目？　規則的？</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.10.12</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

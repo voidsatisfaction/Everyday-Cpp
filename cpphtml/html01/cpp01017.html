@@ -1,0 +1,261 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１７章 for の書式 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１７章　for の書式</font>
+</center>
+<hr>
+
+<p>　前に少し for の書式について触れましたが、今回はもっと詳しく話していきます。今はまだよく分からなくても、そのうち分かってくると思うので、今回のうちに全部理解しなくても構いません。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>for の書式は for(&lt;初期化式&gt;; &lt;条件式&gt;; &lt;ループ式&gt;)&lt;実行文&gt; である。</li>
+<li>条件式は初期化後すぐにも評価される。</li>
+<li>省略できるパラメータは省略できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　以前に話した for の書式を思い出してみましょう。</p>
+
+<center><table border=1><tr><td>
+
+<pre>for(i = 0; i &lt; 10; i++){ ... }</pre>
+
+<p>　最初 i は 0 で、１回処理を行う毎に i を 1 ずつ増やしていき、i が 10 より小さかったらまた処理を行うのです。</p>
+
+<p>　「最初...」が i = 0 にあたり、「１ずつ増やして...」が i++ にあたり、「i が 10 より...」が i &lt; 10 にあたります。</p>
+
+</td></tr></table></center>
+
+<p>　このように話しました。</p>
+
+<p>　これを見ると、<font color=red>i = 0 を i = 5 に変えたり、i++ を i += 2 に変えたりしても支障はなさそうです</font>。</p>
+
+<p>　もしそうしたら、「最初 i は 5 で、１回処理を行う毎に i を 2 ずつ増やしていき、i が 10 より小さかったらまた処理を行う」ということになるはずです。</p>
+
+<p>　そのとき i は 5, 7, 9 の値をとるはずです。</p>
+
+<p>　では、確かめてみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>5</font>; i &lt; <font color=darkcyan>10</font>; i += <font color=darkcyan>2</font>)
+        cout &lt;&lt; i &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>5
+7
+9</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　思った通りになりましたね。</p>
+
+<hr>
+
+<p>　では、i = 10000 から始めてみましょう。i は 1 ずつ増やします。</p>
+
+<p>　上に書いたとおりだとすると、10000 だけは表示されることになります。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>10000</font>; i &lt; <font color=darkcyan>10</font>; i++)
+        cout &lt;&lt; i &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre></pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　あらら、何も表示されませんね。どうやら、<font color=red>条件の確認は一番初めでも行われる</font>ようです。</p>
+
+<hr>
+
+<p>　今度は<font color=red>ループの条件を変えてみましょう</font>。変数 a を別に用意して、その値をループの条件にしてしまいましょう。果たして成功するでしょうか？</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For3c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i, a = <font color=darkcyan>0</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; a &lt; <font color=darkcyan>10</font>; i++)
+    {
+        cout &lt;&lt; i &lt;&lt; <font color=darkcyan>", "</font> &lt;&lt; a &lt;&lt; endl;
+        a += <font color=darkcyan>2</font>;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0, 0
+1, 2
+2, 4
+3, 6
+4, 8</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　どうやら成功したようです。</p>
+
+<p>　i が まだ 4 + 1 = 5 だというのに、a が 8 + 2 = 10 なので条件から外れてしまいました。なので、4, 8 までしか表示されませんでした。</p>
+
+<hr>
+
+<p>　よくよく考えてみると、上の例では i は何の役にも立っていません。<font color=red>i を削除できたりはしないのでしょうか？</font></p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For3d.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a = <font color=darkcyan>0</font>;
+    <font color=blue>for</font>(; a &lt; <font color=darkcyan>10</font>;)
+    {
+        cout &lt;&lt; a &lt;&lt; endl;
+        a += <font color=darkcyan>2</font>;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0
+2
+4
+6
+8</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　やはりできるようです。でも、これでは</p>
+
+<pre>for(a = 0; a &lt; 10; a += 2)...</pre>
+
+<p>と同じですね。実用的には、「i = 0 がもう既に行われているから i = 0 だけを省略する」とか、「i の増減は別の所で行うから、ここでは省略する」とかのように使えるようです。</p>
+
+<hr>
+
+<p>　最初と最後のパラメータは省略できました。では、真ん中のパラメータはどうでしょうか？</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For3e.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a = <font color=darkcyan>0</font>;
+    <font color=blue>for</font>(;;)
+    {
+        cout &lt;&lt; a &lt;&lt; endl;
+        a++;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0
+1
+2
+3
+4
+.
+.
+.</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　あわわ、<font color=red>無限ループになってしまいました</font>。ということで、無限ループを行いたいときに for(;;) を使うことができます。</p>
+
+<p>　では、その際どうやって抜け出せばいいのでしょうか？　それは後の章で話します。</p>
+
+<hr>
+
+<p>　いろいろ実験してきた結果をまとめてみたいと思います。</p>
+
+<p>　for の書式は、</p>
+
+<pre><font color=red>for(&lt;初期化式&gt;; &lt;条件式&gt;; &lt;ループ式&gt;)&lt;実行文&gt;</font></pre>
+
+<p>のようです。</p>
+
+<p>　先ず、初期化式を行って、条件式を評価し、条件が真ならば実行文を実行します。そして、実行文が終わるとループ式を行って、再度条件式を評価します。その繰り返しを行うのが for 文の真の機能なのです。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りでした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>for の書式は for(&lt;初期化式&gt;; &lt;条件式&gt;; &lt;ループ式&gt;)&lt;実行文&gt; である。</li>
+<li>条件式は初期化後すぐにも評価される。</li>
+<li>省略できるパラメータは省略できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01016.html" target="main">第１６章　ループと配列変数</a> | <a href="cpp01018.html" target="main">第１８章　もうひとつのループ</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

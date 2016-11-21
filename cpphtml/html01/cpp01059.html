@@ -1,0 +1,149 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５９章 構造体２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５９章　構造体２</font>
+</center>
+<hr>
+
+<p>　今回は、前回話した構造体を実際に使ってみます。あまり話の進展はありませんが、重要なのでゆっくりやっていきます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体は主に参照渡しする。</li>
+<li>オブジェクトの初期化子は { } で囲む。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回作った構造体がありました。これを実際に使ってみましょう。</p>
+
+<p>　早速ですが、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Struct1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> ELEM(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>struct</font> SStudent
+{
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nJapanese;
+    <font color=blue>int</font>  nMath;
+    <font color=blue>int</font>  nEnglish;
+};
+
+<font color=blue>void</font> Disp(<font color=blue>const</font> SStudent& student)
+{
+    cout &lt;&lt; <font color=darkcyan>"名前 : "</font>   &lt;&lt; student.szName    &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"　国語 : "</font> &lt;&lt; student.nJapanese &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"数学 : "</font>   &lt;&lt; student.nMath     &lt;&lt; <font color=darkcyan>" 点, "</font>
+            <font color=darkcyan>"英語 : "</font>   &lt;&lt; student.nEnglish  &lt;&lt; <font color=darkcyan>" 点"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    SStudent students[] = {
+        { <font color=darkcyan>"赤井孝"</font>,   <font color=darkcyan>73</font>, <font color=darkcyan>98</font>, <font color=darkcyan>86</font>, },
+        { <font color=darkcyan>"笠井大介</font>", <font color=darkcyan>64</font>, <font color=darkcyan>45</font>, <font color=darkcyan>40</font>, },
+        { <font color=darkcyan>"吉田叶"</font>,   <font color=darkcyan>76</font>, <font color=darkcyan>78</font>, <font color=darkcyan>69</font>, },
+    };
+    <font color=blue>int</font>      i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i < ELEM(students); i++)
+        Disp(students[i]);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>
+名前 : 赤井孝
+　国語 : 73 点, 数学 : 98 点, 英語 86 点
+名前 : 笠井大介
+　国語 : 64 点, 数学 : 45 点, 英語 40 点
+名前 : 吉田叶
+　国語 : 76 点, 数学 : 78 点, 英語 69 点
+</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　先ず、ELEM というのがありますが、これは<a href="cpp01057.html" target="main">第５７章</a>でやった配列の要素数を取得するマクロですね。</p>
+
+<p>　で、その次に<font color=red>構造体の宣言</font>があります。ここではまだ<font color=red>型を宣言しただけ</font>でしたね。まだ実体はどこにもありません。</p>
+
+<p>　そして、その次に <font color=red>SStudent への参照を引数にとる関数 Disp</font> があります。普通の型の参照を引数にとる関数と、なんら変わらない構文ですね。関数内の処理も、<font color=red>前回の書いた処理のコピー＆ペースト</font>です（笑）。前回のことを思い出してもらえれば、何の特別なこともしていません。</p>
+
+<p>　このように、構造体はデータ量が多いので、配列と同じように<font color=red>ポインタや参照を使ってやりとりするのが普通</font>です。</p>
+
+<p>　もし、これを<font color=red>ポインタや参照にしていなければ、構造体がコピーされます</font>。int とかと同じように、値渡し（<a href="cpp01034.html" target="main">第３４章</a>参照）になるわけですね。ここは配列と大きく違うところです。もし構造体のサイズが４０００バイトだろうとも、４０００バイトコピーされるわけです。これには注意して下さい。</p>
+
+<p>　ただし、小さい構造体なら値渡しの方が有利になる可能性があります。理由は難しいので詳しくは話せませんが、<a href="../htmlword/words021.html" target="words">キャッシュ</a>が関係してくると言うことだけ言っておきます。でもその場合でも、参照渡しにする必要があるならもちろん参照渡しにします。</p>
+
+<p>　で、いよいよ main 関数です。</p>
+
+<p>　変数を作成しているのは、冒頭の</p>
+
+<pre>SStudent students[] = {
+    { "赤井孝",   73, 98, 86, },
+    { "笠井大介", 64, 45, 40, },
+    { "吉田叶",   76, 78, 69, },
+};</pre>
+
+<p>という所です。宣言自体は普通の配列変数の宣言と全く変わりませんね。</p>
+
+<p>　ここでは宣言と同時に初期化しています。構造体の配列を初期化するときは、<font color=red>１つ１つのオブジェクトに対しての初期化を書き連ね、それぞれを { } で囲みます</font>。これは<font color=red>多次元配列</font>でも同じです。多次元配列についてはまた後の機会に話します。</p>
+
+<p>　なお、これが配列変数でなければ、</p>
+
+<pre>SStudent students = { "赤井孝", 73, 98, 86, };</pre>
+
+<p>という風になります。</p>
+
+<p>　なお、<font color=red>最後の要素にもコンマがつけてあります</font>が、これはつけていなくても構いません。あとから要素を増減する予定があれば、コンマをつけておくと便利ですね。もちろん、普通の配列変数でも同じことができます。</p>
+
+<hr>
+
+<p>　はい、今回はこれだけです。構造体の使い方は大体分かってきましたか？</p>
+
+<p>　というわけで、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体は主に参照渡しする。</li>
+<li>オブジェクトの初期化子は { } で囲む。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は構造体に対するポインタについて話します。では。</p>
+
+<hr>
+
+<p align=right><a href="cpp01058.html" target="main">第５８章　構造体</a> | <a href="cpp01060.html" target="main">第６０章　構造体３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.8</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,377 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２８章 たのしいソート５ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２８章　たのしいソート５</font>
+</center>
+<hr>
+
+<p>　今回は、前回の qsort を使って構造体配列をソートをしてみます。その時、とっても困ることが起きるのです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の配列を直接ソートすると遅い。</li>
+<li>要素へのポインタ配列を作り、そのポインタをソートするとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回と違い、今回は構造体のソートをします。その構造体は次のようなものにします。</p>
+
+<pre>struct SMember   // 会員データ
+{
+    int nID;     // ＩＤ
+    int nYear;   // 誕生年
+    int nMonth;  // 誕生月
+    int nDay;    // 誕生日
+};</pre>
+
+<p>　データは乱数で２０個作って、生年月日をもとに昇順でソートしたいと思います。</p>
+
+<p>　それでは、早速プログラムを作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort7.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> (*array))
+
+<font color=blue>struct</font> SMember   <font color=green>// 会員データ</font>
+{
+    <font color=blue>int</font> nID;     <font color=green>// ＩＤ</font>
+    <font color=blue>int</font> nYear;   <font color=green>// 誕生年</font>
+    <font color=blue>int</font> nMonth;  <font color=green>// 誕生月</font>
+    <font color=blue>int</font> nDay;    <font color=green>// 誕生日</font>
+};
+
+<font color=green>// データの作成</font>
+<font color=blue>void</font> MakeData(SMember* pmems, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+    {
+        pmems[i].nID    = <font color=darkcyan>1</font> + i;
+        pmems[i].nYear  = <font color=darkcyan>1950</font> + rand() % <font color=darkcyan>40</font>;
+        pmems[i].nMonth = <font color=darkcyan>1</font> + rand() % <font color=darkcyan>12</font>;
+        pmems[i].nDay   = <font color=darkcyan>1</font> + rand() % <font color=darkcyan>28</font>;
+    }
+}
+
+<font color=green>// データの表示</font>
+<font color=blue>void</font> DispData(SMember* pmems, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+    {
+        printf(<font color=darkcyan>"会員No.%2d : %4d年 %2d月 %2d日 生まれ\n"</font>,
+               pmems[i].nID,    pmems[i].nYear,
+               pmems[i].nMonth, pmems[i].nDay);
+    }
+}
+
+<font color=green>// データの比較（生年月日）</font>
+<font color=blue>int</font> CompDate(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2)
+{
+    <font color=green>// 一旦変数に入れておくと、データが扱いやすいですね</font>
+    <font color=blue>const</font> SMember* pmem1 = (<font color=blue>const</font> SMember*)pElem1;
+    <font color=blue>const</font> SMember* pmem2 = (<font color=blue>const</font> SMember*)pElem2;
+
+    <font color=blue>int</font> nDiff;  <font color=green>// 両要素の差</font>
+
+    nDiff = pmem1-&gt;nYear - pmem2-&gt;nYear;
+    <font color=blue>if</font>(nDiff != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nDiff;
+
+    nDiff = pmem1-&gt;nMonth - pmem2-&gt;nMonth;
+    <font color=blue>if</font>(nDiff != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nDiff;
+
+    <font color=blue>return</font> pmem1-&gt;nDay - pmem2-&gt;nDay;
+}
+
+<font color=blue>int</font> main()
+{
+    SMember amem[<font color=darkcyan>20</font>];
+
+    MakeData(amem, numof(amem));
+    qsort(amem, numof(amem), <font color=blue>sizeof</font> *amem, CompDate);
+    DispData(amem, numof(amem));
+
+    <font color=blue>return</font> 0;
+}
+
+</pre></td></tr>
+
+<tr><td><pre>会員No. 5 : 1951年  4月 22日 生まれ
+会員No. 1 : 1951年 12月  7日 生まれ
+会員No.15 : 1952年 10月  6日 生まれ
+会員No. 8 : 1954年  3月 14日 生まれ
+会員No.18 : 1954年 11月 26日 生まれ
+会員No.11 : 1957年  7月 16日 生まれ
+会員No. 6 : 1961年  8月 15日 生まれ
+会員No. 9 : 1962年 11月  6日 生まれ
+会員No.17 : 1963年  5月 12日 生まれ
+会員No.14 : 1964年 12月 12日 生まれ
+会員No.12 : 1968年 10月  5日 生まれ
+会員No. 2 : 1970年  6月 17日 生まれ
+会員No.20 : 1971年  2月 23日 生まれ
+会員No. 4 : 1974年  6月  6日 生まれ
+会員No.16 : 1974年 10月 12日 生まれ
+会員No. 7 : 1977年  1月 24日 生まれ
+会員No.13 : 1977年  8月 12日 生まれ
+会員No.10 : 1986年  3月 16日 生まれ
+会員No.19 : 1987年  8月 16日 生まれ
+会員No. 3 : 1988年  7月 27日 生まれ</pre></td></tr>
+
+</table></center>
+
+<p>　はい、きちんとソートできましたね。</p>
+
+<hr>
+
+<p>　と、ここまでは大したことはやっていません。強いて言えば、qsort の使い方のサンプルのようなものです。</p>
+
+<p>　本題はこれからです。ここでもし、<font color=red>構造体のサイズを大きくし</font>、<font color=red>要素数を１０万にする</font>とどうなるでしょうか？　ちょっと試してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort7b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>struct</font> SMember   <font color=green>// 会員データ</font>
+{
+    <font color=blue>int</font> nID;     <font color=green>// ＩＤ</font>
+    <font color=blue>int</font> nYear;   <font color=green>// 誕生年</font>
+    <font color=blue>int</font> nMonth;  <font color=green>// 誕生月</font>
+    <font color=blue>int</font> nDay;    <font color=green>// 誕生日</font>
+    <font color=blue>int</font> dummy[<font color=darkcyan>124</font>];  <font color=green>// ダミーデータ</font>
+};
+
+<font color=green>// データの作成</font>
+<font color=blue>void</font> MakeData(SMember* pmems, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+    {
+        pmems[i].nID    = <font color=darkcyan>1</font> + i;
+        pmems[i].nYear  = <font color=darkcyan>1950</font> + rand() % <font color=darkcyan>40</font>;
+        pmems[i].nMonth = <font color=darkcyan>1</font> + rand() % <font color=darkcyan>12</font>;
+        pmems[i].nDay   = <font color=darkcyan>1</font> + rand() % <font color=darkcyan>28</font>;
+    }
+}
+
+<font color=green>// データの比較（生年月日）</font>
+<font color=blue>int</font> CompDate(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2)
+{
+    <font color=blue>const</font> SMember* pmem1 = (<font color=blue>const</font> SMember*)pElem1;
+    <font color=blue>const</font> SMember* pmem2 = (<font color=blue>const</font> SMember*)pElem2;
+
+    <font color=blue>int</font> nDiff;  <font color=green>// 両要素の差</font>
+
+    nDiff = pmem1-&gt;nYear - pmem2-&gt;nYear;
+    <font color=blue>if</font>(nDiff != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nDiff;
+
+    nDiff = pmem1-&gt;nMonth - pmem2-&gt;nMonth;
+    <font color=blue>if</font>(nDiff != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nDiff;
+
+    <font color=blue>return</font> pmem1-&gt;nDay - pmem2-&gt;nDay;
+}
+
+<font color=blue>int</font> main()
+{
+    SMember*  pmem;
+    <font color=blue>const int</font> nNumOf = <font color=darkcyan>100000</font>;
+
+    <font color=green>// 大きな配列は動的に確保する！</font>
+    pmem = <font color=blue>new</font> SMember[nNumOf];
+    <font color=blue>if</font>(pmem == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    MakeData(pmem, nNumOf);
+    qsort(pmem, nNumOf, <font color=blue>sizeof</font> *pmem, CompDate);
+
+    <font color=blue>delete</font> [] pmem;
+
+    <font color=blue>return</font> 0;
+}
+
+</pre></td></tr>
+
+</table></center>
+
+<p>　この qsort の実行速度を測ってみたところ、２０回平均で<font color=red>６．８秒</font>（ＭＭＸペンティアム３００ＭＨｚで測定）でした。前回、１０万要素の int 型配列のソートは<font color=red>０．３秒程度</font>と言いました。構造体だと何故これほどまでに遅くなるのでしょうか？</p>
+
+<p>　これは、<font color=red>構造体の交換に時間がかかるから</font>です。今回の構造体のサイズは５１２バイトです。５１２バイトのデータ２つを交換するのは、４バイトのデータ２つを交換するよりも時間がかかるのは当然ですね。</p>
+
+<p>　となると、大きな構造体のソートには非常に時間がかかるということになります。しかし、ソートの対象は構造体であることが多く、それではとても不便です。では、どのようにすればいいのでしょうか？</p>
+
+<p>　そこで、構造体を<font color=red>ポインタを介して</font>使うようにします。どういうことかというと、もともとの構造体を直接ソートするのではなく、<font color=red>各要素へのポインタの配列を用意し、そのポインタをソートすればいい</font>、ということです。</p>
+
+<p>　イメージしづらいかもしれませんね。ということで、図を用意してみました。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0302801.gif" width=380 height=280 alt="間接ソート"></td></tr>
+
+<tr><th>図．１　間接ソート</th></tr>
+
+</table></center>
+
+<p>　先ず、元の配列があって、その各要素へのポインタを持つ配列をもう１つ用意します。ポインタは、同じ色の要素のアドレスを持っていると考えて下さい。</p>
+
+<p>　そして、ソートはこの<font color=red>ポインタ配列をソートします</font>。といっても、ポインタに入っているアドレスを比較してソートするのではなく、その<font color=red>参照先のデータを比較</font>してソートします。</p>
+
+<p>　で、一番下の配列がソートされた配列です。色をたどってみるとソートされていることが分かりますね。</p>
+
+<p>　そしてもちろんのことですが、元の配列はソートされていないので、<font color=red>データを扱う際にはソートしたポインタを通す必要があります</font>。</p>
+
+<hr>
+
+<p>　では、プログラムを作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort7c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>struct</font> SMember   <font color=green>// 会員データ</font>
+{
+    <font color=blue>int</font> nID;     <font color=green>// ＩＤ</font>
+    <font color=blue>int</font> nYear;   <font color=green>// 誕生年</font>
+    <font color=blue>int</font> nMonth;  <font color=green>// 誕生月</font>
+    <font color=blue>int</font> nDay;    <font color=green>// 誕生日</font>
+    <font color=blue>int</font> dummy[<font color=darkcyan>124</font>];  <font color=green>// ダミーデータ</font>
+};
+
+<font color=green>// データの作成</font>
+<font color=blue>void</font> MakeData(SMember* pmems, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+    {
+        pmems[i].nID    = <font color=darkcyan>1</font> + i;
+        pmems[i].nYear  = <font color=darkcyan>1950</font> + rand() % <font color=darkcyan>40</font>;
+        pmems[i].nMonth = <font color=darkcyan>1</font> + rand() % <font color=darkcyan>12</font>;
+        pmems[i].nDay   = <font color=darkcyan>1</font> + rand() % <font color=darkcyan>28</font>;
+    }
+}
+
+<font color=green>// アドレスのセット</font>
+<font color=blue>void</font> SetAddresses(SMember** ppmem,
+                  <font color=blue>const</font> SMember* pmemMaster, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nNumOf; i++)
+        ppmem[i] = &pmemMaster[i];
+}
+
+<font color=green>// データの比較（生年月日）</font>
+<font color=blue>int</font> CompDate(<font color=blue>const void</font>* pElem1, <font color=blue>const void</font>* pElem2)
+{
+    <font color=green>// pElem1 はポインタ（渡した配列の要素）へのポインタ</font>
+    <font color=blue>const</font> SMember* pmem1 = <font color=red>*</font>(<font color=blue>const</font> SMember*<font color=red>*</font>)pElem1;
+    <font color=blue>const</font> SMember* pmem2 = <font color=red>*</font>(<font color=blue>const</font> SMember*<font color=red>*</font>)pElem2;
+
+    <font color=blue>int</font> nDiff;  <font color=green>// 両要素の差</font>
+
+    nDiff = pmem1-&gt;nYear - pmem2-&gt;nYear;
+    <font color=blue>if</font>(nDiff != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nDiff;
+
+    nDiff = pmem1-&gt;nMonth - pmem2-&gt;nMonth;
+    <font color=blue>if</font>(nDiff != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> nDiff;
+
+    <font color=blue>return</font> pmem1-&gt;nDay - pmem2-&gt;nDay;
+}
+
+<font color=blue>int</font> main()
+{
+    SMember*  pmemMaster;  <font color=green>// 元の配列</font>
+    SMember*<font color=red>*</font> ppmem;       <font color=green>// 実際に使う配列（ポインタの配列）</font>
+    <font color=blue>const int</font> nNumOf = <font color=darkcyan>100000</font>;
+
+    pmemMaster = <font color=blue>new</font> SMember[nNumOf];
+    <font color=blue>if</font>(pmemMaster == NULL)
+        <font color=blue>goto</font> ALLOC_ERROR1;
+
+    ppmem = <font color=blue>new</font> SMember*[nNumOf];
+    <font color=blue>if</font>(ppmem == NULL)
+        <font color=blue>goto</font> ALLOC_ERROR2;
+
+    MakeData(pmemMaster, nNumOf);
+    SetAddresses(ppmem, pmemMaster, nNumOf);
+    qsort(ppmem, nNumOf, <font color=blue>sizeof</font> *ppmem, CompDate);
+
+    <font color=blue>delete</font> [] ppmem;
+ALLOC_ERROR2:
+    <font color=blue>delete</font> [] pmem;
+ALLOC_ERROR1:
+    <font color=blue>return</font> 0;
+}
+
+</pre></td></tr>
+
+</table></center>
+
+<p>　ポインタでソートした時の時間は２０回平均で<font color=red>１．２秒</font>でした。要素への参照が１段階増える分比較に若干時間がかかりますが、それでもソート時間は約４分の１に短縮されています。</p>
+
+<p>　このように、要素数の多い構造体のソートは<font color=red>ポインタを介して</font>ソートするとかなり速くなります。活用しましょう。</p>
+
+<p>　そして重ねて言いますが、実際に構造体のデータを使うときには、<font color=red>そのポインタを介して要素を扱わないとソートはされていない</font>という点に注意して下さい。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の配列を直接ソートすると遅い。</li>
+<li>要素へのポインタ配列を作り、そのポインタをソートするとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はさらに新しいソート法を話します。限定的にしか使えませんが非常に高速です。</p>
+
+<hr>
+
+<p align=right><a href="cpp03027.html" target="main">第２７章　たのしいソート４</a>
+<!--
+ | <a href="cpp03029.html" target="main">第２９章　たのしいソート６</a>
+-->
+</p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.22</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

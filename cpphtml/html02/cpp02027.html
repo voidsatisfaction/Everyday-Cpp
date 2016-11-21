@@ -1,0 +1,157 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２７章 暗黙の了解 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２７章　暗黙の了解</font>
+</center>
+<hr>
+
+<p>　第９章でオブジェクトを値渡しするプログラムをやりました。誰かここに int 型の値を入れた人はいませんか？　今回はそんな話です。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>値渡しする引数では、コピーコンストラクタ以外のコンストラクタも呼ばれる。</li>
+<li>値渡しでコンストラクタを呼ばれないようにするには、コンストラクタの宣言に explicit をつける。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　早速、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// Copy1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=blue>void</font> Disp(CIntArray array)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; array.NumOf(); i++)
+        cout &lt;&lt; array.Get(i) &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CIntArray arrayAtoZ(<font color=darkcyan>'Z'</font> - <font color=darkcyan>'A'</font> + <font color=darkcyan>1</font>);
+    <font color=blue>int</font>       i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; arrayAtoZ.NumOf(); i++)
+        arrayAtoZ.Set(i, <font color=darkcyan>'A'</font> + i);
+    Disp(arrayAtoZ);
+    <font color=red>Disp(i);</font>
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>コンストラクタが呼ばれました。要素数は 26 です。
+コピーコンストラクタが呼ばれました。
+65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 
+デストラクタが呼ばれました。要素数は 26 でした。
+<font color=red>コンストラクタが呼ばれました。要素数は 26 です。
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+デストラクタが呼ばれました。要素数は 26 でした。</font>
+デストラクタが呼ばれました。要素数は 26 でした。</pre></td></tr>
+
+</table></center>
+
+<p>　第９章の Copy1.cpp に近いですね。しかし、最後に変なものが付いています。</p>
+
+<pre>Disp(i);</pre>
+
+<p>　そうです。これです。</p>
+
+<p>　Disp 関数は CIntArray 型の引数をとるはずなのに、何と、<font color=red>int 型の変数を渡しています</font>。しかも、<font color=red>エラーが出ていません</font>。</p>
+
+<p>　何とも不思議なことですが、実行結果を見てみるとどうなっているかが推測できます。</p>
+
+<p>　この１行を書かなかったときに表示される結果は、上の赤い３行を消したものになります。つまり、上の赤い３行は Disp(i); を実行したときに表示されたということになります。</p>
+
+<p>　ここで、「コンストラクタが呼ばれました。要素数は 26 です。」というのが、先ず表示されています。これが表示されるのは CIntArray(const int nNumOf); の中だけのはずです。ということは、<font color=red>CIntArray(const int nNumOf); が呼ばれているということになります</font>。</p>
+
+<p>　そして、ここで double 型の変数を渡すと「'double' から 'const int' に変換しました。」というエラーが出ます。</p>
+
+<p>　そして、要素数はその時の i の値と同じ２６です。</p>
+
+<p>　これらのことを併せて考えると、どうも<font color=red>「i を使って CIntArray(const int nNumOf); が呼ばれた」</font>ということになりそうです。つまり、</p>
+
+<pre>CIntArray array(i);</pre>
+
+<p>としたときと同じ事をしているわけです。</p>
+
+<p>　このように、引数ではコピーコンストラクタだけではなく、<font color=red>別のコンストラクタも呼ばれるのです</font>。</p>
+
+<p>　この機能はいろいろなところで活用できます。例えば、文字列を扱うクラスを作ったとします。</p>
+
+<p>　このクラスのコンストラクタには「文字列を渡して、そのコピーを作る」というものがあるでしょう。こういうとき、<font color=red>値渡しの引数に文字列を直接渡しても一向に構わない</font>ということになります。いちいちオブジェクトを作って、それを渡さなくても構わないわけです。</p>
+
+<p>　ほかにも、いろいろなところで活用できることがあると思います。</p>
+
+<hr>
+
+<p>　しかし、逆に<font color=red>こういった機能が欲しくないとき</font>もあります。今がその時で、引数に int 型の変数を入れたとしても特に意味はありません。こんな使い方はしないでしょうから、エラーが出てくれた方がいいですね。</p>
+
+<p>　そういうときは、コンストラクタの宣言の頭に <font color=red>explicit</font> をつけます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+<font color=blue>public</font>:
+    <font color=red>explicit</font> CIntArray(<font color=blue>const int</font> nNumOf);
+};</pre></td></tr>
+
+<tr><th>エラーコード</th></tr>
+
+<tr><td><pre>copy1.cpp(22) : error C2664: 1 番目の引数を 'int' から 'class CIntArray' に変換できません。</pre></td></tr>
+
+</table></center>
+
+<p>　これで Disp(i); でエラーが出るようになりました。安心ですね。</p>
+
+<p>　あと、まぁ考えれば分かると思いますが、値渡しで呼ばれる可能性のあるコンストラクタは、<font color=red>引数が１つのものだけ</font>です。デフォルトコンストラクタや、引数の２つ以上あるコンストラクタは呼ばれません。呼びようがない、というのが正しいかもしれませんね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>値渡しする引数では、コピーコンストラクタ以外のコンストラクタも呼ばれる。</li>
+<li>値渡しでコンストラクタを呼ばれないようにするには、コンストラクタの宣言に explicit をつける。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02026.html" target="main">第２６章　これ。２</a> | <a href="cpp02028.html" target="main">第２８章　静かなるメンバ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.1</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

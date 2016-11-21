@@ -1,0 +1,97 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４２章 変えてくれるな２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４２章　変えてくれるな２</font>
+</center>
+<hr>
+
+<p>　今回も定数について話していきます。前回は文法的なことについて触れませんでしたので、今回はそういったことをまとめてみようと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>const は、定数を使いたいときに自由に使うことができる。</li>
+<li>const の書式は const &lt;型&gt; &lt;名前&gt; = &lt;初期値&gt;; 。</li>
+<li>ポインタを定数にする場合は &lt;型&gt; *const &lt;名前&gt; = &lt;初期値&gt;; 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のように、定数はポインタや参照に対して使うのが一般的です。これは、参照先のデータを不用意に書き換えないようにするためです。</p>
+
+<p>　しかし、ポインタや参照以外、そして引数以外でも定数を使っても構いません。例えば物理計算では様々な物理定数があります。それを生の値でなく、「定数」であらかじめ定義しておくと、再利用ができて便利です。</p>
+
+<p>　この使い方は<a href="cpp01029.html" target="main">マクロ</a>と似ています。そして、細かい違いはありますが、マクロをこの方法で使う場合は、実際問題ほとんど同じと考えても構いません。まぁ、微妙な違いですので、今はあまり深く考える必要はないでしょう。</p>
+
+<hr>
+
+<p>　では、ポインタや参照以外で定数を使うときにはどんな文法になるのでしょうか？</p>
+
+<p>　const の文法は以下の通りです。</p>
+
+<pre><font color=red>const &lt;型&gt; &lt;名前&gt; = &lt;初期値&gt;;</font></pre>
+
+<p>　と言っても、const 自体も「型」を示すものですから、</p>
+
+<pre>int const unsigned &lt;名前&gt; = &lt;初期値&gt;;</pre>
+
+<p>のように、const と &lt;型&gt; の順番はどうなっていても構いません。</p>
+
+<p>　初期値は引数の場合はいりませんが、<font color=red>普通の場合には必須</font>です。あとで値を変えられないのですから...当然ですね。</p>
+
+<p>　例えば、光の速度を c で定義したいときは、</p>
+
+<pre>const double c = 299792458;   // 光速は秒速 299792458 メートルと定義されています</pre>
+
+<p>のようにします。（余談ですが、現在は、１メートルを「光が 1/299792458 秒の間に進む距離」と定義しています。）</p>
+
+<p>　ポインタの場合、</p>
+
+<pre>const char *p;</pre>
+
+<p>とすると、<font color=red>参照先が定数</font>になります。p は定数になりません。p を定数にしたい場合は、</p>
+
+<pre>char <font color=red>*const</font> p = &amp;a;</pre>
+
+<p>と、<font color=red>* の後ろに const を入れます</font>。こうすれば、ポインタ p が定数になります。</p>
+
+<hr>
+
+<p>　さて、文法的なことはこれで終わりです。定数の使いどころも、前回の事以外特に言及することもありません。</p>
+
+<p>　ということで、これで今回はこれで終わりにします。短かったですかね。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>const は、定数を使いたいときに自由に使うことができる。</li>
+<li>const の書式は const &lt;型&gt; &lt;名前&gt; = &lt;初期値&gt;; 。</li>
+<li>ポインタを定数にする場合は &lt;型&gt; *const &lt;名前&gt; = &lt;初期値&gt;; 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はポインタの話から大きく離れて、３項演算子というものについて話したいと思います。ちょっと変わった形の、そして便利な機能です。活用してあげて下さい。</p>
+
+<hr>
+
+<p align=right><a href="cpp01041.html" target="main">第４１章　変えてくれるな</a> | <a href="cpp01043.html" target="main">第４３章　？： ？？？</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

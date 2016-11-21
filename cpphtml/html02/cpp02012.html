@@ -1,0 +1,183 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１２章 第３のアクセス指定子 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１２章　第３のアクセス指定子</font>
+</center>
+<hr>
+
+<p>　前回の CTextFile クラスにメンバを追加していくと、致命的な欠点があることに気が付きます。しかし、この欠点は簡単に解消できます。今回はそんなお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>protected: を使うと、外部には公開されないが派生先には公開される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回も CTextFile をパワーアップさせていきましょう。</p>
+
+<p>　前回文字列を書き込む関数がうまく言ったので、今回は１行読み出す関数を作りたいと思います。１行読み出す関数には fgets という関数があるので、これを使いたいと思います。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// TextFile.h</font>
+<font color=blue>#ifndef</font> __TEXTFILE_H__INCLUDED__
+<font color=blue>#define</font> __TEXTFILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=blue>const int</font> TF_OVERFLOW = EOF - <font color=darkcyan>1</font>;  <font color=green>// オーバーフロー</font>
+
+<font color=blue>class</font> CTextFile : <font color=blue>public</font> CFile
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> WriteString(<font color=blue>const char</font>* pszString);  <font color=green>// 文字列を書き込む</font>
+    <font color=blue>int</font> ReadLine(<font color=blue>char</font>* buffer, <font color=blue>int</font> nSize);   <font color=green>// １行読み出す関数</font>
+};
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><td><pre><font color=green>// TextFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=green>// １行読み出す関数
+// 改行コードは切り捨てられます
+// 戻り値は文字列の長さになります
+// バッファに入りきらないとき（オーバーフロー）は TF_OVERFLOW を返します</font>
+<font color=blue>int</font> CTextFile::ReadLine(<font color=blue>char</font>* buffer, size_t nSize)
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>false</font>)
+        <font color=blue>return</font> EOF;
+    <font color=blue>if</font>(fgets(buffer, nSize, m_pfile) == NULL)
+        <font color=blue>return</font> EOF;
+
+    size_t nLength = strlen(buffer);
+
+    <font color=green>// 最後に改行のない場合は、オーバーフローか、改行のない最後の行です
+    // 改行のない最後の行がたまたまバッファの長さ−１の長さの時もオーバーフローと判定します</font>
+    <font color=blue>if</font>(buffer[nLength - <font color=darkcyan>1</font>] != <font color=darkcyan>'\n'</font>)
+        <font color=blue>return</font> (nLength == nSize - <font color=darkcyan>1</font>) ? TF_OVERFLOW : nLength;
+
+    nLength -= <font color=darkcyan>1</font>;
+    buffer[nLength] = <font color=darkcyan>0</font>;
+    <font color=blue>return</font> nLength;
+}</pre></td></tr>
+
+<tr><th>エラーコード</th></tr>
+
+<tr><td><pre>TextFile.cpp(13) : error C2248: 'm_pfile' : private メンバにアクセスできません。</pre></td></tr>
+
+</table></center>
+
+<p>　おや？　エラーが出てきました。「private メンバにアクセスできません」？　どうやら、<font color=red>private メンバは派生先にも公開されない</font>ようです。</p>
+
+<p>　これは困ったどころの問題ではありません。m_pfile は確かに外部に公開したくないメンバ変数です。だからといって<font color=red>派生クラスでも使えない</font>というのはどうしたものでしょうか。</p>
+
+<p>　実は、こういうときのために<font color=red>第３のアクセス指定子</font>があります。それが <font color=red>protected:</font> です。<font color=red>protected:（守られた）と書くと、以降のメンバは外部には公開されませんが、派生先には公開されます。</font></p>
+
+<p>　つまり、CFile の部分をこうしておけばいいのです。</p>
+
+<center><table border=1>
+
+<tr><td valign=top><pre><font color=blue>class</font> CFile
+{
+    <font color=green>// メンバ変数</font>
+<font color=red>protected:</font>
+    FILE* m_pfile;  <font color=green>// ファイル</font>
+
+<font color=red>private:</font>
+    <font color=blue>bool</font>  m_bCopy;  <font color=green>// コピーコンストラクタで作られたかどうか</font>
+
+    <font color=green>// 以降は省略</font>
+};</pre></td></tr>
+
+</table></center>
+
+<p>　これで m_pfile は派生クラスでも使えるようになりました。これで ReadLine 関数も無事コンパイルすることができますね。</p>
+
+<p>　m_bCopy は特に派生クラスで使える必要はないので、private のままにしておきました。このように、<font color=red>派生クラスで使わせないためにあえて private にすることも重要です</font>。</p>
+
+<p>　public, private, そして protected の３つのアクセス指定子を使って、上手にメンバ変数を保護してあげましょう。</p>
+
+<hr>
+
+<p>　今回はこれ以上することがないので、これらのクラスを使ったプログラムでも作って終わりにします。まだ CTextFile でもバイナリモードで開かれるのですが、気にしないことにしましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>int</font> main()
+{
+    CFile     bin;
+    CTextFile txt;
+    <font color=blue>char</font>      buffer[<font color=darkcyan>128</font>];
+    <font color=blue>int</font>       nRead;
+
+    <font color=blue>if</font>(txt.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"w"</font>) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    txt.WriteString(<font color=darkcyan>"色は匂へど散りぬるを"</font>);
+    txt.Close();
+
+    <font color=blue>if</font>(bin.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    nRead = bin.Read(buffer, <font color=blue>sizeof</font> buffer - <font color=darkcyan>1</font>);
+    buffer[nRead] = <font color=darkcyan>0</font>;
+    cout &lt;&lt; buffer &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>色は匂へど散りぬるを</pre></td>
+</tr>
+
+</table></center>
+
+<p>　先ず、CTextFile の方で WriteString で文字列を書き込みます。</p>
+
+<p>　そして、次に CFile の方でその文字列を読み込みます。で、ヌルターミネータを付けてから文字列を表示しています。動作に問題はありませんね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>protected: を使うと、外部には公開されないが派生先には公開される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は、CTextFile だとテキストモードで開かれるようにしたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02011.html" target="main">第１１章　子孫</a> | <a href="cpp02013.html" target="main">第１３章　関数のすげ替え</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２章 メンバ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２章　メンバ</font>
+</center>
+<hr>
+
+<p>　今回は、前回のプログラムの文法的な意味について話します。さぁ、あなたの推理は当たっているでしょうか？</p>
+
+<hr>
+
+<p>　さて、今回の要点...はちょっと最後に回します。推理小説を読んでる途中に犯人を言われるようなものですからね。</p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ずは、クラスの宣言の中に関数のプロトタイプが書いてありました。</p>
+
+<pre><font color=red>void Disp();</font></pre>
+
+<p>　メンバ関数を使うには、先ず<font color=red>クラス宣言の中にその関数のプロトタイプを書きます</font>。これは単純な話ですね。</p>
+
+<p>　次には、今までにはちょっと見たことのない関数の定義がありました。</p>
+
+<pre><font color=red>void SStudent::Disp()</font>
+{
+    cout &lt;&lt; "名前 : "   &lt;&lt; <font color=red>szName</font>    &lt;&lt; endl
+         &lt;&lt; "　国語 : " &lt;&lt; <font color=red>nJapanese</font> &lt;&lt; " 点, "
+            "数学 : "   &lt;&lt; <font color=red>nMath</font>     &lt;&lt; " 点, "
+            "英語 : "   &lt;&lt; <font color=red>nEnglish</font>  &lt;&lt; " 点" &lt;&lt; endl;
+}</pre>
+
+<p>　ここではメンバ関数の中身を定義しているのだということは簡単に分かると思います。メンバ関数の中身を定義することを<font color=red>「実装する」</font>と言います。ここでは「クラス SStudent のメンバ関数 Disp を実装している」となります。</p>
+
+<p>　メンバ関数を実装するときは、<font color=red>関数名の前に &lt;クラス名&gt;:: をつけます</font>。どのクラスの Disp なのかを表しているわけですね。この :: は演算子ではありませんが、スコープ解決演算子と同じと考えて問題ありません。</p>
+
+<p><br></p>
+
+<p>　さて、ここまでは何の問題もありません。問題は szName などを素のまま使っているというところです。この szName は何の szName なのでしょうか？</p>
+
+<p>　これは、<font color=red>このメンバ関数を呼んだ時に使ったオブジェクトの szName</font> なのです。つまり、どのメンバ関数を呼んだかによって、szName がどの szName なのかが変わってしまうのです。</p>
+
+<p>　メンバ関数を呼んでいると思われるのは</p>
+
+<pre>for(i = 0; i < ELEM(students); i++)
+    <font color=red>students[i].Disp();</font></pre>
+
+<p>の部分です。</p>
+
+<p>　先ず i が０のときは、students[0].Disp(); が実行されます。つまり、この時 Disp の中の szName は student[0] の szName になります。nJapanese なども同様です。</p>
+
+<p>　次に i が１になると、students[1].Disp(); が実行されます。つまり、この時 Disp の中の szName は student[1] の szName になります。<font color=red>同じ szName でも、どのオブジェクトを使って呼んだかによってモノが変わってしまうのです。</font></p>
+
+<p>　また、メンバ関数を呼ぶときには、メンバ変数と同じように<font color=red>ピリオド (.)</font> を使って呼ぶことができます。もちろんポインタを使うときは -&gt; を使います（「そうだっけ？」という人は<a href="../html01/cpp01060.html" target="main">第１部第６０章</a>を読み返しましょう）。</p>
+
+<hr>
+
+<p>　このことが考えにくい人は、構造体の時と同じように考えればいいでしょう。</p>
+
+<pre>void Disp(<font color=red>const SStudent& student</font>)
+{
+    cout &lt;&lt; "名前 : "   &lt;&lt; <font color=red>student.szName</font>    &lt;&lt; endl
+         &lt;&lt; "　国語 : " &lt;&lt; <font color=red>student.nJapanese</font> &lt;&lt; " 点, "
+            "数学 : "   &lt;&lt; <font color=red>student.nMath</font>     &lt;&lt; " 点, "
+            "英語 : "   &lt;&lt; <font color=red>student.nEnglish</font>  &lt;&lt; " 点" &lt;&lt; endl;
+}</pre>
+
+<p>の szName は関数に渡されたオブジェクトの szName ですね。<font color=red>メンバ関数でも内部的にはこれと同じことをしています。</font>つまり、メンバ関数を呼ぶときにオブジェクトのアドレスを渡し、メンバ関数ではそのアドレスを使って szName を利用しているのです。</p>
+
+<p>　たまにしか２つ以上の実体を作らないようなクラスを使っていると、次のように誤解することがあります。</p>
+
+<pre>SStudent studentAkai = { "赤井孝", 73, 98, 86, };
+
+void Func()
+{
+    SStudent student;
+    student.Disp();  // ←これが問題のコード
+}</pre>
+
+<p>　初めに studentAkai というオブジェクトを作っています。普通、このオブジェクトしか作らないとします。</p>
+
+<p>　すると、初めの内は Func 関数でやっているようなことをしてしまうかもしれません。この Disp は studentAkai を初期化したときの値を表示してくれると期待してしまうのです。</p>
+
+<p>　しかし、studentAkai と student は<font color=red>全く別のオブジェクト</font>なので、Disp で studentAkai の内容が表示されることは（偶然を除いては）<font size=+2 color=red>ない</font>のです。</p>
+
+<p>　この「クラス」は「構造体」と同じように<font color=red>「型」</font>です。クラスの宣言を行った時点では、メモリ上のどこにも実体は存在しません。そして、沢山インスタンスを作ってもそれぞれは<font color=red>全く別のもの</font>です。このことは、常に頭に入れておくようにしましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メンバ関数を作るときはクラスの宣言中にプロトタイプを書く。</li>
+<li>メンバ関数を実装するときは関数名の前に &lt;クラス名&gt;:: を書く。</li>
+<li>メンバ関数内で使われるメンバ変数は、呼び出すときに使ったオブジェクトのものである。</li>
+<li>メンバ関数はメンバ変数と同じように . や -&gt; を使って呼び出せる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02001.html" target="main">第１章　とにかく作ってみよう</a> | <a href="cpp02003.html" target="main">第３章　コンストラクタ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

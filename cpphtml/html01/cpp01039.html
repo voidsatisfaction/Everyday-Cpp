@@ -1,0 +1,165 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３９章 １＋１＝５？？ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３９章　１＋１＝５？？</font>
+</center>
+<hr>
+
+<p>　今回は１＋１＝５というような計算をします。アドレスの計算をすると、こんなことが起きてしまいます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>アドレスの計算は、その型の大きさに左右される。</li>
+<li>アドレスの計算は、加減算しかできない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　アドレスは数値です。だったら計算もできるはずです。ただ、その結果はどういう値になるのでしょうか？</p>
+
+<p>　今、仮に int array[4] という配列変数を考えてみます。例えば、そのアドレスが下のようになったとします。</p>
+
+<center><table border=1>
+<colgroup><col align=center><col align=center><col align=center><col align=center><col align=center></colgroup>
+<tbody>
+
+<tr>
+<th>名前</th>
+<td>array[0]</td>
+<td>array[1]</td>
+<td>array[2]</td>
+<td>array[3]</td>
+</tr>
+
+<tr>
+<th>アドレス</th>
+<td>6618600</td>
+<td>6618604</td>
+<td>6618608</td>
+<td>6618612</td>
+</tr>
+
+</tbody></table></center>
+
+<p>　このとき、&array[1] + 1 は何になるのでしょうか？</p>
+
+<p>　きっと２つの案が出てくることでしょう。１つは、単に１を足して 6618585 になる、というもの。そしてもう１つは、&array[2] になる、というものです。</p>
+
+<p>　では、プログラム作って調べてみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Address2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> array[<font color=darkcyan>4</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"&array[1]     = "</font> &lt;&lt; (<font color=blue>int</font>)&array[<font color=darkcyan>1</font>]       &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"&array[1] + 1 = "</font> &lt;&lt; (<font color=blue>int</font>)(&array[<font color=darkcyan>1</font>] + <font color=darkcyan>1</font>) &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"&array[2]     = "</font> &lt;&lt; (<font color=blue>int</font>)&array[<font color=darkcyan>2</font>]       &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>&array[1]     = 6618604
+&array[1] + 1 = 6618608
+&array[2]     = 6618608</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　どうやら、<font color=red>&array[1] + 1 は &array[2] になる</font>ようです。</p>
+
+<p>　この配列の型を char にしてみたらどうなるでしょうか？　やはり &array[2] に等しくなります。double（大きさは８バイト）にしても、そうなります。（実際に確かめて下さい）</p>
+
+<p>　このように、<font color=red>アドレスの足し算は型の大きさに左右されます</font>。４バイトの大きさの型なら４ずつ、８バイトの大きさの型なら８ずつ足されます。</p>
+
+<p>　何個か先の要素のアドレスを知りたいときに、いちいち型の大きさをかけて足さなくても、勝手にかけてくれるというわけです。</p>
+
+<p>　当然と言えば当然なのですが、実際に数字を表示してみてみると少し違和感を感じると思います。でも、これに慣れて下さい。ついサイズをかけてしまうというバグに注意して下さい。</p>
+
+<hr>
+
+<p>　このことは、ポインタを含む計算にも当てはまります。例えば、次のようなものです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ptr4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>  array[<font color=darkcyan>4</font>];
+    <font color=blue>int</font>* p = array;
+
+    cout &lt;&lt; (<font color=blue>int</font>)p&lt;&lt; endl;
+    p +=2;
+    cout &lt;&lt; (<font color=blue>int</font>)p&lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>6618596
+6618604</pre></td></tr>
+</tbody></table></center>
+
+<p>　p に足されたのは２ですが、実際には８が足されています。ポインタの型を把握していないと、ついこのことを忘れ、８を足そうとしてしまいます。そして、他のポインタに２を足したからといって、そのアドレスが８増えるとは限らないことも注意して下さい。</p>
+
+<hr>
+
+<p>　さて、今までは足し算だけでした。足し算が出来るのですから、引き算ももちろん出来ます。ですが、かけ算はどうでしょうか？</p>
+
+<p>　アドレスにかけ算をする必要があるのでしょうか？　よほどのことがあっても、アドレスのかけ算をする必要は出てこないでしょう。</p>
+
+<p>　実はやはりアドレスに乗除算は出来ないようになっています。どうしても乗除算がしたい人がいるなら、int でキャスト（<a href="CPP01021.html">２１章</a>参照）して下さい。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。</p>
+
+<p>　では、今回の要点をもう一度見てみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>アドレスの計算は、その型の大きさに左右される。</li>
+<li>アドレスの計算は、加減算しかできない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はポインタの演算を使って文字列を操作してみます。では、また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01038.html" target="main">第３８章　参照のしくみ</a> | <a href="cpp01040.html" target="main">第４０章　さらなる計算</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

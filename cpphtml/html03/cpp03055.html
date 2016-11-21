@@ -1,0 +1,97 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５５章 融合３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５５章　融合３</font>
+</center>
+<hr>
+
+<p>　仮想継承を行うと仮想関数の呼び出しはどうなるのでしょうか？　今回はそのあたりを考えてみようと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想継承されたクラスの仮想関数は一意でなくてはならない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は、前回のクラスに<font color=red>仮想関数</font> DispInfo を加えてみたいと思います。動作はそのクラスの情報を表示するというものです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>class</font> CBuffer
+{
+<font color=gray>... 略 ...</font>
+
+<font color=blue>public</font>:
+    <font color=blue>virtual void</font> DispInfo() <font color=blue>const</font> = <font color=darkcyan>0</font>;
+};
+
+<font color=gray>... 略 ...</font>
+
+<font color=blue>void</font> CBufferRead::DispInfo() <font color=blue>const</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"CBufferRead"</font> &lt;&lt; endl;
+}
+
+<font color=blue>void</font> CBufferWrite::DispInfo() <font color=blue>const</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"CBufferWrite"</font> &lt;&lt; endl;
+}
+
+<font color=blue>void</font> CBufferRW::DispInfo() <font color=blue>const</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"CBufferRW"</font> &lt;&lt; endl;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　これはこれで構わないのですが、ここでひねくれて<font color=red>CBufferRW ではオーバーライドしない</font>でおきます。つまりは、<a href="cpp03052.html" target="main">第５２章</a>で話した「CNinja と CMaster で GetString をオーバーライドしたとき、CJohnin ではどちらの GetString が呼ばれるのか」ということが仮想継承を使った場合どうなるかということです。</p>
+
+<p>　しかし、では試そうとコンパイルしてみると...何と <font color=red>BufferRW.cpp でコンパイルエラー</font>が出てしまいます。どういうエラーが出たのか見てみましょう。</p>
+
+<pre>error C2250: 'CBufferRW' : 'CBufferRead::DispInfo'の継承があいまいです。
+error C2250: 'CBufferRW' : 'CBufferWrite::DispInfo'の継承があいまいです。</pre>
+
+<p>　関数を呼ぶ前から「あいまいだ」と文句を言っています。つまりは、<font color=red>仮想継承されたクラスにある仮想関数は、派生クラスを定義する時点であいまいさを除いておく必要がある</font>ということです。</p>
+
+<p>　むぅ。少し言葉が難しくなってしまいましたね。簡単にいってしまうと<font color=red>１つのクラスに沢山 DispInfo があったら困る</font>ということです。CBuffer は１つしかないので、扱う関数も１つである必要があるわけです。複数あったら処理の整合性をとるのが難しいですね。</p>
+
+<p>　CBufferRead の流儀で処理した結果を使って CBufferWrite で処理を行うと、処理が破綻してしまう場合があります。そういうことがないように、そういう処理は CBufferRW できちんと記述してやる必要があるわけです。</p>
+
+<hr>
+
+<p>　困ったことに、これ以上話すことがなくなってしまいました。ということで、短いですが今回はこれで終わりです。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想継承されたクラスの仮想関数は一意でなくてはならない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回で仮想継承については終わりです。あまり使いどころはないかもしれませんが、一応頭に置いておくと役に立つ日がくるかもしれませんね。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03054.html" target="main">第５４章　融合２</a> | <a href="cpp03056.html" target="main">第５６章　クロスキャスト</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.6.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

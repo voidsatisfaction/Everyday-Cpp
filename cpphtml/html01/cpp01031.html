@@ -1,0 +1,113 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３１章 メモリとアドレス -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３１章　メモリとアドレス</font>
+</center>
+<hr>
+
+<p>　３０章も終わり、そろそろメモリについて詳しく話すべき時がきたようです。今回は「メモリ」と「アドレス」についてずずずっと話していきます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メモリは使用中のデータを置いておくところ。</li>
+<li>メモリ上の位置をアドレスという。</li>
+<li>アドレスは普通の変数は前に & を付けて、配列変数と関数は名前だけで取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<table border=1 align=right><tr><td>
+<img src="images/0103101.gif">
+</td></tr></table>
+
+<p>　今までにも少し話に出てきたメモリ。これはアプリケーションを実行するときの作業領域です。</p>
+
+<p>　ディスク上にある実行ファイルをメモリ上にロードして、それからそれを使ってアプリケーションが実行されます。<font color=red>決してディスク上で実行されるわけではありません。</font></p>
+
+<p>　初心者はディスクとメモリとを混同することがよくありますが、この２つは全く違うものです。確かにちょっとデータを置いておくのにディスクを使うこともありますが、基本的にディスクはデータをずっと保存しておくことを目的としています。</p>
+
+<p>　一方、メモリは一時的な記憶を目的にしています。そのため、メモリは電源を切るたびに内容が破棄されます。</p>
+
+<p>　また、実行ファイルに限らず、<font color=red>ファイルを使うには中身を一度メモリに読み出す必要があります</font>。</p>
+
+<p>　それに、見た目も違いますね（笑）。メモリは普通チップですが、ディスクは普通円盤形をしています。</p>
+
+<p><br clear=right><br></p>
+
+<p>　つまり、アプリケーションの使用中のデータは全てメモリ上にあることになります。とすると、関数も変数もメモリの「どこか」にあるわけです。</p>
+
+<p>　その「どこか」を<font size=+2 color=red>アドレス</font>と言います。住所ですね。まんまです。アドレスは<font color=red>バイト単位の通し番号</font>です。</p>
+
+<p>　ではアドレスはどのようにして知ることができるのでしょうか。それは簡単です。<font color=red>普通の変数は & を付けるだけです。配列変数や関数に至っては名前を書くだけで構いません。</font>それで変数や関数の<font color=red>先頭の</font>アドレスを知ることができます。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Address1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>  a;
+    <font color=blue>char</font> b[<font color=darkcyan>10</font>];
+    printf(<font color=darkcyan>"a    : %d\nb    : %d\nmain : %d\n"</font>, &amp;a, b, main);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a    : 6618612
+b    : 6618600
+main : 4198400</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今回は気分を変えて printf を使ってみました（<a href="cpp01024.html">第２４章</a>参照）。<font color=red>\n</font> で改行します。</p>
+
+<p>　筆者が行ったときには a は 6618612、b は 6618600、main は 4198400でした。条件によっては異なる値が出てくるかもしれません。</p>
+
+<p>　まぁ、実際そんな細かい数値はどうでもいいのです。とにかく、関数も変数もメモリ上にあって、その位置であるアドレスを持っているのです。そして、<font color=red>アドレスは何の変哲もないごく普通の数値なのです</font>。</p>
+
+<p>　アドレスはただの数値ですから、それを変数に入れておくことができます。このことについては次回話します。</p>
+
+<hr>
+
+<p>　何か短かったですが、非常に大事な章です。じっくりと理解しておいて下さい。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メモリは使用中のデータを置いておくところ。</li>
+<li>メモリ上の位置をアドレスという。</li>
+<li>アドレスは普通の変数は前に & を付けて、配列変数と関数は名前だけで取得できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はアドレスを格納するための変数「ポインタ」について話してきます。では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01030.html" target="main">第３０章　マクロの書式</a> | <a href="cpp01032.html" target="main">第３２章　ポインタ天国</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.31</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

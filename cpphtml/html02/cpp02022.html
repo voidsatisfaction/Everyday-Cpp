@@ -1,0 +1,204 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２２章 メンバ定数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２２章　メンバ定数</font>
+</center>
+<hr>
+
+<p>　今回からは継承から離れ、普通のクラスに関する話をやっていきたいと思います。先ずは、初期化のタイミングがさっぱり分からないメンバの初期化方法について話したいと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>const 定数メンバには代入できない。</li>
+<li>コンストラクタの後に : &lt;変数名&gt;(&lt;初期値&gt;) と書けば、その変数を「初期化」できる。</li>
+<li>オブジェクトをメンバにとっている場合も、同様にしてコンストラクタが呼べる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回から、CIntArray に話を戻します。</p>
+
+<p>　IntArray.h と IntArray.cpp はきちんと残していますか？　残していない人もいると思うので、<a href="cp020221.html" target="_blank">こちら</a>に掲載しておきます。</p>
+
+<hr>
+
+<p>　さて、CIntArray のメンバ m_nNumOf は配列の要素数でした。よく見ると、このメンバは<font color=red>コンストラクタでしか値が代入されていません</font>。</p>
+
+<p>　こういう値があると <font color=red>const をつけたいと思うのが人情です</font>。しかし、const のついた変数は<font color=red>「初期化」</font>しかできません。コンストラクタの中のどこに書いても<font color=red>「代入」</font>になってしまい、結局<font color=red>「初期化」</font>できません。</p>
+
+<pre>例）
+CIntArray::CIntArray(const int nNumOf)
+{
+    m_nNumOf = nNumOf;  // エラー：const 定数に代入は出来ません
+    // 省略
+}</pre>
+
+<p>　そのため、メンバを<font color=red>「初期化」</font>する構文が用意されています。実はこの構文は前にも紹介したことがあります。こういう構文です。</p>
+
+<pre>CIntArray::CIntArray(const int nNumOf) <font color=red>: m_nNumOf(nNumOf)</font>
+{
+    // 省略
+}</pre>
+
+<p>　これは継承のときに使いましたね。<font color=red>基底クラスのコンストラクタを呼ぶ構文と同じです</font>。</p>
+
+<p>　ただ、&lt;クラス名&gt;(&lt;実引数リスト&gt;) が &lt;変数名&gt;(&lt;初期値&gt;) に変わっています。でもまぁ、大した違いではないですね。</p>
+
+<p>　では、こういうメンバが２つ以上あった場合はどうなるのでしょうか？　それは単純で、<font color=red>コンマで区切ればいいだけです</font>。</p>
+
+<pre>例）
+CTest::CTest(int a, int b) : m_a(a), m_b(b)
+{
+}</pre>
+
+<hr>
+
+<p>　<font color=red>「初期化」</font>でしかできないことにはもう２つあります。参照の初期化と、コンストラクタの呼び出しです。</p>
+
+<p>　参照やオブジェクトをメンバに入れているとします。</p>
+
+<pre>例）
+class CTest
+{
+    int&amp;      m_rn;
+    CIntArray m_array;
+
+public:
+    CTest(int&amp; rn, int nNumOf);
+};</pre>
+
+<p>　こういう場合も、上と同じように初期化することが出来ます。</p>
+
+<pre>CTest::CTest(int&amp; rn, int nNumOf) : m_rn(rn), m_array(nNumOf)
+{
+}</pre>
+
+<p>　下のようにすることは出来ないのです。</p>
+
+<pre>CTest::CTest(int&amp; rn, int nNumOf)
+{
+    m_rn = rn;        // エラー：参照が初期化されていません
+    m_array(nNumOf);  // エラー：コンストラクタは初期化でしか呼べません
+}</pre>
+
+<p>　このように、<font color=red>メンバを「初期化」するには、コンストラクタの実装の後ろに : &lt;メンバ名&gt;(&lt;初期化値&gt;) を書くのです</font>。</p>
+
+<p>　また、このように<font color=red>オブジェクトをメンバに持つ</font>ことを<font size=+2 color=red>内包（コンポジション）</font>と呼びます。継承と同じく、クラスの機能を別のクラスに持たせることができます。しかし、その方法はお互いに全然違うので、場合によって両方を使い分けます。</p>
+
+<hr>
+
+<p>　では、実際に CIntArray を書き換えて、const 定数メンバに「代入」できないことを確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>class</font> CIntArray
+{
+<font color=blue>private</font>:
+    <font color=blue>const int</font> m_nNumOf;
+
+<font color=blue>public</font>:
+    <font color=blue>void</font> Error();  <font color=green>// コンパイルエラーの出るはずな関数</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=green>// コンストラクタ</font>
+CIntArray::CIntArray(<font color=blue>const int</font> nNumOf) <font color=red>: m_nNumOf(nNumOf)</font>
+{
+    m_pnum = <font color=blue>new int</font>[nNumOf];
+    <font color=blue>if</font>(m_pnum != NULL)
+        memset(m_pnum, <font color=darkcyan>0</font>, nNumOf * <font color=blue>sizeof</font> *m_pnum);
+
+    cout &lt;&lt; <font color=darkcyan>"コンストラクタが呼ばれました。"</font>
+         &lt;&lt; <font color=darkcyan>"要素数は "</font> &lt;&lt; nNumOf &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// コピーコンストラクタ
+// メモリの確保に失敗したオブジェクトが渡されたときはコピーしません</font>
+CIntArray::CIntArray(<font color=blue>const</font> CIntArray&amp; rother) <font color=red>: m_nNumOf(rother.NumOf())</font>
+{
+    <font color=blue>if</font>(rother.Success() == <font color=blue>false</font>)
+        m_pnum = NULL;
+    <font color=blue>else</font>
+    {
+        m_pnum = <font color=blue>new int</font>[rother.NumOf()];
+        <font color=blue>if</font>(m_pnum != NULL)
+            memcpy(m_pnum, rother.m_pnum, rother.SizeOf());
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"コピーコンストラクタが呼ばれました。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// インデックスのチェック
+// メモリの確保に失敗したときに m_nNumOf を０にできないので、
+// アドレスもチェックするようにしました</font>
+<font color=blue>void</font> CIntArray::CheckIndex(<font color=blue>const int</font> index) <font color=blue>const</font>
+{
+    <font color=blue>if</font>(<font color=red>Success() == true &amp;&amp;</font> (<font color=blue>unsigned int</font>)index &lt; (<font color=blue>unsigned int</font>)m_nNumOf)
+        <font color=blue>return</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"インデックスが不正です！"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"値 : "</font> &lt;&lt; index &lt;&lt; endl;
+    exit(<font color=darkcyan>1</font>);
+}
+
+<font color=green>// コンパイルエラーの出るはずな関数</font>
+<font color=blue>void</font> CIntArray::Error()
+{
+    m_nNumOf = <font color=darkcyan>0</font>;  <font color=green>// あからさまなエラーですね（笑）</font>
+}</pre></td></tr>
+
+<tr><th>エラーメッセージ</th></tr>
+
+<tr><td><pre>IntArray.cpp(74) : error C2166: 左辺値は const オブジェクトに指定されています。
+             ↑ m_nNumOf = 0; の行です</pre></td></tr>
+
+</table></center>
+
+<p>　はい。コンストラクタなどのコンパイルはうまくいきましたが、Error 関数でコンパイルエラーになりました。</p>
+
+<p>　このように、const 定数メンバは<font color=red>「初期化」</font>はできるけれども、<font color=red>「代入」</font>はできないのです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>const 定数メンバには代入できない。</li>
+<li>コンストラクタの後に : &lt;変数名&gt;(&lt;初期値&gt;) と書けば、その変数を「初期化」できる。</li>
+<li>オブジェクトをメンバにとっている場合も、同様にしてコンストラクタが呼べる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も CIntArray を掘り下げていきます。cout の謎についても触れてみたいと思います。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02021.html" target="main">第２１章　メンバの呼び分け</a> | <a href="cpp02023.html" target="main">第２３章　同姓同名２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.27</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

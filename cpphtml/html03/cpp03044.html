@@ -1,0 +1,204 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４４章 デバッグ文 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４４章　デバッグ文</font>
+</center>
+<hr>
+
+<p>　Ｃ／Ｃ＋＋の標準ライブラリには、<a href="cpp03017.html" target="main">第１７章</a>のデバッグ文を利用したマクロが用意されています。今回はそのお話です。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>assert(&lt;条件文&gt;); で、条件文が偽の時 abort される。</li>
+<li>assert は NDEBUG マクロが定義されていると消えて無くなる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　いきなりですが、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Assert.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=green>// 動的配列クラス</font>
+<font color=blue>class</font> CArray
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pArray;  <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nSize;   <font color=green>// 配列のサイズ</font>
+
+<font color=blue>public</font>:
+    enum Exception  <font color=green>// 例外型</font>
+    {
+        IrregalSize,   <font color=green>// サイズ指定異常</font>
+        BadAlloc,      <font color=green>// メモリ確保失敗</font>
+        IrregalIndex,  <font color=green>// 不正なインデックス</font>
+        NotAlloc,      <font color=green>// メモリを確保していない</font>
+    };
+
+<font color=blue>public</font>:
+    <font color=green>// コンストラクタ</font>
+    CArray(<font color=blue>int</font> nSize);
+    <font color=blue>virtual</font> ~CArray(){ Release(); }
+
+    <font color=green>// 要素の取得</font>
+    <font color=blue>int</font>&amp; <font color=blue>operator</font>[](<font color=blue>int</font> index)
+    {
+        <font color=blue>if</font>(m_pArray == NULL)
+            <font color=blue>throw</font> NotAlloc;
+        <font color=blue>if</font>(index &lt; <font color=darkcyan>0</font> || m_nSize &lt;= index)
+            <font color=blue>throw</font> IrregalIndex;
+        <font color=blue>return</font> m_pArray[index];
+    }
+    <font color=green>// サイズの取得</font>
+    <font color=blue>int</font> GetSize(){ <font color=blue>return</font> m_nSize; }
+    <font color=green>// メモリの解放</font>
+    <font color=blue>void</font> Release();
+};
+
+<font color=green>// コンストラクタ</font>
+CArray::CArray(<font color=blue>int</font> nSize)
+    : m_pArray(NULL), m_nSize(<font color=darkcyan>0</font>)
+{
+    <font color=blue>if</font>(nSize &lt;= <font color=darkcyan>0</font>)
+        <font color=blue>throw</font> IrregalSize;
+    m_pArray = <font color=blue>new int</font>[nSize];
+    <font color=blue>if</font>(m_pArray == NULL)
+        <font color=blue>throw</font> BadAlloc;
+    m_nSize = nSize;
+}
+
+<font color=green>// メモリの解放</font>
+<font color=blue>void</font> CArray::Release()
+{
+    <font color=blue>if</font>(m_pArray != NULL)
+    {
+        <font color=blue>delete</font> [] m_pArray;
+        m_pArray = NULL;
+        m_nSize  = <font color=darkcyan>0</font>;
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    CArray array(<font color=darkcyan>10</font>);
+    <font color=blue>int</font>    i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; array.GetSize(); i++)
+        array[i] = i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; array.GetSize(); i++)
+        cout &lt;&lt; array[i] &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　簡単な動的配列クラスを作って、それを実際に使っています。コピーコンストラクタ、= 演算子オーバーライド、再確保などができないあたりかなり手抜きですが、完全な動的配列クラスを作るのが目的ではないので許して下さい。</p>
+
+<p>　では、先ずはコンストラクタを見てみましょう。</p>
+
+<pre><font color=green>// コンストラクタ</font>
+CArray::CArray(<font color=blue>int</font> nSize)
+    : m_pArray(NULL), m_nSize(<font color=darkcyan>0</font>)
+{
+    <font color=blue>if</font>(nSize &lt;= <font color=darkcyan>0</font>)
+        <font color=blue>throw</font> IrregalSize;
+    m_pArray = <font color=blue>new int</font>[nSize];
+    <font color=blue>if</font>(m_pArray == NULL)
+        <font color=blue>throw</font> BadAlloc;
+    m_nSize = nSize;
+}</pre>
+
+<p>　先ずメンバ変数を初期化して、引数のチェックを行っています。nSize が不正な場合は IrregalSize 例外を返すようにしています。</p>
+
+<p>　次に、メモリの確保をしています。確保できなかった場合は BadAlloc 例外を返すようにしています。そして、確保ができたら m_nSize に nSize を代入しています。</p>
+
+<p>　あと目立った関数といえば、[ ] 演算子くらいでしょう。</p>
+
+<pre><font color=green>// 要素の取得</font>
+<font color=blue>int</font>&amp; <font color=blue>operator</font>[](<font color=blue>int</font> index)
+{
+    <font color=blue>if</font>(m_pArray == NULL)
+        <font color=blue>throw</font> NotAlloc;
+    <font color=blue>if</font>(index &lt; <font color=darkcyan>0</font> || m_nSize &lt;= index)
+        <font color=blue>throw</font> IrregalIndex;
+    <font color=blue>return</font> m_pArray[index];
+}</pre>
+
+<p>　要素を取得するわけですが、その前にメンバ変数をいちいちチェックしています。こういったチェック機能を簡単に付けられるのはクラスの嬉しいところですが、ちょっと冗長な感じもしますね。なにしろ、<font color=red>ちゃんとした完成品のプログラムではこういったチェックには引っかからないようにしてあることが望まれる</font>からです。</p>
+
+<p>　こういうときには #ifdef を駆使して制御するのでしたね。しかし、値の判定については自分で作らなくても既に便利なマクロが用意されています。それが <font color=red>assert</font> です。</p>
+
+<pre><font color=blue>#include</font> <font color=red>&lt;assert.h&gt;</font>  <font color=green>// assert を使うのに必要</font>
+
+<font color=green>// 要素の取得</font>
+<font color=blue>int</font>&amp; <font color=blue>operator</font>[](<font color=blue>int</font> index)
+{
+    <font color=red>assert</font>(m_pArray != NULL);
+    <font color=red>assert</font>(<font color=darkcyan>0</font> &lt;= index &amp;&amp; index &lt; m_nSize);
+    <font color=blue>return</font> m_pArray[index];
+}</pre>
+
+<p>　assert 文は、その引数が<font color=red>偽</font>のときに <font color=red>abort</font> します。つまり、引数には<font color=red>常に成り立っていて欲しい条件式</font>を書くことになります。</p>
+
+<p>　そして、assert 文は次のようにすれば効力を失います。</p>
+
+<pre><font color=red>#define NDEBUG</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;assert.h&gt;</font>
+
+<font color=green>// 要素の取得</font>
+<font color=blue>int</font>&amp; <font color=blue>operator</font>[](<font color=blue>int</font> index)
+{
+    assert(m_pArray != NULL);
+    assert(<font color=darkcyan>0</font> &lt;= index &amp;&amp; index &lt; m_nSize);
+    <font color=blue>return</font> m_pArray[index];
+}</pre>
+
+<p>　<font color=red>NDEBUG を assert.h をインクルードする前に定義</font>してやれば、assert 文は空の処理に置き換わります。これで assert 文は<font color=red>書いていないのと同じ事になり</font>、無駄な処理は完全に消えて無くなります。</p>
+
+<p>　ＶＣ＋＋では、プロジェクトの設定をリリースモード、つまり、Win32 Release にすると（<a href="cpp03018.html" target="main">第１８章</a>参照）、自動的に NDEBUG が定義されます。これも _DEBUG と同じところで定義してあります。</p>
+
+<p>　assert.h の中身を見ると自分でデバッグ文を作るときの参考になるかも知れませんね。ＶＣ＋＋や gcc での定義を見てみましたが、なかなかに面白い定義の仕方で参考になります。解説したいところですが、コードの引用に問題があってはいけないので自粛しておきます。その謎は自分で解き明かしてみて下さい。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>assert(&lt;条件文&gt;); で、条件文が偽の時 abort される。</li>
+<li>assert は NDEBUG マクロが定義されていると消えて無くなる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　しばらくマニアックな話題が続くかも知れませんが、ご容赦下さい。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03043.html" target="main">第４３章　切り捨て御免</a> | <a href="cpp03045.html" target="main">第４５章　マクロの落穂拾い</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

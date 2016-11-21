@@ -1,0 +1,239 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４８章 同姓同名４ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４８章　同姓同名４</font>
+</center>
+<hr>
+
+<p>　今回は話をちょっと変えて、new と delete についての話をします。これらが演算子だということを覚えている人はどれだけいるでしょうか？</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>new と delete もオーバーロードできる。</li>
+<li>new は 戻り値の型が void* で、引数の型が size_t 。</li>
+<li>delete は 戻り値の型が void で、引数の型が void* 。</li>
+<li>new は余分に引数をとれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="../html01/cpp01071.html" target="main">第１部第７１章</a>で、次のようなことをいいました。</p>
+
+<ul>
+<li>実は、この new というのはメモリを確保する<font color=red>演算子</font>だったのです。</li>
+<li>そのメモリを解放するための<font color=red>演算子</font>が delete なわけです。</li>
+</ul>
+
+<p>　そうです。new も delete も演算子です。演算子だというのなら <font color=red>new も delete もオーバーロードできるはずです</font>。それはその通りで、new も delete もオーバーロードできます。</p>
+
+<p>　では、実際にやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// New3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;malloc.h&gt;</font>
+
+<font color=blue>void</font>* <font color=blue>operator new</font>(size_t nSize)
+{
+    <font color=green>// new では確保できないので malloc で確保</font>
+    <font color=blue>void</font>* ptr = malloc(nSize);
+    <font color=blue>if</font>(ptr == NULL)
+        <font color=blue>throw</font> <font color=darkcyan>1</font>;  <font color=green>// 失敗したら例外を返す</font>
+    <font color=blue>return</font> ptr;
+}
+
+<font color=blue>void operator delete</font>(<font color=blue>void</font>* ptr)
+{
+    free(ptr);  <font color=green>// malloc に対しては free</font>
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        <font color=blue>struct</font> HUGE_TYPE{ <font color=blue>int</font> dummy[<font color=darkcyan>0xFFFFFFF</font>]; };
+        HUGE_TYPE* p = <font color=blue>new</font> HUGE_TYPE;
+        <font color=blue>delete</font> p;
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> nErrorCode)
+    {
+        cout &lt;&lt; <font color=darkcyan>"エラー発生 : "</font> &lt;&lt; nErrorCode &lt;&lt; endl;
+        <font color=blue>return</font> <font color=darkcyan>1</font>;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>エラー発生 : 1</pre></td></tr>
+
+</table></center>
+
+<p>　ほとんど何にもしてませんが、大体こんな感じでオーバーロードできます。もうちょっとよく見てみましょう。</p>
+
+<p>　先ずは new です。</p>
+
+<pre><font color=blue>void</font>* <font color=blue>operator new</font>(size_t nSize);</pre>
+
+<p>　new はコンストラクタを呼んでくれますが、オーバーロード関数内でコンストラクタを呼ぶ必要はありません。<font color=red>コンストラクタは、このオーバーロード関数が終わった後に自動的に実行されます。</font>つまり、ここではメモリを確保することだけに専念すればいいわけです。</p>
+
+<p>　そして、メモリを確保するのに必要な情報、確保するサイズが引数から渡されます。<font color=red>引数の型は size_t</font> で、size_t は stddef.h で定義されています。普通は iostream.h などのヘッダファイルをインクルードすれば、自動的にインクルードされます。</p>
+
+<p>　そして、確保したらそのアドレスを返します。<font color=red>型は void*</font> になっています。この段階では何の型ということもないので、void* にしてあるわけです。</p>
+
+<p>　次は delete です。</p>
+
+<pre><font color=blue>void operator delete</font>(<font color=blue>void</font>* ptr);</pre>
+
+<p>　delete では、<font color=red>解放するメモリのアドレス</font>が渡されます。delete でもデストラクタを呼ぶ必要はなく、オーバーロード関数が実行される前に自動的にデストラクタを呼んでくれます。</p>
+
+<p>　[ ] をつけた new / delete も同様にオーバーロードできます。引数の型も戻り値の型も同じです。</p>
+
+<pre><font color=blue>void</font>* <font color=blue>operator new</font>[](size_t nSize);
+<font color=blue>void operator delete</font>[](<font color=blue>void</font>* ptr);</pre>
+
+<p>　このようにして、new と delete のオーバーロードができるわけです。</p>
+
+<p>　この時注意することは、Ｃ＋＋の関数は内部で new を使っている可能性があるので、<font color=red>無限に new が呼び出されてスタックオーバーフローになる可能性がある</font>ということです。内部ではＣ＋＋の関数を使わないことを奨めます。例えば文字の表示では cout ではなく printf を使う等です。</p>
+
+<p>　new と delete をオーバーロードすれば、上のように new が失敗したときに例外を返すことができます（注：Ｃ＋＋の本来の仕様では new は例外を返しますが、ＶＣ＋＋はデフォルトで例外を返しません。詳しくは次回話します）。また、new の回数と delete の回数をチェックしてメモリリークを示唆することもできます。</p>
+
+<p>　メモリを前後余分に確保し、その前後をある値で初期化し、delete 時にその値が変わっていないかチェックすることで、不正な書き込みがないかチェックすることもできます。ＶＣ＋＋のデバッグモードではこのことがデフォルトでやられているので、ＶＣ＋＋を使う限りはあまり気にする必要はないかも知れません（他のツールでもそうしてあるかもしれません）。</p>
+
+<hr>
+
+<p>　また、<font color=red>new をオーバーロードするときには余分に引数を持たせることもできます</font>。これは、__FILE__ や __LINE__ を渡して、エラーが発生したときにファイル名と行番号を示してやるのに便利です。</p>
+
+<p>　例えば、こんな感じです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// New4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;malloc.h&gt;</font>
+
+<font color=green>// 例外型</font>
+<font color=blue>class</font> CErrorInfo
+{
+<font color=blue>private</font>:
+    <font color=green>// __FILE__ はリテラル文字列になるので、
+    // アドレスを保存するだけで構いません</font>
+    <font color=blue>const char</font>* m_pszFile;
+    <font color=blue>int</font>         m_nLine;
+    <font color=blue>int</font>         m_nSize;
+
+<font color=blue>public</font>:
+    CErrorInfo(<font color=blue>int</font> nSize, <font color=blue>const char</font>* pszFile, <font color=blue>int</font> nLine)
+        : m_pszFile(pszFile), m_nLine(nLine), m_nSize(nSize) { }
+
+    <font color=blue>const char</font>* GetFileName() { <font color=blue>return</font> m_pszFile; }
+    <font color=blue>int</font>         GetLineNo()   { <font color=blue>return</font> m_nLine; }
+    <font color=blue>int</font>         GetTrialSize(){ <font color=blue>return</font> m_nSize; }
+};
+
+<font color=blue>void</font>* <font color=blue>operator new</font>[](size_t nSize, <font color=blue>const char</font>* pszFile, <font color=blue>int</font> nLine)
+{
+    <font color=blue>void</font>* ptr = malloc(nSize);
+    <font color=blue>if</font>(ptr == NULL)  <font color=green>// 情報を乗せて例外を投げます</font>
+        <font color=blue>throw</font> CErrorInfo(nSize, pszFile, nLine);
+    <font color=blue>return</font> ptr;
+}
+<font color=blue>#define</font> <font color=blue>new</font>   <font color=blue>new</font>(__FILE__, __LINE__)
+
+<font color=blue>void</font> <font color=blue>operator delete</font>[](<font color=blue>void</font>* ptr)
+{
+    free(ptr);
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>try</font>
+    {
+        <font color=blue>int</font>* p = <font color=blue>new int</font>[<font color=darkcyan>0xFFFFFFF</font>];
+        <font color=blue>delete</font> [] p;
+    }
+    <font color=blue>catch</font>(CErrorInfo e)
+    {
+        cout &lt;&lt; <font color=darkcyan>"エラー発生"</font> &lt;&lt; endl
+             &lt;&lt; <font color=darkcyan>"ファイル : "</font> &lt;&lt; e.GetFileName()  &lt;&lt; endl
+             &lt;&lt; <font color=darkcyan>"行番号　 : "</font> &lt;&lt; e.GetLineNo()    &lt;&lt; endl
+             &lt;&lt; <font color=darkcyan>"サイズ　 : "</font> &lt;&lt; e.GetTrialSize() &lt;&lt; endl;
+        <font color=blue>return</font> <font color=darkcyan>1</font>;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>エラー発生
+ファイル : C:\My Documents\MyProjects\New4\New4.cpp
+行番号　 : 40
+サイズ　 : 1073741820</pre></td></tr>
+
+</table></center>
+
+<p>　途中の #define 文を見て下さい。</p>
+
+<pre><font color=blue>#define</font> <font color=blue>new</font>   <font color=blue>new</font>(__FILE__, __LINE__)</pre>
+
+<p>　これが実際に使われているところでは</p>
+
+<pre><font color=blue>int</font>* p = <font color=red>new(&lt;ファイル名&gt;, &lt;行番号&gt;)</font> <font color=blue>int</font>[<font color=darkcyan>0xFFFFFFF</font>];</pre>
+
+<p>と展開されるわけです。このように、<font color=red>引数付きの new を使うときは new の後のカッコの中に引数を書きます</font>。</p>
+
+<p>　このようにしてデバッグ用の new が作れるというわけです。もちろん、それ以外の利用法も考えられます。</p>
+
+<hr>
+
+<p>　演算子のオーバーロードといえば、クラスのメンバとして使うのが有名です。もちろん new や delete もクラスメンバとしてオーバーロードできます。</p>
+
+<p>　これを駆使すれば、配列で確保していながらそれぞれ異なる初期化を行えたりするのですが、配列で確保したあとはやはりデフォルトコンストラクタが呼ばれます。この時、初期化を潰さないようにデフォルトコンストラクタの動作を空にする必要があり、あまり奨められません。</p>
+
+<p>　また、デフォルトコンストラクタが例外を投げるとメモリリークを起こしたり、なにかと気を遣うので使うのは極力避けた方がいいかもしれません。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>new と delete もオーバーロードできる。</li>
+<li>new は 戻り値の型が void* で、引数の型が size_t 。</li>
+<li>delete は 戻り値の型が void で、引数の型が void* 。</li>
+<li>new は余分に引数をとれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　new と delete のオーバーロードは優れたデバッグ環境があればあまり自分ですることはないかも知れませんが、気合いの入ったデバッグ環境を作ってみるのも面白いかもしれません。</p>
+
+<p>　また、これを利用した面白いことができるのですが、それは次回に話しましょう。では。</p>
+
+<hr>
+
+<p align=right><a href="cpp03047.html" target="main">第４７章　Ｃ±±</a> | <a href="cpp03049.html" target="main">第４９章　破壊と創造</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

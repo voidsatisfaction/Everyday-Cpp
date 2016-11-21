@@ -1,0 +1,197 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２０章 デストラクタ（仮） -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２０章　デストラクタ（仮）</font>
+</center>
+<hr>
+
+<p>　今回は、動的確保とアップキャストを併せて使ってみます。アップキャストを忘れたという人は<a href="cpp02015.html" target="main">第１５章</a>を見返してみて下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>デストラクタは仮想関数にすべし！</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、アップキャストというのがありました。これは、派生元のクラスへのポインタや参照に、派生先のクラスのオブジェクトを渡せるというものでした。</p>
+
+<p>　これを利用すれば派生元の関数を使う処理はまとめてしまうことが出来るのでしたね。</p>
+
+<p>　ということで、今回は <font color=red>CFile へのポインタ</font>に動的に確保したオブジェクトを渡してみます。アップキャストですね。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TextFile.h</font>
+<font color=blue>class</font> CTextFile : <font color=blue>public</font> CFile
+{
+<font color=blue>public</font>:
+    ~CTextFile();  <font color=green>// デストラクタ</font>
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TextFile.cpp</font>
+<font color=green>// デフォルトコンストラクタ</font>
+CTextFile::CTextFile()
+{
+    cout &lt;&lt; <font color=darkcyan>"CTextFile::CTextFile 1"</font> &lt;&lt; endl;
+}
+
+<font color=green>// 構築と同時にファイルを開く</font>
+CTextFile::CTextFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    cout &lt;&lt; <font color=darkcyan>"CTextFile::CTextFile 2"</font> &lt;&lt; endl;
+    Open(pszPath, pszFlags);
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CTextFile::CTextFile(<font color=blue>const</font> CTextFile&amp; rother) : CFile(rother)
+{
+    cout &lt;&lt; <font color=darkcyan>"CTextFile::CTextFile 3"</font> &lt;&lt; endl;
+}
+
+<font color=green>// デストラクタ</font>
+CTextFile::~CTextFile()
+{
+    cout &lt;&lt; <font color=darkcyan>"CTextFile::~CTextFile"</font> &lt;&lt; endl;
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=green>// 読み出し</font>
+<font color=blue>void</font> Read(CFile* pfile)
+{
+    <font color=blue>if</font>(pfile->Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>) == <font color=blue>false</font>)
+        <font color=blue>return</font>;
+
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    pfile->Read(buffer, <font color=blue>sizeof</font> buffer);
+    cout &lt;&lt; buffer &lt;&lt; endl;
+    pfile->Close();
+}
+
+<font color=green>// 書き込み</font>
+<font color=blue>void</font> Write(CFile* pfile)
+{
+    <font color=blue>if</font>(pfile->Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"w"</font>) == <font color=blue>false</font>)
+        <font color=blue>return</font>;
+
+    <font color=blue>char</font> buffer[] = <font color=darkcyan>"食すな危険"</font>;
+
+    pfile->Write(buffer, <font color=blue>sizeof</font> buffer);
+    pfile->Close();
+}
+
+<font color=blue>int</font> main()
+{
+    CFile* pfile;
+
+    pfile = <font color=blue>new</font> CBinaryFile;
+    <font color=blue>if</font>(pfile == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    Write(pfile);
+    <font color=blue>delete</font> pfile;
+
+    pfile = <font color=blue>new</font> CTextFile;
+    <font color=blue>if</font>(pfile == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    Read(pfile);
+    <font color=blue>delete</font> pfile;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>CBinaryFile::CBinaryFile 1
+CFile::Open
+CBinaryFile::ModifyFlags
+CTextFile::CTextFile 1
+CFile::Open
+CTextFile::ModifyFlags
+食すな危険</pre></td></tr>
+
+</table></center>
+
+<p>　一見きちんとしているようですが...何と、<font color=red>デストラクタで表示されるはずの文字列が表示されていません</font>。どうやら、<font color=red>CFile へのポインタ</font>を使っていたので、<font color=red>CFile のデストラクタが呼ばれてしまった</font>ようです。</p>
+
+<p>　耳にタコができるような言い回しです。こういうときはどうすればいいのか、もうわかりますね？</p>
+
+<p>　そうです。<font color=red>デストラクタは<font size=+2>仮想関数</font>にしないといけない</font>わけです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// File.h</font>
+<font color=blue>class</font> CFile
+{
+<font color=blue>public</font>:
+    <font color=red>virtual</font> ~CFile();  <font color=green>// デストラクタ</font>
+};</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>CBinaryFile::CBinaryFile 1
+CFile::Open
+CBinaryFile::ModifyFlags
+CBinaryFile::~CBinaryFile
+CTextFile::CTextFile 1
+CFile::Open
+CTextFile::ModifyFlags
+食すな危険
+CTextFile::~CTextFile</pre></td></tr>
+
+</table></center>
+
+<p>　オブジェクトがこのように扱われる可能性は常にあるわけであって、<font color=red>継承するときは必ずデストラクタを仮想関数にしなければなりません</font>。</p>
+
+<p>　継承しないときも仮想関数にして実害はないので、デストラクタは仮想関数にするという癖をつけておいた方がいいかもしれませんね。</p>
+
+<hr>
+
+<p>　短いですが、これで終わりです。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>デストラクタは仮想関数にすべし！</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　第２０章で継承が終わらなかったです。残念。というわけで、次回も継承に関することをやりたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02019.html" target="main">第１９章　動的オブジェクト</a> | <a href="cpp02021.html" target="main">第２１章　メンバの呼び分け</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.10.13</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

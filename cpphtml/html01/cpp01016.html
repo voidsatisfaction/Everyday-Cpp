@@ -1,0 +1,156 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１６章 ループと配列変数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１６章　ループと配列変数</font>
+</center>
+<hr>
+
+<p>　配列変数は似た用途の変数を一括したものです。ならばそれを一括して処理する方法があるはずです。今回はその方法について話していきます。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>for を使えば配列を一括して処理できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　配列変数は似た変数を一括したものと言えます。だというのに、それを一括して処理できないはずはありません。そんな不条理なことがあっていいはずがありません。ええ、そうですとも！</p>
+
+<p>　そういうときは前々回のループを上手く使ってやれば良いのです。</p>
+
+<p>　では、前回のテストの点の平均点を出してみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> nResults[] = {
+    <font color=darkcyan>641</font>, <font color=darkcyan>703</font>, <font color=darkcyan>405</font>, <font color=darkcyan>598</font>, <font color=darkcyan>402</font>, <font color=darkcyan>752</font>, <font color=darkcyan>330</font>,   <font color=darkcyan>0</font>, <font color=darkcyan>445</font>, <font color=darkcyan>662</font>,
+    <font color=darkcyan>254</font>, <font color=darkcyan>710</font>, <font color=darkcyan>467</font>, <font color=darkcyan>530</font>, <font color=darkcyan>548</font>, <font color=darkcyan>485</font>, <font color=darkcyan>244</font>, <font color=darkcyan>396</font>, <font color=darkcyan>601</font>, <font color=darkcyan>510</font>,
+    <font color=darkcyan>532</font>, <font color=darkcyan>687</font>, <font color=darkcyan>623</font>, <font color=darkcyan>420</font>, <font color=darkcyan>647</font>, <font color=darkcyan>587</font>, <font color=darkcyan>490</font>, <font color=darkcyan>647</font>, <font color=darkcyan>575</font>, <font color=darkcyan>688</font>,
+    <font color=darkcyan>764</font>, <font color=darkcyan>633</font>, <font color=darkcyan>712</font>, <font color=darkcyan>312</font>, <font color=darkcyan>655</font>, <font color=darkcyan>425</font>, <font color=darkcyan>722</font>, <font color=darkcyan>631</font>, <font color=darkcyan>680</font>, <font color=darkcyan>602</font>
+};
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nSum = <font color=darkcyan>0</font>;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>40</font>; i++)
+        nSum += nResults[i];
+
+    cout &lt;&lt; <font color=darkcyan>"クラスの平均点は "</font> &lt;&lt; nSum / <font color=darkcyan>40.0</font>
+         &lt;&lt; <font color=darkcyan>" 点です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>クラスの平均点は 542.875 点です。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今回はテストの点数 nResults[] をグローバル変数（<a href="cpp01009.html">第９章</a>を参照）にしました。色々理由はありますが、とりあえずは、スペースの都合とだけ言っておきます。</p>
+
+<p>　ループの回数を数えるために使っている変数 i の中身は何でしょうか？　もちろん処理を行った回数です。初めは０で、３９まで処理を行い、４０になったらループを抜けるのでしたね。</p>
+
+<p>　何かどこかで見た数字ですね。そうです。<font color=red>これは配列変数のインデックス（番号）と同じですね。</font>なので、<font color=red>nResults[i] としてやれば１つずつ順番に処理を行うことができます</font>。</p>
+
+<center><table border=1>
+<colgroup><col valign=middle><col valign=middle></colgroup>
+<tbody>
+
+<tr>
+<th>回数</th>
+<th>i の値</th>
+<th>処理</th>
+</tr>
+
+<tr>
+<td>１回目</td>
+<td>0</td>
+<td>nSum += nResults[0];</td>
+</tr>
+
+<tr>
+<td>２回目</td>
+<td>1</td>
+<td>nSum += nResults[1];</td>
+</tr>
+
+<tr>
+<td>３回目</td>
+<td>2</td>
+<td>nSum += nResults[2];</td>
+</tr>
+
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+
+<tr>
+<td>４０回目</td>
+<td>39</td>
+<td>nSum += nResults[39];</td>
+</tr>
+
+<tr>
+<td>ループ終了</td>
+<td>40</td>
+<td>次の処理へ</td>
+</tr>
+
+</tbody></table></center>
+
+<p>　このように、全員のテストの合計を足すことが<font color=red>簡単に</font>できるのです。</p>
+
+<p>　あとはこれを４０で割れば平均点がでてきます。ここでは答えを小数で出すために 40<font color=red>.0</font> で割ります（<a href="cpp01003.html">第３章</a>を参照）。...どうやら 542.875 点のようですね。</p>
+
+<hr>
+
+<p>　こうしてみてみると、for を使っていても、１回目と２回目の処理は微妙に違います。そのあとも同じです。</p>
+
+<p>　どうやらこの for はもっといろいろなことに使えそうです。変数を中に入れ、その値を変えていけば、毎回少し違う処理を行うことができるようです。これに if 文を組み合わせると、もっといろいろなことができそうです。</p>
+
+<p>　次回はそういったことをやってみたいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>for を使えば配列を一括して処理できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01015.html" target="main">第１５章　配列変数</a> | <a href="cpp01017.html" target="main">第１７章　for の書式</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

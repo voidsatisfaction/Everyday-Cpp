@@ -1,0 +1,191 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２８章 マクロの手始め -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２８章　マクロの手始め</font>
+</center>
+<hr>
+
+<p>　前回のインクルードに続き、今回も # のつく命令をやります。その名もマクロ。プログラムをわかりやすくしてくれる助っ人です。</p>
+
+<hr>
+
+<p>　今回の要点はこんな感じです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>マクロはテキストを差し込むもの。</li>
+<li>マクロは引数もとれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回インクルードについて話しました。今回はその親戚ともいえる<font color=red>マクロ</font>の基本について話していきます。</p>
+
+<p>　インクルードとは、その文を書いたところに別のファイルが差し込まれるというものでした。ところがマクロはそうではなくて、<font color=red>テキストを差し込む</font>という代物なのです。</p>
+
+<p>　これだけではあまりピンとこないでしょう。なので、実物を早速見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム１</th><th>プログラム１’</th></tr>
+
+<tr>
+<td><pre><font color=green>// Macro1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>#define FUNC     void Func(int x, int y)</font> 
+
+<font color=red>FUNC</font>;
+
+<font color=blue>int</font> main()
+{
+    Func(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    Func(<font color=darkcyan>158</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=red>FUNC</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"2 * "</font> &lt;&lt; x &lt;&lt; <font color=darkcyan>" + "</font> &lt;&lt; y
+         &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; <font color=darkcyan>2</font> * x + y &lt;&lt; endl;
+}</pre></td>
+<td><pre><font color=green>// Macro1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+
+
+<font color=red>void Func(int x, int y)</font>;
+
+<font color=blue>int</font> main()
+{
+    Func(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    Func(<font color=darkcyan>158</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=red>void Func(int x, int y)</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"2 * "</font> &lt;&lt; x &lt;&lt; <font color=darkcyan>" + "</font> &lt;&lt; y
+         &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; <font color=darkcyan>2</font> * x + y &lt;&lt; endl;
+}</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　インクルードの時と同様に、<font color=red>プログラム１はプログラム１’であるとして<a href="../htmlword/words014.html" target="words">コンパイル</a>される</font>という風に表を見て下さい。</p>
+
+<p>　プログラム１の <font color=red>FUNC</font> が、プログラム１’では <font color=red>void Func(int x, int y)</font> に置き換わっていることがわかります。つまり、<font size=+2 color=red>FUNC がマクロです</font>。</p>
+
+<p>　では、この FUNC というのはどこからきたのでしょうか？　プログラムを見てみると、どうやら</p>
+
+<pre>#define FUNC     void Func(int x, int y)</pre>
+
+<p>あたりからきているようですね。</p>
+
+<p>　このように、<font color=red>#define を使うとマクロが定義できます</font>。define は「定義する」という意味ですね。</p>
+
+<p>　詳しい書式は</p>
+
+<pre><font color=red>#define &lt;マクロ名&gt; &lt;差し込むテキスト&gt;</font></pre>
+
+<p>です。</p>
+
+<p>　マクロ名に使える文字は変数や関数と同じです。忘れたという人は<a href="cpp01005.html" target="main">第５章</a>を参照して下さい。</p>
+
+<p>　...何か赤文字だらけになってしまいましたね (^ ^;。まぁ気にせず先に進みましょう。</p>
+
+<hr>
+
+<p>　マクロは関数みたいな形にすることも可能です。つまり、<font color=red>引数を持つことが可能です</font>。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム２</th><th>プログラム２’</th></tr>
+
+<tr>
+<td><pre><font color=green>// Macro2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>#define FUNC(name)     void name(int x, int y)</font> 
+
+<font color=red>FUNC(Func)</font>;
+
+<font color=blue>int</font> main()
+{
+    Func(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    Func(<font color=darkcyan>158</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=red>FUNC(Func)</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"2 * "</font> &lt;&lt; x &lt;&lt; <font color=darkcyan>" + "</font> &lt;&lt; y
+         &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; <font color=darkcyan>2</font> * x + y &lt;&lt; endl;
+}</pre></td>
+<td><pre><font color=green>// Macro2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+
+
+<font color=red>void Func(int x, int y)</font>;
+
+<font color=blue>int</font> main()
+{
+    Func(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    Func(<font color=darkcyan>158</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=red>void Func(int x, int y)</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"2 * "</font> &lt;&lt; x &lt;&lt; <font color=darkcyan>" + "</font> &lt;&lt; y
+         &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; <font color=darkcyan>2</font> * x + y &lt;&lt; endl;
+}</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　テキストを差し込むだけなので、当然引数に型などはありません。差し込むテキストの name の部分が入れたテキストに置き換わって、それから差し込まれます。</p>
+
+<p>　これは特に問題ありませんね。</p>
+
+<hr>
+
+<p>　では、このマクロ。一体どう使うとよいのでしょうか？　それは次章に回したいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>マクロはテキストを差し込むもの。</li>
+<li>マクロは引数もとれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは次回まで、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01027.html" target="main">第２７章　インクルード</a> | <a href="cpp01029.html" target="main">第２９章　マクロの活用法</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.11</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,223 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１６章 派生と構築 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１６章　派生と構築</font>
+</center>
+<hr>
+
+<p>　今回はコンストラクタについてのお話です。継承した場合、コンストラクタはどう呼ばれるのでしょうか？</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>基底クラスから順にコンストラクタが呼ばれる。</li>
+<li>基底クラスの引数付きコンストラクタを呼ぶには、<br>実装時に : &lt;基底クラス名&gt;(&lt;実引数リスト&gt;) と書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回までのプログラムで不思議に思ったことはありませんでしたか？　CTextFile にはコンストラクタがありませんでした。</p>
+
+<p>　こういう場合は特に何もしないデフォルトコンストラクタが自動的に作られるのですが、m_pfile, m_bCopy  メンバの初期化はどうなるんでしょうね？</p>
+
+<p>　簡単なプログラムを作って、継承した場合にコンストラクタがどう呼ばれるかを確かめてみましょう。併せて、デストラクタについても確かめてみます。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Inherit1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CA
+{
+<font color=blue>public</font>:
+    CA()     { cout &lt;&lt; <font color=darkcyan>"CA"</font> &lt;&lt; endl; }
+    CA(<font color=blue>int</font> a){ cout &lt;&lt; <font color=darkcyan>"CA:"</font> &lt;&lt; a &lt;&lt; endl; }
+    ~CA()    { cout &lt;&lt; <font color=darkcyan>"~CA"</font> &lt;&lt; endl; }
+};
+
+<font color=blue>class</font> CB : <font color=blue>public</font> CA
+{
+<font color=blue>public</font>:
+    CB() { cout &lt;&lt; <font color=darkcyan>"CB"</font> &lt;&lt; endl; }
+    ~CB(){ cout &lt;&lt; <font color=darkcyan>"~CB"</font> &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> main()
+{
+    CB b;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>CA
+CB
+~CB
+~CA</pre></td>
+</tr>
+
+</table></center>
+
+<p>　...これほどのものは他にないくらい簡潔なプログラムですね。これがコンストラクタ、デストラクタの呼ばれ方です。</p>
+
+<p>　つまり、<font color=red>派生クラスのコンストラクタを呼ぶ前</font>に<font color=red>基底クラスのコンストラクタが呼ばれ</font>、<font color=red>派生クラスのデストラクタが呼ばれた後</font>に<font color=red>基底クラスのデストラクタが呼ばれる</font>のです。</p>
+
+<p>　このとき、呼ばれるコンストラクタは<font color=red>デフォルトコンストラクタ</font>です。引数がないので、当たり前といえば当たり前ですね。</p>
+
+<p>　これは、こう考えるとよく分かります。CA のメンバ変数を CB で初期化するとき、CA とは別の値で初期化したいとします。そこで基底クラスのコンストラクタが後に呼ばれてしまうと、折角 CB のコンストラクタで変更を行っても、CA のコンストラクタによって元の値に書き換えられてしまいます。</p>
+
+<p>　デストラクタも同じ考えで説明できます。CB で CA のメンバ変数を使った終了処理を行いたいとき、CA での方法と別の方法で処理を行いたいとします。そこで基底クラスのデストラクタが先に呼ばれてしまうと、折角 CB のデストラクタで終了処理を書いても、CA のデストラクタによって先に処理されてしまいます。</p>
+
+<hr>
+
+<p>　では、ここで引数付きのコンストラクタを呼びたいときはどうすればいいのでしょうか？　どうやって引数を指定するんでしょうね。</p>
+
+<p>　ということで、CFile に引数付きのコンストラクタを加えてみましょう。（面倒なので、「〜は省略」というのはもう書きません。）</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// File.h</font>
+<font color=blue>class</font> CFile
+{
+    <font color=green>// 構築と同時にファイルを開く</font>
+<font color=blue>public</font>:
+    CFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+};</pre></td></tr>
+
+<tr><td><pre><font color=green>// File.cpp</font>
+<font color=green>// 構築と同時にファイルを開く</font>
+CFile::CFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    m_pfile = NULL;
+    m_bCopy = <font color=blue>false</font>;
+    Open(pszPath, pszFlags);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　先ず、CTextFile でもこのコンストラクタが使えるかどうかを試してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>int</font> main()
+{
+    CTestFile txt(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>エラーメッセージ</th></tr>
+
+<tr><td valign=top><pre>
+TestFile.cpp(7) : error C2661: 'CTextFile::CTextFile' : 2 個の引数を持つオーバーロードされた関数はありません。
+</pre></td></tr>
+
+</table></center>
+
+<p>　...エラーが出ましたね。</p>
+
+<p>　CTextFile クラスではコンストラクタは作りませんでした。その時は「特に何もしない<font color=red>デフォルトコンストラクタ</font>」が自動的に作られるだけです。</p>
+
+<p>　なので、以前までのプログラムではエラーは出ませんでしたが、今回のプログラムではそうはいきません。const char* を２つとるコンストラクタを使おうとしているからです。</p>
+
+<p>　ということで、CTextFile にも const char* を２つとるコンストラクタを作らなければなりません。すると、コンストラクタが定義されるので、自動的に作られるデフォルトコンストラクタは<font color=red>作られなくなります</font>。ということで、デフォルトコンストラクタも作ってやる必要があります。</p>
+
+<p>　また、コピーコンストラクタも定義していません。その時は「メンバ変数をコピーするだけのコピーコンストラクタ」が作られます。なので、コピーコンストラクタも作ってやる必要があります。</p>
+
+<p>　しかし、動作自体はそれぞれ CFile のものと同じで構いません。</p>
+
+<p>　ということで、コンストラクタで基底クラスの<font color=red>引数付きのコンストラクタ</font>を呼ぶこともできます。それは、次のようにします。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// TextFile.h</font>
+<font color=blue>class</font> CTextFile : <font color=blue>public</font> CFile
+{
+    <font color=green>// コンストラクタ</font>
+<font color=blue>public</font>:
+    CTextFile();                         <font color=green>// デフォルトコンストラクタ</font>
+    CTextFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+                                         <font color=green>// 構築と同時にファイルを開く</font>
+    CTextFile(<font color=blue>const</font> CTextFile&amp; rother);  <font color=green>// コピーコンストラクタ</font>
+};</pre></td></tr>
+
+<tr><td><pre><font color=green>// TextFile.cpp</font>
+<font color=green>// デフォルトコンストラクタ</font>
+CTextFile::CTextFile()
+{
+}
+
+<font color=green>// 構築と同時にファイルを開く</font>
+CTextFile::CTextFile(<font color=blue>const char</font>* pszPath,
+                     <font color=blue>const char</font>* pszFlags) <font color=red>: CFile(pszPath, pszFlags)</font>
+{
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CTextFile::CTextFile(<font color=blue>const</font> CTextFile&amp; rother) <font color=red>: CFile(rother)</font>
+{
+}</pre></td></tr>
+
+</tr></table></center>
+
+<p>　コンストラクタの実装で、何やら見たことのないことをやっています。</p>
+
+<pre>CTextFile::CTextFile(const CTextFile&amp; rother) <font color=red>: CFile(rother)</font></pre>
+
+<p>　この赤い部分が、<font color=red>基底クラスのコンストラクタを呼ぶ</font>コードです。</p>
+
+<p>　はっきり言って、そのまんまです。コンストラクタを呼んでいるだけです。しかし、関数の中身を定義する部分にではなく、<font color=red>プロトタイプの後ろ</font>に、<font color=red>コロン (:) を挟んで</font>書いてあります。変わってますね。</p>
+
+<p>　このように、基底クラスの引数付きコンストラクタを呼びたいときは、コンストラクタを実装するときのプロトタイプの後ろに</p>
+
+<pre> <font color=red>: &lt;基底クラス名&gt;(&lt;実引数リスト&gt;)</font></pre>
+
+<p>と書くのです。</p>
+
+<hr>
+
+<p>　ところが、これをいざ実行してみるとおかしな事が起こることが分かります。<font color=red>CTextFile の ModifyFlags が呼ばれず、CFile のものが呼ばれてしまう</font>のです。これについては次回に話したいと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>基底クラスから順にコンストラクタが呼ばれる。</li>
+<li>基底クラスの引数付きコンストラクタを呼ぶには、<br>実装時に : &lt;基底クラス名&gt;(&lt;実引数リスト&gt;) と書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02015.html" target="main">第１５章　アップキャスト</a> | <a href="cpp02017.html" target="main">第１７章　派生と構築２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.21</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

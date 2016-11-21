@@ -1,0 +1,106 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４６章 ハンドルされない例外 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４６章　ハンドルされない例外</font>
+</center>
+<hr>
+
+<p>　<a href="../html02/cpp02046.html" target="main">第２部第４６章</a>でキャッチされない例外について話しました。今回はその発展です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>set_terminate でキャッチされない例外の処理を設定できる。</li>
+<li>terminate でその処理を呼べる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="../html02/cpp02046.html" target="main">第２部第４６章</a>では、例外がキャッチされなかった場合はエラー終了するといいました。この時のエラーメッセージが abort のものと一緒だということに気がついた人もいるでしょう。</p>
+
+<p>　これはその通りで、<font color=red>例外がキャッチされなければ abort されます</font>。したがってデストラクタも呼ばれませんし、終了処理もされません。</p>
+
+<p>　強制終了すること自体は特に問題はないのですが、それ以外に終了処理を付け加えてやりたいときもあるかも知れません。もしくは、abort ではなく exit したいときもあるかも知れません。</p>
+
+<p>　そういうときのために、実は<font color=red>この処理を変更する</font>ことも出来ます。処理をどう変えても必ず強制終了はされるのですが、その前に何か処理を加えることが出来ます。<font color=red>その処理を変えるための関数が set_terminate です。</font></p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Term1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=red>&lt;eh.h&gt;</font>  <font color=green>// set_terminate を使うのに必要です</font>
+
+<font color=red>void NewTerminate()</font>
+{
+    cout &lt;&lt; <font color=darkcyan>"異常終了です！"</font> &lt;&lt; endl;
+    exit(<font color=darkcyan>1</font>);  <font color=green>// これを書かなければ abort されます</font>
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=red>set_terminate(NewTerminate);</font>
+    <font color=blue>throw</font> <font color=darkcyan>1</font>;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>異常終了です！</pre></td></tr>
+
+</table></center>
+
+<p>　このように、戻り値の型が void で引数のない関数を set_terminate で設定してやれば、キャッチされない（ハンドルされないともいう）例外の処理を自分で決めてやることができるわけです。</p>
+
+<p>　ただし、<font color=red>これは throw で投げられた例外にしか反応しません</font>。０除算とか不正アクセス（例えば NULL の入ったポインタで参照したときなど）とかの例外を処理することはできません。</p>
+
+<p>　あと、例外を処理するもののことを「例外ハンドラ」と呼びます。ヘッダファイル名 eh.h も、exception handler（例外ハンドラ）の略でしょう。</p>
+
+<p>　また、こういう処理を作ると、例外を投げずに異常終了するときもこの関数を使うと一貫性が保てます。そういう場合はこの関数を直接呼ばずに、<font color=red>terminate</font> という関数を使います。terminate を呼べば、例外がハンドルされなかったときと全く同じ処理を行ってくれます。terminate も eh.h で宣言されています。</p>
+
+<hr>
+
+<p>　補足ですが、gcc では set_terminate, terminate の宣言は <font color=red>exception ヘッダファイル</font>にあります。std という名前空間（<a href="../html02/cpp02050.html" target="main">第２部第５０章</a>参照）の中で宣言されています。</p>
+
+<p>　最近の回はＶＣ＋＋と gcc との違いがよく現れるので、読む方も書く方も大変です（汗）。他の環境で動かなかった場合は、まだサポートされていないか、別のヘッダファイルにあるかのどちらかと思います。全てに対応するのは不可能なので、その場合は何とか自力で解決してください。それはそれでいい経験になると思います。</p>
+
+<hr>
+
+<p>　極端に短い回ですが、今回はこれで終わりです。嘘じゃありません。その証拠に、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>set_terminate でキャッチされない例外の処理を設定できる。</li>
+<li>terminate でその処理を呼べる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03045.html" target="main">第４５章　マクロの落穂拾い</a> | <a href="cpp03047.html" target="main">第４７章　Ｃ±±</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

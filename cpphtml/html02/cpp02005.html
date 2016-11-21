@@ -1,0 +1,178 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５章 隠せ！ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５章　隠せ！</font>
+</center>
+<hr>
+
+<p>　初めに、public: をつけないとメンバが利用できないと言いました。しかし、これは厳密には正しくないのです。では、正しくはどうなのでしょうか？　今回はそういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>public: をつけるとメンバは外部に公開される。</li>
+<li>private: をつけるとメンバは外部に公開されない。</li>
+<li>アクセス指定はメンバ変数の値などを保証するために重要である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、今回は新しいクラスを作りたいと思います。<font color=red>int 型１００要素の配列を扱う</font>クラスです。早速骨子をみてみましょう。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+
+<font color=blue>class</font> CIntArray
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> m_anum[<font color=darkcyan>100</font>];
+
+    CIntArray();
+};
+
+<font color=green>// コンストラクタ</font>
+CIntArray::CIntArray()
+{
+    <font color=green>// memset はバイト単位でデータを埋める関数です</font>
+    memset(m_anum, <font color=darkcyan>0</font>, <font color=blue>sizeof</font> m_anum);
+}</pre></td>
+</tr></table></center>
+
+<p>　m_anum というのが配列です。コンストラクタでは memset という関数が呼ばれています。これは<a href="../html01/cpp01067.html" target="main">第１部第６７章</a>でも１回出たのですが、バイト単位で同じデータを埋めていくという関数です。つまり、ここでは<font color=red>配列全体を０で初期化している</font>わけです。</p>
+
+<p>　このようにすれば、初めに変な値が入っているということを防げますね。</p>
+
+<p>　しかし配列を使うときには、この問題以外にももう１つ大きな問題があります。それは<font color=red>０〜９９番以外の要素に書き込んだ時に危険である</font>ということです。この点をクラスを使ってどうにかできないものでしょうか？</p>
+
+<p>　実は、これはそれほど難しいことではありません。<font color=red>メンバ変数 m_anum を関数を通して利用してやればいい</font>のです。引数にはインデックスをとります。このインデックスをチェックして、これが０〜９９になかったときは特別な処理をするようにすればいいのです。</p>
+
+<p>　その関数 Get, Set を追加すると、次のようになります。（コンストラクタの実装部は省略します。）</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+
+<font color=blue>#define</font> ELEM(array)   (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>class</font> CIntArray
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> m_anum[<font color=darkcyan>100</font>];
+
+    CIntArray();
+    <font color=blue>int</font> Get(<font color=blue>const int</font> index);
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value);
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index);
+};
+
+<font color=green>// メンバへのアクセス関数</font>
+<font color=blue>int</font> CIntArray::Get(<font color=blue>const int</font> index)
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_anum[index];
+}
+
+<font color=blue>void</font> CIntArray::Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value)
+{
+    CheckIndex(index);
+    m_anum[index] = value;
+}
+
+<font color=green>// インデックスのチェック</font>
+<font color=blue>void</font> CIntArray::CheckIndex(<font color=blue>const int</font> index)
+{
+    <font color=blue>if</font>((<font color=blue>unsigned int</font>)index &lt; ELEM(m_anum))
+        <font color=blue>return</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"インデックスが不正です！"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"値 : "</font> &lt;&lt; index &lt;&lt; endl;
+    exit(<font color=darkcyan>1</font>);
+}</pre></td>
+</tr></table></center>
+
+<p>　変なインデックスを使おうとするとエラーメッセージを表示し、プログラムを強制終了する関数 exit を呼ぶようにしました。このようにすれば、Get, Set を使いさえすれば変なことにはならないわけです。</p>
+
+<p>　しかし、しかしです。<font size=+2 color=red>m_anum を直接使ってしまえばこの工夫も全く意味がないではありませんか！</font>　「使わないようにして下さい」と言われても、もしかしたら使ってしまうかもしれません。いっそのこと、<font size=+2 color=red>使えない</font>ようにはできないのでしょうか？</p>
+
+<hr>
+
+<p>　ここで、<a href="cpp02001.html" target="main">第１章</a>を思い出して下さい。ここでこういうことを言いました。</p>
+
+<pre>「public:（公開された）というものを書いて初めて、メンバにアクセスできるようになる」</pre>
+
+<p>　実は、この「アクセスできるようになる」という表現は不正確で、正しくは「<font color=red>外部から</font>アクセスできるようになる」となります。「外部」というのは、<font color=red>「そのクラスのメンバ関数以外」</font>ということです。</p>
+
+<p>　つまり、<font color=red>public: がなくても、メンバ関数内ならそのメンバを使うことができる</font>のです。初めに public: の話を聞いて変だと思った人は正解で、実はこういうことだったのです。</p>
+
+<p>　「メンバ」と言っているように、このことはメンバ変数、メンバ関数、両方に言えることです。「外部」から使えないメンバ関数を作ることもできます。丁度上の CheckIndex 関数はそうした方がよさそうですね。</p>
+
+<p>　しかし、順番を調えるために public: を書いた後にも外部に公開したくないメンバが出てくるかもしれません。そういうときは <font color=red>private:</font> というものを書きます。<font color=red>private:（私有の）というものを書けば、それ以降のメンバはそのクラスのメンバ関数からしか利用できなくなります。</font></p>
+
+<p>　これら public: と private: のことを<font color=red>アクセス指定子</font>と呼びます。間違いをなくすためにも、アクセス指定子は必要だと思ったところにはこまめに書いておいた方がいいでしょう。あとからアクセス指定子を増やしたいときに便利です。</p>
+
+<p>　では、最終的に CIntArray クラスは次のようになりました。（実装部は省略します。）</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_anum[<font color=darkcyan>100</font>];  <font color=green>// 配列</font>
+
+    <font color=green>// コンストラクタ</font>
+<font color=blue>public</font>:
+    CIntArray();
+
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> Get(<font color=blue>const int</font> index);
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value);
+
+    <font color=green>// インデックスのチェック</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index);
+};</pre></td>
+</tr></table></center>
+
+<p>　これでやっと安全に配列が扱えるようになりました。</p>
+
+<p>　このように、メンバ変数を「外部」から<font color=red>隠し</font>、<font color=red>関数を通して扱う</font>ようにすることによって、メンバ変数の<font color=red>値を保証</font>したり、その<font color=red>扱いを安全に</font>したりすることができます。アクセス指定子はそのためにとても重要な役割を果たすのです。</p>
+
+<p>　この応用として、インデックスが０から始まらない配列を扱うクラスなども作ることができます。一度挑戦してみてはどうでしょうか？</p>
+
+<hr>
+
+<p>　では、今回の要点を public:</p>
+
+<font size=+2 color=red>
+<ul>
+<li>public: をつけるとメンバは外部に公開される。</li>
+<li>private: をつけるとメンバは外部に公開されない。</li>
+<li>アクセス指定はメンバ変数の値などを保証するために重要である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02004.html" target="main">第４章　引数付きの構築</a> | <a href="cpp02006.html" target="main">第６章　デストラクタ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

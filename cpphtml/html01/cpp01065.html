@@ -1,0 +1,163 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６５章 ナマケモノ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６５章　ナマケモノ</font>
+</center>
+<hr>
+
+<p>　ろくに使わない引数にいちいちいつもお決まりの値を渡し続けるのも面倒です。こういうとき、ちょっと怠けたいと思います。実は、怠けられます。今回はその方法について話します。</p>
+
+<hr>
+
+<p>　では、要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮引数に値を代入するように書くと、省略したときその値が使われる。</li>
+<li>その値をデフォルト引数と呼ぶ。</li>
+<li>途中の引数だけを省略することはできない。</li>
+<li>デフォルト引数には静的なデータしか使えない。</li>
+<li>オーバーロードとデフォルト引数を併用するときは、呼び出しが区別できるかに注意する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="cpp01049.html" target="main">第４９章</a>で作った文字列のコピー関数 strcpy_ex を思い出して下さい。ビット演算を使わない方のです。</p>
+
+<center><table border=1>
+<tr><td><pre><font color=green>// 文字列をコピーする関数</font>
+<font color=blue>void</font> strcpy_ex(<font color=blue>char*</font> pszDest, <font color=blue>const char*</font> pszSource,
+               <font color=blue>int</font> fAdd, <font color=blue>int</font> fTrim, <font color=blue>int</font> fUpper, <font color=blue>int</font> fLower)
+{
+    ... 略 ...
+}</pre></td></tr>
+</table></center>
+
+<p>　この関数を使うとき、普通は fAdd = 0, fTrim = 0, fUpper = 0, fLower = 0 くらいしか使わないとします。それでも、毎回毎回 0, 0, 0 ,0 という引数を書かないといけないなんて不条理ですね。でも、こんな引数なんかいらない、という訳ではなく、たまにはフラグを立てることもあるのです。</p>
+
+<p>　この不条理は、<font color=red>Ｃ言語では甘んじるしかありません</font>が、<font color=red>Ｃ＋＋では甘んじる必要はありません</font>。大抵同じ値の渡されるような引数には、<font color=red><a href="../htmlword/words024.html" target="words">デフォルト</a>引数</font>を設定することができます。設定方法は簡単です。仮引数に値を代入するように書けばいいだけです。</p>
+
+<center><table border=1>
+<tr><td><pre><font color=green>// 文字列をコピーする関数</font>
+<font color=blue>void</font> strcpy_ex(<font color=blue>char*</font> pszDest, <font color=blue>const char*</font> pszSource,
+               <font color=blue>int</font> fAdd = <font color=darkcyan>0</font>, <font color=blue>int</font> fTrim = <font color=darkcyan>0</font>, <font color=blue>int</font> fUpper = <font color=darkcyan>0</font>, <font color=blue>int</font> fLower = <font color=darkcyan>0</font>)
+{
+    ... 略 ...
+}</pre></td></tr>
+</table></center>
+
+<p>　こうすると、例えば strcpy_ex(str1, str2); と呼ぶと、<font color=red>省略された部分にはデフォルト引数が渡されます</font>。つまり、strcpy_ex(str1, str2<font color=red>, 0, 0, 0, 0</font>); としたのと同じ事になります。そして、strcpy_ex(str1, str2, 1, 1); と呼ぶと、strcpy_ex(str1, str2, 1, 1<font color=red>, 0, 0</font>); としたのと同じ事になります。</p>
+
+<p>　プロトタイプ宣言（<a href="cpp01026.html" target="main">第２６章</a>参照）を行う場合は、デフォルト引数は片方のみ（普通はプロトタイプの方）にだけ書きます。プロトタイプと関数の定義の両方に書いたらエラーになります。</p>
+
+<pre>例）
+void Func(int a = 0);
+
+void Func2()
+{
+    Func();
+}
+
+void Func(int a)
+{
+    cout &lt;&lt; a &lt;&lt; endl;
+}</pre>
+
+<hr>
+
+<p>　さて、「そうか、略せるのか」と、strcpy_ex(str1, str2, ,1); と書きました。しかし、エラーが出てしまいました。何と、<font color=red>途中の引数だけを省略することはできない</font>のです。ここは面倒でも strcpy_ex(str1, str2, 0, 1); と書かなければいけないのです。最後の引数だけを設定したいときには、結局全ての引数を書かなければいけないわけです。</p>
+
+<p>　そのため、<font color=red>使用頻度の少ないものを最後の方に持っていく</font>とよいでしょう。</p>
+
+<p>　そして、「そうか、デフォルト引数が設定できるのか」と、void Func(int a, int b = a) とすると、またエラーになりました。<font color=red>デフォルト引数には静的なデータしか指定することができない</font>のです。</p>
+
+<p>　<font color=red>静的なデータ</font>というのは、<font color=red>定数、もしくはプログラムが実行される前に位置が決まっているデータ</font>です。すなわち、<font color=red>定数、外部変数、関数</font>のことです。位置的に内部変数が指定できないのはもちろんですが、この制限のため引数ですら指定することはできません。</p>
+
+<p>　引数は関数を呼ぶたびに位置が変わります。もちろん位置が同じ事もありますが、違うことがある以上、デフォルト引数に指定することはできないのです。</p>
+
+<p>　引数の位置が変わるということを、次のプログラムで確かめてみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Param1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func(<font color=blue>int</font> a = <font color=darkcyan>0</font>){ cout &lt;&lt; &amp;a &lt;&lt; endl; }
+<font color=blue>void</font> Func2()        { Func(); }
+
+<font color=blue>int</font> main()
+{
+    Func();
+    Func2();
+    Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0x0065FDA8
+0x0065FD54
+0x0065FDA8</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　早速デフォルト引数を使っています。便利でしょう？</p>
+
+<p>　0x とついているのは、１６進数でしたね（<a href="cpp01045.html" target="main">第４５章</a>参照）。同じ main から呼んだときは同じアドレスにありますが、Func2 を通して呼べばアドレスが変わっていることが分かります。</p>
+
+<p>　このような静的でないデータは、デフォルト引数に指定することはできません。</p>
+
+<hr>
+
+<p>　最後に、オーバーロードとデフォルト引数を併用したときの問題点を言っておきます。</p>
+
+<p>　たとえば、次のような関数があったとします（プロトタイプのみしか書いていません）。</p>
+
+<pre>void Func(int a, int b);
+void Func(int a, int b = 0, int c = 0);</pre>
+
+<p>　引数の個数が違うので、このオーバーロードは成功します。しかし、<font color=red>Func(0, 1); と呼ぶと、このどちらを呼び出したのか区別がつかない</font>ことが分かります。このときは<font color=red>エラーになります</font>。</p>
+
+<p>　Func(0, 0, 1); や Func(0); と呼ぶと、区別はつき、無事関数の呼び出しは成功します。</p>
+
+<p>　このことから分かるように、<font color=red>上の Func は呼び出せません</font>。オーバーロードが成功していながら、上の Func を使おうとするとエラーになるのです。<font color=red>オーバーロードとデフォルト引数を併用するときは、呼び出しの区別ができるのかきちんと確認しましょう</font>。</p>
+
+<hr>
+
+<p>　では、最後に要点をまとめておきます。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮引数に値を代入するように書くと、省略したときその値が使われる。</li>
+<li>その値をデフォルト引数と呼ぶ。</li>
+<li>途中の引数だけを省略することはできない。</li>
+<li>デフォルト引数には静的なデータしか使えない。</li>
+<li>オーバーロードとデフォルト引数を併用するときは、呼び出しが区別できるかに注意する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は関数３部作の最後、インライン関数について話します。それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01064.html" target="main">第６４章　同姓同名</a> | <a href="cpp01066.html" target="main">第６６章　インライン関数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.27</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

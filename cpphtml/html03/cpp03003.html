@@ -1,0 +1,204 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３章 コンパイル済 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３章　コンパイル済</font>
+</center>
+<hr>
+
+<p>　どのソースファイルからも iostream.h がインクルードされるとします。こういうとき、ソースファイル数だけ iostream.h は解析されることになります。iostream.h をいろいろ変更するのならともかくですが、そうでもないのに毎回解析するのは無駄な気がします。そこで、ツールによってはこの無駄をなくすことのできる機能がついています。</p>
+
+<p>　例によってＶＣ＋＋での話になります。ツールの違う場合は自分で読み替えて下さい。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>滅多に変更しないヘッダファイルのインクルード時間を節約する機能がある。</li>
+<li>#include "Pch.h" 以前には、コメント以外のコードを書かないようにする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　複数のソースファイルを使用してプログラムを作るとき、どのソースファイルでも iostream.h をインクルードするということもあるでしょう。このとき、どのファイルでも iostream.h が展開され、いちいち解析されるというのは、時間の無駄な気がします。</p>
+
+<p>　さらに、iostream.h は標準のヘッダファイルであり、<font color=red>変更することはありません</font>。毎回解析結果は同じなわけで、さらに時間の無駄な気がしますね。</p>
+
+<p>　<font color=red>「全く変更しない、よく使うヘッダファイルの解析時間を節約したい」</font>と考えるのはごく自然なことです。</p>
+
+<p>　そこで、<font color=red>プリコンパイル済みのヘッダファイル</font>というものを使用できることがあります。これは、全く変更しないヘッダファイルを作ってそれをあらかじめコンパイルしておき、次回からはその情報を再利用しようというものです。</p>
+
+<p>　ＶＣ＋＋ ver 6.0 からはコンソールアプリケーション（<a href="../html01/cpp01001.html" target="main">第１部第１章</a>参照）であっても初めから利用できるようになりましたが、一応今回は全てを手動でやってみたいと思います。</p>
+
+<hr>
+
+<p>　さて、先ずはプログラムの紹介です。内容をあまり考えないでいいように、<a href="../html01/cpp01011.html" target="main">第１部第１１章</a>のプログラムをベースにしています。今回は実行結果は重要でないので、実行結果は省略します。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th><th>プログラム４</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Pch.h</font>
+
+<font color=blue>#ifndef</font> __PCH_H__INCLUDED__
+<font color=blue>#define</font> __PCH_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#endif</font></pre></td>
+
+<td valign=top><pre><font color=green>// TestPch2.h</font>
+
+<font color=blue>#ifndef</font> __TESTPCH2_H__INCLUDED__
+<font color=blue>#define</font> __TESTPCH2_H__INCLUDED__
+
+<font color=blue>bool</font> Birthmonth();
+
+<font color=blue>#endif</font></pre></td>
+</tr>
+
+<tr><th>プログラム２</th><th>プログラム５</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Pch.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Pch.h"</font></pre></td>
+
+<td valign=top rowspan=3><pre><font color=green>// TestPch2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Pch.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TestPch2.h"</font>
+
+<font color=blue>bool</font> Birthmonth()
+{
+    <font color=blue>int</font> a;
+
+    cout &lt;&lt; <font color=darkcyan>"あなたは何月生まれですか &gt; "</font>;
+    cin &gt;&gt; a;
+
+    <font color=blue>if</font>(<font color=darkcyan>1</font> &lt;= a &amp;&amp; a &lt;= <font color=darkcyan>12</font>)
+    {
+        cout &lt;&lt; <font color=darkcyan>"へー、"</font> &lt;&lt; a
+             &lt;&lt; <font color=darkcyan>" 月なんですか。"</font> &lt;&lt; endl;
+        <font color=blue>return true</font>;
+    }
+    <font color=blue>else</font>
+    {
+        cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" 月やと！？"</font> &lt;&lt; endl
+             &lt;&lt; <font color=darkcyan>"んな月、あらへんわ！"</font> &lt;&lt; endl;
+        <font color=blue>return false</font>;
+    }
+}
+</pre></td>
+</tr>
+
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestPch1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Pch.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TestPch2.h"</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(!Birthmonth());
+
+    cout &lt;&lt; <font color=darkcyan>"終了"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　さて、先ずはこれらを普通にビルドしてみて下さい。...何も問題ありませんね。</p>
+
+<p>　Pch.h というのがプリコンパイル済みヘッダファイルになる<font color=red>予定</font>です。これだけではまだプリコンパイル済みヘッダファイルにはなっていません。他にも、Pch.h だけをインクルードした Pch.cpp という謎のファイルもあります。</p>
+
+<table align=right border=1><tr><td><img src="images/0300301.gif" alt="「プロジェクト」→「設定」"></td></tr></table>
+
+<p>　この Pch.h をプリコンパイル済みヘッダファイルにするには、プロジェクトの設定を変更する必要があります。</p>
+
+<p>　プロジェクトの設定を変更するには、先ずはメニューから「プロジェクト」→「設定」の順に選択します。面倒な方は Alt+F7 でも構いません。</p>
+
+<p><br clear=right><br></p>
+
+<p>　すると、次のようなダイアログが表示されます。</p>
+
+<center><img src="images/0300302.gif" alt="プリコンパイル済みヘッダファイルの指定"></center>
+
+<p>　...いろいろ書き込んでありますね。ここでプロジェクトの設定を変更することができます。</p>
+
+<p>　先ずは、<font color=red>プリコンパイル済みヘッダファイルの指定</font>を行います。</p>
+
+<p>　左半分では設定の対象を指定するのですが、ここで<font color=red>プロジェクトの名前</font>を選択します。こうすると、プロジェクト全体の設定を行うことになります。</p>
+
+<p>　次に、「Ｃ＋＋」→「プリコンパイル済みヘッダー」→「プリコンパイル済みヘッダーファイルを使用」と選択していきます。この項目を指定すると、プリコンパイル済みヘッダファイルを使用するようになります。</p>
+
+<p>　最後に、プリコンパイル済みヘッダファイルとしてどのヘッダファイルを利用するかを指定します。と、これは厳密には正しくないですね。<font color=red>プリコンパイル済みヘッダファイルを使用する部分を指定するのです。</font></p>
+
+<p>　上のように Pch.h と指定すると、#include "Pch.h" のある行まではプリコンパイル済みヘッダファイルのデータを使用します。このため、<font color=red>#include "Pch.h" より前にはコードは書かない</font>ようにします。この行を含む、その行までのコードは<font color=red>一切無視され</font>、この部分にプリコンパイル済みヘッダファイルがインクルードされます。まぁ、コメントならこの行までにあっても別に問題ありませんね。</p>
+
+<p>　さて、これでプリコンパイル済みヘッダファイルの指定が終わりました。次は、プリコンパイル済みヘッダファイルの作成です。</p>
+
+<center><img src="images/0300303.gif" alt="プリコンパイル済みヘッダファイルの作成"></center>
+
+<p>　今度は、設定の対象を例の <font color=red>Pch.h だけをインクルードしていたファイル</font>、Pch.cpp にします。</p>
+
+<p>　そして、「Ｃ＋＋」→「プリコンパイル済みヘッダー」→「プリコンパイル済みヘッダーファイルの作成」と選択していきます。この項目を指定すると、<font color=red>この Pch.cpp をコンパイルするときに、一緒にプリコンパイル済みヘッダファイルを作成するようになります</font>。</p>
+
+<p>　そして最後に<font color=red>どこまでをプリコンパイル済みヘッダファイルとするか</font>を指定します。</p>
+
+<p>　上のように Pch.h と指定すると、#include "Pch.h" のある行までをプリコンパイル済みヘッダファイルとします。Pch.h の内容のみをプリコンパイル済みヘッダファイルとするためには、やはり<font color=red>#include "Pch.h" より前にはコードは書かない</font>ようにします。ここも、コメントならこの行までにあっても別に問題ありませんね。</p>
+
+<p>　以上のように設定を行い、もう一度コンパイルをしてみて下さい。...と、見た目はあまり変わりませんし、iostream.h 程度ならあまり速度の違いもよく分からないかもしれませんね。</p>
+
+<p>　まぁとにかく、以上のようにするとプリコンパイル済みヘッダファイルが利用できるのです。</p>
+
+<p>　Ｗｉｎｄｏｗｓプログラムを行うときは windows.h という、<font color=red>それはそれはもうバカでかい</font>ヘッダファイルをインクルードします。これを毎回まともにインクルードしていたら時間の無駄です。なので、Ｗｉｎｄｏｗｓプログラミングではプリコンパイル済みヘッダファイルは必須といえるでしょう。別にここで windows.h をインクルードしても全く問題ないので、一度その速度の違いを試してはどうでしょうか？</p>
+
+<hr>
+
+<img align=right src="images/0300304.gif" alt="講座.pch">
+
+<p>　さて、プロジェクトのファイルの入っているフォルダを開いてみて下さい。そして、Debug というフォルダ（なければそれらしいフォルダ）の中に入って下さい。</p>
+
+<p>　そこには、プロジェクトと同じ名前の、pch という拡張子をもったファイルがあると思います。厳密にはこれがプリコンパイル済みヘッダファイルであり、Pch.h はプリコンパイル済みヘッダファイルではありません。ですが、同等であった方が便利なので、上のように同等になるように工夫するのが普通ですね。</p>
+
+<p>　そして、わざわざ Pch.cpp というファイルを作らなくても、同じ設定を別のファイルに設定してやっても問題はありません。しかし、そのファイルを変更するとプリコンパイル済みヘッダファイルを作り直そうとします。なので、Pch.cpp という普通は変更しないファイルを作っておくと便利なのです。</p>
+
+<p>　もちろん、Pch.h を変更してもプリコンパイル済みヘッダファイルを作り直そうとするので、Pch.h には全く、もしくは滅多に変更しないコードのみを書くようにしましょう。</p>
+
+<p><br clear=right><br></p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>滅多に変更しないヘッダファイルのインクルード時間を節約する機能がある。</li>
+<li>#include "Pch.h" 以前には、コメント以外のコードを書かないようにする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はまた言語の話に戻ります。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03002.html" target="main">第２章　近道</a> | <a href="cpp03004.html" target="main">第４章　参照先は何もなし？</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

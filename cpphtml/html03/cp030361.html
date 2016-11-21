@@ -1,0 +1,555 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - ハッシュ法 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>ハッシュ法のテストプログラム</font>
+</center>
+
+<center><table border=1>
+
+<tr><th>Hash1.h</th></tr>
+
+<tr><td><pre><font color=green>// Hash1.h</font>
+<font color=blue>#ifndef</font> __HASH1_H__INCLUDED__
+<font color=blue>#define</font> __HASH1_H__INCLUDED__
+
+<font color=green>// ハッシュ表のサイズ（素数）</font>
+<font color=blue>const unsigned</font> HASH_SIZE  = <font color=darkcyan>11</font>;
+<font color=green>// ハッシュに登録しない値</font>
+<font color=blue>const int</font> HASH_UNUSED  = <font color=darkcyan>-1</font>;
+
+<font color=green>// 二分探索木のノード</font>
+<font color=blue>struct</font> SNode
+{
+    <font color=blue>const char</font>* key;
+    <font color=blue>int</font> value;
+    SNode* pNext[<font color=darkcyan>2</font>];
+};
+
+<font color=green>// ハッシュ</font>
+<font color=blue>struct</font> SHash
+{
+    SNode* pNode[HASH_SIZE];
+};
+
+<font color=blue>void</font> InitHash(SHash&amp; hash);  <font color=green>// 初期化</font>
+
+<font color=blue>int</font> HashFind(SHash&amp; hash, <font color=blue>const char</font>* key);  <font color=green>// データを検索</font>
+<font color=blue>bool</font> HashAdd(SHash&amp; hash, <font color=blue>const char</font>* key, <font color=blue>int</font> value);  <font color=green>// データを追加</font>
+
+<font color=blue>void</font> HashFree(SHash&amp; hash);  <font color=green>// 全削除</font>
+
+<font color=blue>void</font> HashDisp(SHash&amp; hash);  <font color=green>// データ全体を表示</font>
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __HASH1_H__INCLUDED__</font></pre></td></tr>
+
+<tr><th>Hash1.cpp</th></tr>
+
+<tr><td><pre><font color=green>// Hash1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iomanip.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Hash1.h"</font>
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////
+// static 関数のプロトタイプ宣言</font>
+
+<font color=green>// ハッシュ法のルーチン</font>
+<font color=green>// ハッシュ関数</font>
+<font color=blue>static int</font> HashFunc(<font color=blue>const char</font>* key);
+<font color=green>// データを検索（ノードを返す）</font>
+<font color=blue>static</font> SNode*&amp; HashFindNode(SHash&amp; hash, <font color=blue>const char</font>* key);
+
+<font color=green>// 二分探索木操作関数</font>
+<font color=green>// 初期化</font>
+<font color=blue>static bool</font> InitNode(SNode* pNode, <font color=blue>const char</font>* key, <font color=blue>int</font> value);
+<font color=green>// ノードを探す</font>
+<font color=blue>static</font> SNode*&amp; TreeFindNode(SNode*&amp; pNode, <font color=blue>const char</font>* key);
+<font color=green>// 全削除</font>
+<font color=blue>static void</font> TreeFree(SNode*&amp; pNode);
+<font color=green>// 二分探索木全体の表示</font>
+<font color=blue>static int</font> TreeDisp(SNode* pNode, <font color=blue>int</font> nDepth);
+
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////
+// ハッシュ法のルーチン</font>
+
+<font color=green>// 初期化</font>
+<font color=blue>void</font> InitHash(SHash&amp; hash)
+{
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; HASH_SIZE; i++)
+        hash.pNode[i] = NULL;
+}
+
+<font color=green>// ハッシュ関数
+// 先頭と最後と中央の文字コードの合計を HASH_SIZE で割った余りを返します</font>
+<font color=blue>static int</font> HashFunc(<font color=blue>const char</font>* key)
+{
+    <font color=blue>int</font> nLen = strlen(key);
+
+    <font color=blue>if</font>(nLen == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    nLen--;
+    <font color=blue>return</font> ((<font color=blue>unsigned</font>)key[<font color=darkcyan>0</font>] + key[nLen / <font color=darkcyan>2</font>] + key[nLen]) % HASH_SIZE;
+}
+
+<font color=green>// データを検索（ノードを返す）</font>
+<font color=blue>static</font> SNode*&amp; HashFindNode(SHash&amp; hash, <font color=blue>const char</font>* key)
+{
+    <font color=blue>return</font> TreeFindNode(hash.pNode[HashFunc(key)], key);
+}
+
+<font color=green>// データを検索</font>
+<font color=blue>int</font> HashFind(SHash&amp; hash, <font color=blue>const char</font>* key)
+{
+    SNode* pNode = HashFindNode(hash, key);
+    <font color=blue>return</font> pNode == NULL ? HASH_UNUSED : pNode-&gt;value;
+}
+
+<font color=green>// データを追加</font>
+<font color=blue>bool</font> HashAdd(SHash&amp; hash, <font color=blue>const char</font>* key, <font color=blue>int</font> value)
+{
+    SNode*&amp; pNode = HashFindNode(hash, key);
+    <font color=blue>if</font>(pNode != NULL)
+        pNode-&gt;value = value;
+    <font color=blue>else</font>
+    {
+        pNode = <font color=blue>new</font> SNode;
+        <font color=blue>if</font>(pNode == NULL)
+            <font color=blue>return false</font>;
+        <font color=blue>if</font>(!InitNode(pNode, key, value))
+        {
+            <font color=blue>delete</font> pNode;
+            pNode = NULL;
+            <font color=blue>return false</font>;
+        }
+    }
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 全削除</font>
+<font color=blue>void</font> HashFree(SHash&amp; hash)
+{
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; HASH_SIZE; i++)
+    {
+        TreeFree(hash.pNode[i]);
+        hash.pNode[i] = NULL;
+    }
+}
+
+<font color=green>// データ全体を表示</font>
+<font color=blue>void</font> HashDisp(SHash&amp; hash)
+{
+    <font color=blue>int</font> nData = <font color=darkcyan>0</font>;  <font color=green>// データの総数</font>
+
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; HASH_SIZE; i++)
+    {
+        cout &lt;&lt; <font color=darkcyan>"ハッシュ値 "</font> &lt;&lt; i &lt;&lt; endl;
+        <font color=blue>int</font> nDataNode = TreeDisp(hash.pNode[i], <font color=darkcyan>0</font>);
+        cout &lt;&lt; <font color=darkcyan>"データ数 "</font> &lt;&lt; nDataNode &lt;&lt; endl;
+        nData += nDataNode;
+
+        <font color=blue>char</font> letter;
+        cin &gt;&gt; letter;
+    }
+    cout &lt;&lt; <font color=darkcyan>"総データ数 "</font> &lt;&lt; nData &lt;&lt; endl;
+}
+
+<font color=green>////////////////////////////////////////////////////////////////////////////////
+// 二分探索木操作関数</font>
+
+<font color=green>// 初期化</font>
+<font color=blue>static bool</font> InitNode(SNode* pNode, <font color=blue>const char</font>* key, <font color=blue>int</font> value)
+{
+    pNode-&gt;key = strdup(key);
+    <font color=blue>if</font>(key == NULL)
+        <font color=blue>return false</font>;
+    pNode-&gt;value = value;
+    pNode-&gt;pNext[<font color=darkcyan>0</font>] = NULL;
+    pNode-&gt;pNext[<font color=darkcyan>1</font>] = NULL;
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// ノードを探す</font>
+<font color=blue>static</font> SNode*&amp; TreeFindNode(SNode*&amp; pNode, <font color=blue>const char</font>* key)
+{
+    <font color=blue>if</font>(pNode == NULL)
+        <font color=blue>return</font> pNode;
+
+    <font color=blue>int</font> fComp = strcmp(pNode-&gt;key, key);
+    <font color=blue>if</font>(fComp == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> pNode;
+
+    <font color=blue>return</font> TreeFindNode(pNode-&gt;pNext[fComp &lt; <font color=darkcyan>0</font>], key);
+}
+
+<font color=green>// 全削除</font>
+<font color=blue>static void</font> TreeFree(SNode*&amp; pNode)
+{
+    <font color=blue>if</font>(pNode == NULL)
+        <font color=blue>return</font>;
+
+    TreeFree(pNode-&gt;pNext[<font color=darkcyan>0</font>]);
+    TreeFree(pNode-&gt;pNext[<font color=darkcyan>1</font>]);
+    <font color=blue>delete</font> pNode;
+    pNode = NULL;
+}
+
+<font color=green>// 二分探索木全体の表示</font>
+<font color=blue>static int</font> TreeDisp(SNode* pNode, <font color=blue>int</font> nDepth)
+{
+    <font color=blue>if</font>(pNode == NULL)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    <font color=blue>int</font> nData = <font color=darkcyan>1</font>;
+    nData += TreeDisp(pNode-&gt;pNext[<font color=darkcyan>0</font>], nDepth + <font color=darkcyan>1</font>);
+    cout &lt;&lt; setw(nDepth * <font color=darkcyan>2</font>) &lt;&lt; <font color=darkcyan>""</font> &lt;&lt; pNode-&gt;key &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; pNode-&gt;value &lt;&lt; endl;
+    nData += TreeDisp(pNode-&gt;pNext[<font color=darkcyan>1</font>], nDepth + <font color=darkcyan>1</font>);
+
+    <font color=blue>return</font> nData;
+}</pre></td></tr>
+
+<tr><th>Hash2.cpp</th></tr>
+
+<tr><td><pre><font color=green>// Hash2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Hash1.h"</font>
+
+<font color=green>// 基本操作</font>
+<font color=blue>static bool</font> AddData(SHash&amp; hash);   <font color=green>// データの追加</font>
+<font color=blue>static bool</font> FindData(SHash&amp; hash);  <font color=green>// データの検索</font>
+
+<font color=blue>int</font> main()
+{
+    SHash hash;
+
+    InitHash(hash);
+    <font color=blue>while</font>(AddData(hash));
+    <font color=blue>while</font>(FindData(hash));
+    HashDisp(hash);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>static bool</font> AddData(SHash&amp; hash)
+{
+    <font color=blue>char</font> key[<font color=darkcyan>1024</font>];
+    <font color=blue>int</font>  value;
+
+    cout &lt;&lt; <font color=darkcyan>"文字列と値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; key &gt;&gt; value;
+
+    <font color=blue>if</font>(strcmp(key, <font color=darkcyan>"q"</font>) == <font color=darkcyan>0</font> || value == HASH_UNUSED)
+        <font color=blue>return false</font>;
+
+    <font color=blue>return</font> HashAdd(hash, key, value);
+}
+
+<font color=blue>static bool</font> FindData(SHash&amp; hash)
+{
+    <font color=blue>char</font> key[<font color=darkcyan>1024</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"検索する文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; key;
+
+    <font color=blue>if</font>(strcmp(key, <font color=darkcyan>"q"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    <font color=blue>int</font> value = HashFind(hash, key);
+    <font color=blue>if</font>(value == HASH_UNUSED)
+        cout &lt;&lt; <font color=darkcyan>"見つかりません"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"値は "</font> &lt;&lt; value &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    <font color=blue>return true</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>文字列と値を入力して下さい &gt; Hash1.h 0
+文字列と値を入力して下さい &gt; #ifndef 1
+文字列と値を入力して下さい &gt; __HASH_H__INCLUDED__ 2
+文字列と値を入力して下さい &gt; #define 3
+文字列と値を入力して下さい &gt; const 4
+文字列と値を入力して下さい &gt; unsigned 5
+文字列と値を入力して下さい &gt; HASH_SIZE 6
+文字列と値を入力して下さい &gt; 11 7
+文字列と値を入力して下さい &gt; int 8
+文字列と値を入力して下さい &gt; HASH_UNUSED 9
+文字列と値を入力して下さい &gt; -1 10
+文字列と値を入力して下さい &gt; struct 11
+文字列と値を入力して下さい &gt; SNode 12
+文字列と値を入力して下さい &gt; char 13
+文字列と値を入力して下さい &gt; key 14
+文字列と値を入力して下さい &gt; value 15
+文字列と値を入力して下さい &gt; pNext[2] 16
+文字列と値を入力して下さい &gt; SHash 17
+文字列と値を入力して下さい &gt; pNode 18
+文字列と値を入力して下さい &gt; void 19
+文字列と値を入力して下さい &gt; InitHash 20
+文字列と値を入力して下さい &gt; hash 21
+文字列と値を入力して下さい &gt; HashFind 22
+文字列と値を入力して下さい &gt; bool 23
+文字列と値を入力して下さい &gt; HashAdd 24
+文字列と値を入力して下さい &gt; HashFree 25
+文字列と値を入力して下さい &gt; HashDisp 26
+文字列と値を入力して下さい &gt; #endif 27
+文字列と値を入力して下さい &gt; Hash1.cpp 28
+文字列と値を入力して下さい &gt; #include 29
+文字列と値を入力して下さい &gt; &lt;iostream.h&gt; 30
+文字列と値を入力して下さい &gt; &lt;iomanip.h&gt; 31
+文字列と値を入力して下さい &gt; &lt;string.h&gt; 32
+文字列と値を入力して下さい &gt; "Hash1.h" 33
+文字列と値を入力して下さい &gt; static 34
+文字列と値を入力して下さい &gt; HashFindNode 35
+文字列と値を入力して下さい &gt; InitNode 36
+文字列と値を入力して下さい &gt; TreeFindNode 37
+文字列と値を入力して下さい &gt; TreeFree 38
+文字列と値を入力して下さい &gt; TreeDisp 39
+文字列と値を入力して下さい &gt; nDepth 40
+文字列と値を入力して下さい &gt; for 41
+文字列と値を入力して下さい &gt; i 42
+文字列と値を入力して下さい &gt; hash.pNode[i] 43
+文字列と値を入力して下さい &gt; NULL 44
+文字列と値を入力して下さい &gt; nLen 45
+文字列と値を入力して下さい &gt; strlen 46
+文字列と値を入力して下さい &gt; return 47
+文字列と値を入力して下さい &gt; -- 48
+文字列と値を入力して下さい &gt; / 49
+文字列と値を入力して下さい &gt; ?: 50
+文字列と値を入力して下さい &gt; pNode-&gt;value 51
+文字列と値を入力して下さい &gt; != 52
+文字列と値を入力して下さい &gt; false 53
+文字列と値を入力して下さい &gt; delete 54
+文字列と値を入力して下さい &gt; true 55
+文字列と値を入力して下さい &gt; cout 56
+文字列と値を入力して下さい &gt; &lt;&lt; 57
+文字列と値を入力して下さい &gt; endl 58
+文字列と値を入力して下さい &gt; nDataNode 59
+文字列と値を入力して下さい &gt; nData 60
+文字列と値を入力して下さい &gt; letter 61
+文字列と値を入力して下さい &gt; cin 62
+文字列と値を入力して下さい &gt; &gt;&gt; 63
+文字列と値を入力して下さい &gt; strdup 64
+文字列と値を入力して下さい &gt; if 65
+文字列と値を入力して下さい &gt; fComp 66
+文字列と値を入力して下さい &gt; strcmp 67
+文字列と値を入力して下さい &gt; new 68
+文字列と値を入力して下さい &gt; setw 69
+文字列と値を入力して下さい &gt; Hash2.cpp 70
+文字列と値を入力して下さい &gt; AddData 71
+文字列と値を入力して下さい &gt; FindData 72
+文字列と値を入力して下さい &gt; main 73
+文字列と値を入力して下さい &gt; 1024 74
+文字列と値を入力して下さい &gt; "q" 75
+文字列と値を入力して下さい &gt; ハッシュ法のテストプログラム 76
+文字列と値を入力して下さい &gt; ハッシュ表のサイズ（素数） 77
+文字列と値を入力して下さい &gt; ハッシュに登録しない値 78
+文字列と値を入力して下さい &gt; 二分探索木のノード 79
+文字列と値を入力して下さい &gt; ハッシュ 80
+文字列と値を入力して下さい &gt; 初期化 81
+文字列と値を入力して下さい &gt; データを検索 82
+文字列と値を入力して下さい &gt; データを追加 83
+文字列と値を入力して下さい &gt; 全削除 84
+文字列と値を入力して下さい &gt; データ全体を表示 85
+文字列と値を入力して下さい &gt; 関数のプロトタイプ宣言 86
+文字列と値を入力して下さい &gt; ハッシュ法のルーチン 87
+文字列と値を入力して下さい &gt; ハッシュ関数 88
+文字列と値を入力して下さい &gt; データを検索（ノードを返す） 89
+文字列と値を入力して下さい &gt; 二分探索木操作関数 90
+文字列と値を入力して下さい &gt; ノードを探す 91
+文字列と値を入力して下さい &gt; 二分探索木全体の表示 92
+文字列と値を入力して下さい &gt; 先頭と最後と中央の文字コードの合計 93
+文字列と値を入力して下さい &gt; 割った余りを返します 94
+文字列と値を入力して下さい &gt; データの総数 95
+文字列と値を入力して下さい &gt; 基本操作 96
+文字列と値を入力して下さい &gt; データの追加 97
+文字列と値を入力して下さい &gt; データの検索 98
+文字列と値を入力して下さい &gt; 最後の追加要素 99
+文字列と値を入力して下さい &gt; q -1
+検索する文字列を入力して下さい &gt; value
+値は 15 です。
+検索する文字列を入力して下さい &gt; int
+値は 8 です。
+検索する文字列を入力して下さい &gt; ハッシュ関数
+値は 88 です。
+検索する文字列を入力して下さい &gt; letter
+値は 61 です。
+検索する文字列を入力して下さい &gt; cin
+値は 62 です。
+検索する文字列を入力して下さい &gt; &gt;&gt;
+値は 63 です。
+検索する文字列を入力して下さい &gt; SHash
+値は 17 です。
+検索する文字列を入力して下さい &gt; FindData
+値は 72 です。
+検索する文字列を入力して下さい &gt; #include
+値は 29 です。
+検索する文字列を入力して下さい &gt; "q"
+値は 75 です。
+検索する文字列を入力して下さい &gt; double
+見つかりません
+検索する文字列を入力して下さい &gt; ハッシュ
+値は 80 です。
+検索する文字列を入力して下さい &gt; 全削除
+値は 84 です。
+検索する文字列を入力して下さい &gt; delete
+値は 54 です。
+検索する文字列を入力して下さい &gt; while
+見つかりません
+検索する文字列を入力して下さい &gt; new
+値は 68 です。
+検索する文字列を入力して下さい &gt; Hash1.h
+値は 0 です。
+検索する文字列を入力して下さい &gt; &lt;iostream.h&gt;
+値は 30 です。
+検索する文字列を入力して下さい &gt; q
+ハッシュ値 0
+  TreeDisp : 39
+TreeFree : 38
+    endl : 58
+  hash.pNode[i] : 43
+    nDataNode : 59
+          new : 68
+        strcmp : 67
+      strdup : 64
+        ハッシュ関数 : 88
+            基本操作 : 96
+          二分探索木操作関数 : 90
+データ数 11
+n
+ハッシュ値 1
+      &lt;iomanip.h&gt; : 31
+    HashAdd : 24
+  HashFind : 22
+    delete : 54
+int : 8
+  true : 55
+    初期化 : 81
+データ数 7
+n
+ハッシュ値 2
+    Hash1.cpp : 28
+  HashDisp : 26
+HashFree : 25
+  最後の追加要素 : 99
+データ数 4
+n
+ハッシュ値 3
+      -- : 48
+          FindData : 72
+        Hash2.cpp : 70
+    HashFindNode : 35
+      false : 53
+  static : 34
+unsigned : 5
+  ハッシュ表のサイズ（素数） : 77
+      関数のプロトタイプ宣言 : 86
+    二分探索木のノード : 79
+データ数 10
+n
+ハッシュ値 4
+  #include : 29
+11 : 7
+      &lt;&lt; : 57
+    InitNode : 36
+      TreeFindNode : 37
+        if : 65
+  struct : 11
+    データ全体を表示 : 85
+データ数 8
+n
+ハッシュ値 5
+      "q" : 75
+    #endif : 27
+  #ifndef : 1
+      &lt;iostream.h&gt; : 30
+    HASH_SIZE : 6
+      HASH_UNUSED : 9
+Hash1.h : 0
+  pNode : 18
+    pNode-&gt;value : 51
+      setw : 69
+        先頭と最後と中央の文字コードの合計 : 93
+データ数 11
+n
+ハッシュ値 6
+  != : 52
+      1024 : 74
+    cin : 62
+const : 4
+    fComp : 66
+  pNext[2] : 16
+        データの検索 : 98
+      データを検索 : 82
+    ハッシュ法のテストプログラム : 76
+データ数 9
+n
+ハッシュ値 7
+  "Hash1.h" : 33
+#define : 3
+  -1 : 10
+      &lt;string.h&gt; : 32
+    InitHash : 20
+          cout : 56
+        i : 42
+          nData : 60
+      nDepth : 40
+        二分探索木全体の表示 : 92
+データ数 10
+n
+ハッシュ値 8
+        ?: : 50
+      NULL : 44
+    for : 41
+  hash : 21
+    letter : 61
+      main : 73
+value : 15
+    データの総数 : 95
+  ハッシュ : 80
+    全削除 : 84
+データ数 10
+n
+ハッシュ値 9
+    / : 49
+  SHash : 17
+SNode : 12
+    bool : 23
+  char : 13
+    strlen : 46
+          データの追加 : 97
+        データを検索（ノードを返す） : 89
+      データを追加 : 83
+        ノードを探す : 91
+          割った余りを返します : 94
+データ数 11
+n
+ハッシュ値 10
+  &gt;&gt; : 63
+    AddData : 71
+__HASH_H__INCLUDED__ : 2
+  key : 14
+      nLen : 45
+        return : 47
+    void : 19
+      ハッシュに登録しない値 : 78
+        ハッシュ法のルーチン : 87
+データ数 9
+n
+総データ数 100</pre></td></tr>
+
+</table></center>
+
+<hr>
+
+<p align=right><font size=-1><i>Last update was done on 2001.2.13</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

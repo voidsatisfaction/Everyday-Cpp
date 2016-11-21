@@ -1,0 +1,157 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４１章 変えてくれるな -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４１章　変えてくれるな</font>
+</center>
+<hr>
+
+<p>　いろいろプログラムを組むようになると、中には値の変わって欲しくないようなデータもでてきます。今回はそんな値を保護するシステムについて話していきます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>定数は値を変更できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さぁ、ある関数に配列変数を渡すとします。でも、この配列には手を加えることはしません。その値を使って何らかの作業をするだけです。</p>
+
+<p>　しかし、人とは時に過ちを犯すものです。ついついこの配列の中身を変更するような<a href="../HTMLWORD/WORDS017.html" target="words">コード</a>を書いてしまうこともあるのです。</p>
+
+<p>　例えば、次のような関数は危ないですね。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Const01a.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> strcnt(<font color=blue>char</font>* psz, <font color=blue>int</font> letter)
+{
+    <font color=blue>int</font> num;
+    <font color=blue>for</font>(num = <font color=darkcyan>0</font>; *psz; psz++)
+    {
+        <font color=blue>if</font>(*psz = letter)
+            num++;
+    }
+    <font color=blue>return</font> num;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> szPath[] = <font color=darkcyan>"C:/Program Files/Robert/BH/BH.exe"</font>;
+
+    printf(<font color=darkcyan>"ファイル %s は、%d 重のフォルダの中に入っています。"</font>,
+        szPath, strcnt(szPath, <font color=darkcyan>'/'</font>) - <font color=darkcyan>1</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+<tr><th>実行結果例</th></tr>
+<tr><td><pre>ファイル ///////////////////////////////// は、32 重のフォルダの中に入っています。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　strcnt は、第一引数の文字列の中に第二引数の文字がいくつ含まれているかを数える関数です。いや、そのつもりでした。</p>
+
+<p>　何のビルドエラーも出なかったので安心して実行ボタンを押したものの、結果はこの通りです。数え間違えくらいなら大した問題ではありませんが、元の配列が書き換えられているのは大問題です。</p>
+
+<p>　では、どこに原因があったのでしょうか。それはこの部分です。</p>
+
+<pre>if(*psz <font color=red>=</font> letter)</pre>
+
+<p>　この部分を</p>
+
+<pre>if(*psz <font color=red>==</font> letter)</pre>
+
+<p>　にすれば正しく動作します。</p>
+
+<hr>
+
+<p>　このように、関数に配列を渡すときは本体を渡すことになるので、ミスによる書き換えといった危険が伴ってしまいます。おちおちミスもできません。そしてもちろん、このことは配列に限ったことではありません。</p>
+
+<p>　そこで、Ｃ／Ｃ＋＋言語には変数の中身を変更できないようにする機能が備わっています。それは、<font color=red>定数</font>です。</p>
+
+<p>　次のプログラムを見て下さい。変更した箇所は一ヶ所だけです。そこは = のところではなく、引数の部分です。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Const01b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> strcnt(<font color=red>const</font> <font color=blue>char</font>* psz, <font color=blue>int</font> letter)
+{
+    <font color=blue>int</font> num;
+    <font color=blue>for</font>(num = <font color=darkcyan>0</font>; *psz; psz++)
+    {
+        <font color=blue>if</font>(*psz = letter)
+            num++;
+    }
+    <font color=blue>return</font> num;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> szPath[] = <font color=darkcyan>"C:/Program Files/Robert/BH/BH.exe"</font>;
+
+    printf(<font color=darkcyan>"ファイル %s は、%d 重のフォルダの中に入っています。"</font>,
+        szPath, strcnt(szPath, <font color=darkcyan>'/'</font>) - <font color=darkcyan>1</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+<tr><th>エラーメッセージ</th></tr>
+<tr><td><pre>Const01b.cpp(9) : error C2166: 左辺値は const オブジェクトに指定されています。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　このように、<font color=red>const</font> の付けられた変数の中身を変更しようとすると、コンパイラに怒られてしまいます。const を付けると変数でなく<font color=red>定数</font>になるのです。</p>
+
+<p>　ポインタを、配列を扱う際にはこの const を使う必要があるか常に考えておく癖を付けておくとよいでしょう。そうすれば、== と = の間違いなどというミスからも解放されるでしょう。もっとも、const の付け忘れにまでは責任は持てませんが...。</p>
+
+<hr>
+
+<p>　一度に沢山教えても身に付かないと思いますので、今回はこれで終わります。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>定数は値を変更できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も定数についてやっていきたいと思います。定数はアドレスを渡す関数に関するバグを追放するための強力な武器ですので、是非早い段階から身につけておいて下さい。</p>
+
+<p>　では、また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01040.html" target="main">第４０章　さらなる計算</a> | <a href="cpp01042.html" target="main">第４２章　変えてくれるな２</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.10.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

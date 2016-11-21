@@ -1,0 +1,247 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２９章 たのしいソート６ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２９章　たのしいソート６</font>
+</center>
+<hr>
+
+<p>　今回のソート法は非常に限定的です。しかし、頭の片隅に置いておくと意外なところで役に立つかもしれませんよ。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>各数値の数を数えて、その数だけその数値を展開すればソートできる。</li>
+<li>これを分布数えソートと呼ぶ。</li>
+<li>データの種類が限られている時にしか有効に利用できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回のソート法は今までのソート法とは少し違います。今までのソート法はデータを交換していきました。が、今回のソート法には<font color=red>データの交換は全くありません</font>。</p>
+
+<p>　では、どんなソート法なのでしょうか？</p>
+
+<p>　先ず、<font color=red>どのデータが何個あるか</font>を調べます。そして、<font color=red>データを小さいものからその個数だけ配列に書き込んでいきます</font>。すると、もうソートができています。これを<font color=red>分布数えソート</font>と呼びます。</p>
+
+<p>　と、説明速すぎますね。では、図でも見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0302901.gif" alt="分布数えソート"></td></tr>
+
+<tr><th>図．１　分布数えソート</th></tr>
+
+</table></center>
+
+<p>　先ず、データが０〜３の値しかとらないとします。そして、０〜３のデータがそれぞれ何個あるかを数えていきます。上の配列では、０は４個、１は２個、２は３個、３は２個です。</p>
+
+<p>　そして、元の配列に０を４個、１を２個、２を３個、３を２個書き出せば、ソートが完了します。</p>
+
+<p>　何か騙されたようですが、間違いなくソートできます。そして、いろいろ面倒なことをしないので、数あるソート法の中でも<font color=red>最も速いソート法</font>となります。データが０〜２５５しかない１００万要素の乱数列を、わずか０．２秒でソートしてしまいます（ＭＭＸペンティアム３００ＭＨｚ）。同じデータをクイックソートでソートしたところ、１．６秒かかりました。</p>
+
+<p><br></p>
+
+<p>　これを<font color=red>構造体の１メンバを使ったソートに応用することもできます</font>。しかし、ソートする配列と同じ大きさのバッファを必要とします。</p>
+
+<p>　例えば上の例を使うと、０は１〜４番目に、１は５〜６番目に、２は７〜９番目に、３は１０〜１１番目に来ますね。各組の最後が何番目かは、<font color=red>上で数えた個数を順に足していけば分かります</font>。０の個数を１の個数を足すと６で、１の組の最後の位置になります。そして、この６を２の個数と足すと９になり、２の組の最後に位置になります。これを数えるのに使ったバッファ上で計算します。</p>
+
+<p>　要素をどの位置にもっていったらソートできるかが分かったので、あとはこの情報を元にソートすることができます。しかし、元の配列を上書きしながらソートすることはできません。一旦バッファへソートして、それから一括して元の配列に上書きすることになります。</p>
+
+<p>　では、例を見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort8.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+
+<font color=blue>struct</font> SData  <font color=green>// データ</font>
+{
+    <font color=blue>int</font> nKey1;
+    <font color=blue>int</font> nKey2;
+};
+
+<font color=blue>const int</font> DATA_SIZE  = <font color=darkcyan>64</font>;   <font color=green>// データの個数</font>
+<font color=blue>const int</font> DATA_MAX   = <font color=darkcyan>200</font>;  <font color=green>// データの最大値</font>
+<font color=blue>const int</font> DATA_MIN   = <font color=darkcyan>100</font>;  <font color=green>// データの最小値</font>
+<font color=blue>const int</font> DATA_KINDS = (DATA_MAX - DATA_MIN + <font color=darkcyan>1</font>);  <font color=green>// データの種類数</font>
+
+SData  g_adata[DATA_SIZE];   <font color=green>// 元データ</font>
+SData* g_apdata[DATA_SIZE];  <font color=green>// データへのポインタ</font>
+
+<font color=green>// データを設定する</font>
+<font color=blue>void</font> SetData()
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; DATA_SIZE; i++)
+    {
+        g_adata[i].nKey1 = rand() % DATA_KINDS + DATA_MIN;
+        g_adata[i].nKey2 = rand() % DATA_KINDS + DATA_MIN;
+        g_apdata[i] = &amp;g_adata[i];
+    }
+}
+
+<font color=green>// データを表示する</font>
+<font color=blue>void</font> DispData()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; DATA_SIZE; i++)
+        printf(<font color=darkcyan>"(%d, %d)"</font>, g_apdata[i]-&gt;nKey1, g_apdata[i]-&gt;nKey2);
+    putchar(<font color=darkcyan>'\n'</font>);
+}
+
+<font color=green>// 分布数えソート
+// bKey1 が true  の時は nKey1 を使ってソート
+// bKey1 が false の時は nKey2 を使ってソート</font>
+<font color=blue>void</font> DCSort(<font color=blue>bool</font> bKey1)
+{
+    SData* apdataTemp[DATA_SIZE];  <font color=green>// ソートのためのバッファ</font>
+    <font color=blue>int</font>    anCount[DATA_KINDS];      <font color=green>// 勘定のためのバッファ</font>
+    <font color=blue>int</font>    nKey;  <font color=green>// キー</font>
+    <font color=blue>int</font>    i;
+
+    <font color=green>// 分布を数える</font>
+    memset(anCount, <font color=darkcyan>0</font>, <font color=blue>sizeof</font> anCount);
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; DATA_SIZE; i++)
+    {
+        nKey = bKey1 ? g_apdata[i]-&gt;nKey1 : g_apdata[i]-&gt;nKey2;
+        anCount[nKey - DATA_MIN]++;
+    }
+    <font color=green>// 各組の最後の要素の位置を計算</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>1</font>; i &lt; DATA_KINDS; i++)
+        anCount[i] += anCount[i - <font color=darkcyan>1</font>];
+
+    <font color=green>// ソート</font>
+    <font color=blue>for</font>(i = DATA_SIZE - <font color=darkcyan>1</font>; i &gt;= <font color=darkcyan>0</font>; i--)
+    {
+        nKey = bKey1 ? g_apdata[i]-&gt;nKey1 : g_apdata[i]-&gt;nKey2;
+        apdataTemp[anCount[nKey - DATA_MIN] - <font color=darkcyan>1</font>] = g_apdata[i];
+        anCount[nKey - DATA_MIN]--;
+    }
+    <font color=green>// 結果をコピー</font>
+    memcpy(g_apdata, apdataTemp, DATA_SIZE * <font color=blue>sizeof</font> *g_apdata);
+}
+
+<font color=blue>int</font> main()
+{
+    SetData();
+
+    DCSort(<font color=blue>false</font>);  <font color=green>// 先に nKey2 でソートして</font>
+    DispData();
+
+    DCSort(<font color=blue>true</font>);   <font color=green>// 次に nKey1 でソートする</font>
+    DispData();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>(174, 100)(117, 103)(195, 105)(186, 107)(186, 108)(194, 111)(183, 111)(152, 113)
+(151, 115)(199, 118)(177, 118)(112, 119)(121, 120)(196, 122)(134, 122)(171, 123)
+(166, 124)(125, 124)(171, 124)(174, 124)(183, 125)(149, 131)(139, 132)(180, 132)
+(112, 133)(139, 133)(192, 135)(172, 138)(113, 139)(137, 145)(194, 148)(147, 149)
+(164, 152)(171, 152)(151, 154)(146, 157)(149, 159)(171, 160)(190, 160)(151, 161)
+(172, 161)(159, 162)(133, 163)(194, 165)(160, 165)(149, 167)(165, 168)(180, 169)
+(175, 170)(195, 171)(157, 171)(108, 172)(119, 176)(102, 178)(180, 183)(139, 184)
+(158, 184)(141, 185)(163, 187)(158, 194)(167, 197)(123, 199)(129, 199)(135, 199)
+
+(102, 178)(108, 172)(112, 119)(112, 133)(113, 139)(117, 103)(119, 176)(121, 120)
+(123, 199)(125, 124)(129, 199)(133, 163)(134, 122)(135, 199)(137, 145)(139, 132)
+(139, 133)(139, 184)(141, 185)(146, 157)(147, 149)<font color=red>(149, 131)(149, 159)(149, 167)</font>
+<font color=orange>(151, 115)(151, 154)(151, 161)</font>(152, 113)(157, 171)(158, 184)(158, 194)(159, 162)
+(160, 165)(163, 187)(164, 152)(165, 168)(166, 124)(167, 197)<font color=blue>(171, 123)(171, 124)
+(171, 152)(171, 160)</font>(172, 138)(172, 161)(174, 100)(174, 124)(175, 170)(177, 118)
+(180, 132)(180, 169)(180, 183)(183, 111)(183, 125)(186, 107)(186, 108)(190, 160)
+(192, 135)(194, 111)(194, 148)(194, 165)(195, 105)(195, 171)(196, 122)(199, 118)</pre></td></tr>
+
+</table></center>
+
+<p>　分布数えソートのいいところは、<font color=red>同じ値の要素の位置関係が保たれる</font>所です。このような性質を<font color=red>安定である</font>と呼びます。これは高速なソート法であるクイックソート、シェルソートにはない特色です（ただし、バブルソートなど、低速なソート法は大抵安定です）。</p>
+
+<p>　例えば、上の赤、橙、青で色付けられたところを見て下さい。先に nKey2 でソートしているので、nKey1 でソートした後でも nKey2 の大小関係が保存されています。他の所もそうなっているはずです。高速で、なおかつ安定なソート法。それが分布数えソートなのです。</p>
+
+<hr>
+
+<p>　それでは、何故このソート法が広く使われないのでしょうか？　それは、この<font color=red>ソート法の適用範囲が限定されている</font>からです。</p>
+
+<p><br></p>
+
+<p>　先ず、<font color=red>データの種類数が決まっていなければいけません</font>。数を数えるのに使うバッファのサイズが決まっていなければならない、という制約があるからです。バッファのサイズはデータの種類数だけ必要ですね。動的に確保することもできますが、それでは遅くなってしまいます。</p>
+
+<p>　上の配列では「データが０〜３しかない」と限定されています。すると、各データの個数を数えるために</p>
+
+<pre>int nCount[4];</pre>
+
+<p>という変数を作ることになります。データが０〜９９９なら</p>
+
+<pre>int nCount[1000];</pre>
+
+<p>となります。</p>
+
+<p><br></p>
+
+<p>　そして、ここで分かるように<font color=red>データの種類が多すぎると問題があります</font>。</p>
+
+<p>　例えば、int のとりうる値全てをとるとすると、種類が多すぎてバッファを作ることができません。それでなくても、あまりに種類が多いとデータを展開するときに時間がかかりすぎます。小さい配列であれば、単調にデータをソートした方が速くなってしまうでしょう。</p>
+
+<p><br></p>
+
+<p>　ということで、分布数えソートは限定的にしか使えません。しかし、もし使えるところがあれば、その性能をいかんなく発揮してくれることでしょう。使う機会は少ないかも知れませんが、頭の片隅にでも置いておいてはどうでしょうか？</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>各数値の数を数えて、その数だけその数値を展開すればソートできる。</li>
+<li>これを分布数えソートと呼ぶ。</li>
+<li>データの種類が限られている時にしか有効に利用できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<hr>
+
+<p>　これでソートは終わりです。<font color=red>ヒープソート</font>、<font color=red>マージソート</font>など、他にもソート法はありますが、これ以上話すのもくどいので軽く話して終わりにします。</p>
+
+<p>　ヒープソートは<font color=red>速度が安定している</font>という特徴があります。同じサイズの配列のソートにかかる時間は一定という性質があります。速度の大きさよりもその安定性を重視したいときは、クイックソートよりはヒープソートの方が適していると言えます。</p>
+
+<p>　ただ、アルゴリズムは若干難解です。<a href="http://www.people.or.jp/~fussy/" target="_blank">Fussy さんのＨＰ</a>で詳しく解説されているので、そちらを参考にしてみてはいかがでしょうか？</p>
+
+<p>　マージソートはデータを２つずつの組に分割し、それをそれぞれソートし、それを合成していくことでソートを行います。合成するときは、２つのデータの先頭を見て小さいものから書き出していきます。</p>
+
+<p>　確かに高速なのですが、マージソートは<font color=red>データと同じサイズのバッファを必要とする</font>のが欠点です。データサイズが限られているような配列のソートに使うといいでしょう。</p>
+
+<hr>
+
+<p>　次回は数値検索をやってみたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03028.html" target="main">第２８章　たのしいソート５</a> | <a href="cpp03030.html" target="main">第３０章　高速探索</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.10.23</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

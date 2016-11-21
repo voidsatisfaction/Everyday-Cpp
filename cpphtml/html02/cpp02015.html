@@ -1,0 +1,195 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１５章 アップキャスト -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１５章　アップキャスト</font>
+</center>
+<hr>
+
+<p>　今回は継承を使ったクラスを関数に渡してみたいと思います。「何だ、それだけか」と思われるかもしれませんが、それだけじゃないんです、これが。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>基底クラスへのポインタ、参照には派生クラスのオブジェクトが渡せる。</li>
+<li>仮想関数は、その大元のオブジェクトの型のものが呼ばれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は、ファイルを開く部分を別の関数（メンバ関数ではありません）にしたいと思います。ファイル名を入力し、そのファイルを開くという関数です。</p>
+
+<p>　この際渡す引数は、やはり CFile もしくは CTextFile のオブジェクトです。ということで、早速やってみたいと思います。</p>
+
+<center><table border=1>
+
+<tr><td valign=top><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>bool</font> Open(CFile&amp; rfile, <font color=blue>const char</font>* pszFlags)
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"ファイル名を指定して下さい &gt; "</font> &gt;&gt; flush;
+    cin &gt;&gt; buffer;
+    <font color=blue>return</font> rfile.Open(buffer, pszFlags);
+}
+
+<font color=blue>bool</font> Open(CTextFile&amp; rfile, <font color=blue>const char</font>* pszFlags)
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"ファイル名を指定して下さい &gt; "</font> &gt;&gt; flush;
+    cin &gt;&gt; buffer;
+    <font color=blue>return</font> rfile.Open(buffer, pszFlags);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　型が違うからこうしたのですが...何というか、不経済ですね。</p>
+
+<p>　そういえば<a href="cpp02011.html" target="main">第１１章</a>で、「派生クラスは基底クラスのメンバを全て持っている」と言いました。なら、<font color=red>派生クラスのオブジェクトを基底クラスへの参照に渡しても、動作に問題はなさそうです</font>。基底クラスのメンバは全て持っているわけだから、データが多いことはあっても、足りないことはないはずです。</p>
+
+<p>　そして、Open 関数は CFile のものを使っているので、その呼び出しに問題はないはずです。</p>
+
+<p>　というわけで、CTextFile への参照をとる関数は消して、CFile への参照をとる関数だけを残しましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"MainDefs.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>bool</font> Open(CFile&amp; rfile, <font color=blue>const char</font>* pszFlags)
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"ファイル名を指定して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+    <font color=blue>return</font> rfile.Open(buffer, pszFlags);
+}
+
+<font color=blue>void</font> Write(CTextFile&amp; rtxt)
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"何を書き込みますか &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+    rtxt.WriteString(buffer);
+}
+
+<font color=blue>void</font> Load(CFile&amp; rbin)
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+    <font color=blue>int</font>  nRead;
+
+    nRead = rbin.Read(buffer, numof(buffer));
+    buffer[nRead] = <font color=darkcyan>0</font>;
+    cout &lt;&lt; buffer &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CFile     bin;
+    CTextFile txt;
+
+    <font color=blue>if</font>(Open(txt, <font color=darkcyan>"w"</font>) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    Write(txt);
+    txt.Close();
+
+    <font color=blue>if</font>(Open(bin, <font color=darkcyan>"r"</font>) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    Load(bin);
+    bin.Close();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>ファイル名を指定して下さい > Test.txt
+CFile::Open
+CTextFile::ModifyFlags
+何を書き込みますか > ペペロンチーノ
+ファイル名を指定して下さい > Test.txt
+CFile::Open
+CFile::ModifyFlags
+ペペロンチーノ</pre></td></tr>
+
+</table></center>
+
+<p>　おお、きちんと動きました。<font color=red>CTextFile の ModifyFlags</font> が呼ばれています。</p>
+
+<p>　このように、<font color=red>派生クラスのオブジェクトを基底クラスへの参照、ポインタに対して渡すことは可能</font>です。このことを<font color=red>アップキャスト</font>と言います。</p>
+
+<hr>
+
+<p>　しかし、ちょっと待って下さい。そういえば<font color=red>仮想関数</font>を使っていましたね。これって何か影響あるんでしょうか？</p>
+
+<p>　では、<font color=red>virtual を消して</font>もう一度やってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>ファイル名を指定して下さい > Test.txt
+CFile::Open
+CFile::ModifyFlags
+何を書き込みますか > ペスカトーレ
+ファイル名を指定して下さい > Test.txt
+CFile::Open
+CFile::ModifyFlags
+ペスカトーレ</pre></td></tr>
+
+</table></center>
+
+<p>　今度は <font color=red>CFile の ModifyFlags</font> が呼ばれてしまいました。</p>
+
+<p>　これは前回と同じ状況ですね。<font color=red>CFile の参照から呼ばれたから CFile の ModifyFlags が呼ばれた</font>のです。そして、それを回避し、オブジェクトの<font color=red>本当の型</font>に対する ModifyFlags を呼ぶために<font color=red>仮想関数</font>を使うわけです。</p>
+
+<hr>
+
+<p>　最後にもう一度仮想関数についてまとめます。</p>
+
+<p>　<font color=red>普通</font>は、<font color=red>呼び出すときに使った型に対応する関数</font>が呼ばれます。しかし、<font color=red>仮想関数</font>にしていれば、そのオブジェクトの<font color=red>本当の型に対応する関数</font>が呼ばれるのです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>基底クラスへのポインタ、参照には派生クラスのオブジェクトが渡せる。</li>
+<li>仮想関数は、その大元のオブジェクトの型のものが呼ばれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02014.html" target="main">第１４章　仮想関数</a> | <a href="cpp02016.html" target="main">第１６章　派生と構築</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.21</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

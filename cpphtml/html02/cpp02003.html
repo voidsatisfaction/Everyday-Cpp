@@ -1,0 +1,128 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３章 コンストラクタ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３章　コンストラクタ</font>
+</center>
+<hr>
+
+<p>　前回、前々回ではオブジェクトの初期化を構造体と同じようにしていました。しかし、これは本来は<font color=red>やるべきでない</font>ものです。クラスにはクラスなりの初期化の仕方があるのです。今回はその「初期化の仕方」についてのお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メンバ変数の初期化はコンストラクタで行う。</li>
+<li>コンストラクタはクラス名と同じ名前の、戻り値なしの関数である。</li>
+<li>コンストラクタはオブジェクトを作るときに呼ばれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、クラスを作りました。そして、次はそのオブジェクトを作るとします。</p>
+
+<pre>SStudent student;</pre>
+
+<p>　このとき、これだけでは student の中身には何が入っているか分かりませんね。これは int i; などのときと同じことです。</p>
+
+<p>　クラスの実体のことを「オブジェクト」というのは、クラスの実体を「物」にたとえているからでした。しかし、何が入っているか分からないというのに、それを「オブジェクト」と呼ぶのは何か納得がいきませんね。メンバ変数はその「物」の特徴といえます。その特徴が訳の分からないままというのは困りものです。</p>
+
+<p>　そこで、SStudent student; と書いただけで変数の初期化をしてくれるようにできるのです。わざわざ student.Init(); などと自分で関数を呼ばなくていいのです。</p>
+
+<p>　その初期化を行うには<font color=red>特殊なメンバ関数</font>を使います。それを<font color=red>コンストラクタ</font>と呼びます。<font color=red>SStudent student; と書くと、勝手にこの「コンストラクタ」が呼ばれるのです。</font></p>
+
+<p>　コンストラクタは<font color=red>クラス名と同じ名前のメンバ関数</font>で、<font color=red>戻り値がありません</font>。これは戻り値の型が void であるというのではなく、<font color=red>戻り値の型すらないのです</font>。</p>
+
+<p>　まぁ、言葉だけで説明してもピンとこないので、実際にプログラムを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Cstruct1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CInt
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> m_num;
+
+    CInt();
+    <font color=blue>void</font> Disp();
+};
+
+<font color=green>// コンストラクタ</font>
+CInt::CInt()
+{
+    m_num = <font color=darkcyan>0</font>;
+}
+
+<font color=green>// メンバ変数の表示</font>
+<font color=blue>void</font> CInt::Disp()
+{
+    cout &lt;&lt; m_num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CInt a, b, c, d;
+
+    a.Disp();
+    b.Disp();
+    c.Disp();
+    d.Disp();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>0
+0
+0
+0</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　CInt というメンバ関数がコンストラクタです。<font color=red>名前はクラス名と同じ</font>ですね。そして、<font color=red>戻り値の型を書くべき所には何も書いてない</font>ですね。その動作は、ここでは m_num メンバの値を０に初期化するようにしています。</p>
+
+<p>　そして、いくらオブジェクトを作っても Disp 関数で表示されるのは０です。a, b, c, d のどのオブジェクトも、メンバ変数 m_num が０で初期化されていることが分かります。このコンストラクタの m_num = 0; の文を<a href="../htmlword/words025.html" target="words">コメントアウト</a>してみて下さい。変な値が表示されるようになると思います。</p>
+
+<p>　コンストラクタは<font color=red>メンバ変数の値を保証するための機構</font>のうちの１つです。クラスの色々な機能も、このことを頭に入れておくと理解しやすいと思います。これらの機構をフルに使えば、「変な値が入ってたから動作がおかしくなった」というバグを極力減らすことができるでしょう。</p>
+
+<hr>
+
+<p>　短いですが、今回はこれで終わりです。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メンバ変数の初期化はコンストラクタで行う。</li>
+<li>コンストラクタはクラス名と同じ名前の、戻り値なしの関数である。</li>
+<li>コンストラクタはオブジェクトを作るときに呼ばれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は、引数付きのコンストラクタについてやろうと思います。それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02002.html" target="main">第２章　メンバ</a> | <a href="cpp02004.html" target="main">第４章　引数付きの構築</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

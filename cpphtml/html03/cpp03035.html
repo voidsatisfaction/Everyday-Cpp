@@ -1,0 +1,362 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３５章 大樹の如く２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３５章　大樹の如く２</font>
+</center>
+<hr>
+
+<p>　前回の予告通り、今回は二分探索木というものについて話します。さて、これは一体何なのでしょうか？</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>比較しつつ木を進み、その端に要素を追加したものが二分探索木。</li>
+<li>一般に、二分探索木は高速に要素を探し当てることができる。</li>
+<li>ソートされた順番で要素を追加するとパフォーマンスが落ちる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は<font color=red>二分探索木</font>のお話です。二分探索木という名前から予測がつくように、これは<font color=red>二分木の一種</font>です。</p>
+
+<p>　簡単に言うとどんなものかというと、<font color=red>ある要素を簡単に探し出すことができる二分木</font>です。どういう風にすれば実現できるでしょうか？　ちょっと考えながら話を進めてみましょう。</p>
+
+<p>　ある要素を簡単に探すといえば、<font color=red>二分探索</font>（<a href="cpp03030.html" target="main">第３０章</a>参照）が先ず思い浮かびます。これをヒントに考えていくとしましょう。</p>
+
+<p>　先ず、二分探索では配列を<font color=red>ソート</font>します。そして、真ん中の要素（厳密にはど真ん中である必要はありません）の値と探したい値とを<font color=red>比較</font>します。で、<font color=red>大きいか小さいかで次に探査する場所を決めます</font>。そして、等しくなるまでこれを続けるというものでした。</p>
+
+<p>　二分探索の重要な部分は「ソートされた配列を使う」ということと、「比較を利用する」というところです。この部分を二分木に適用してみましょう。</p>
+
+<p>　先ず、「比較」を利用してみましょう。二分木のノードは、次の要素２つだけ持っています。そう、２つです。ということは、<font color=red>そのノードにある値と探したい値とを比較して、大きければ右、小さければ左へ行く</font>ということができそうです。木が変に偏った形をしていなければ、この探し方ができればどの要素も安定した速度で見つかるはずです。</p>
+
+<p>　では、この探し方のできる二分木に要求される特徴は、<font color=red>あるノードの右の子以降にはそのノードの値よりも大きい値しか入ってなく、左の子以降にはそのノードの値よりも小さい値しか入っていない</font>ことです。これは「配列がソートされている」という状態に対応していると考えることができます。</p>
+
+<p>　このような、いわゆる「ソートされた」二分木を作るのはとても簡単です。<font color=red>探すときと同じ事をして、その最後に要素を追加すればいいだけ</font>です。つまり、そのノードにある値と追加したい値とを比較して、大きければ右、小さければ左へ行き、ノードのない部分に到達したらそこにノードを追加すればいいということです。</p>
+
+<p>　こういう風に作った二分木は「ソートされた」二分木となり、「比較を使って」簡単にある値を持つノードを探し当てることができます。これが<font color=red>二分探索木</font>です。</p>
+
+<hr>
+
+<p>　文だけでは何なので、ちょっと例を見てみましょう。</p>
+
+<table align=left border=1>
+
+<tr><td><img src="images/0303501.gif" width=115 height=85 alt="３"></td></tr>
+
+</table>
+
+<p>　先ず、二分木に値３を追加します。左の図のような感じですね。<br clear=left><br></p>
+
+<p>　では、これに６を追加してみましょう。先ず、６をルートの値３と比べます。６は３よりも大きいので、右に進むことにします。ここでもうノードがなくなっているので、ここにノードを追加することにしましょう。</p>
+
+<table align=left border=1>
+
+<tr><td><img src="images/0303502.gif" width=210 height=145 alt="６を追加"></td></tr>
+
+</table>
+
+<p>　こんな感じです。<br clear=left><br></p>
+
+<p>　今度は１を追加します。先ず、同じように１をルートの値３と比べます。１は３よりも小さいので、左に進むことにします。ここでもうノードがなくなっているので、ここにノードを追加します。</p>
+
+<table align=left border=1>
+
+<tr><td><img src="images/0303503.gif" width=305 height=145 alt="１を追加"></td></tr>
+
+</table>
+
+<p>　こんな感じです。<br clear=left><br></p>
+
+<p>　同じようにして、今度は２と５を追加します。先ずは２です。２は３よりも小さいので、最初は左に進みます。そして、２を次にある値１と比べます。２は１よりも大きいので右に進みます。ここでノードがなくなったのでここに追加します。</p>
+
+<p>　次は５です。５は３よりも大きいので、最初は右に進みます。そして、５を次にある値６と比べます。５は６よりも小さいので左に進みます。ここにノードを追加します。</p>
+
+<table align=left border=1>
+
+<tr><td><img src="images/0303504.gif" width=305 height=210 alt="２と５を追加"></td></tr>
+
+</table>
+
+<p>　こんな感じです。<br clear=left><br></p>
+
+<table align=left border=1>
+
+<tr><td><img src="images/0303505.gif" width=350 height=270 alt="４と７を追加"></td></tr>
+
+</table>
+
+<p>　同じように４と７を追加すると左のようになります。よくみると、左から値が順番通りに並んでいることが分かります。これが「ソートされた」状態な訳です。<br clear=left><br></p>
+
+<hr>
+
+<p>　では、実際にプログラムを組んでみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// BinTree1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iomanip.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;malloc.h&gt;</font>
+
+<font color=green>// 入力バッファの最大サイズ</font>
+<font color=blue>const int</font> BUFSIZE = <font color=darkcyan>1024</font>;
+
+<font color=green>// ノード</font>
+<font color=blue>struct</font> SNode
+{
+    <font color=blue>char</font>* id;
+    <font color=blue>int</font>   num;
+
+    SNode* pChild[<font color=darkcyan>2</font>];
+};
+
+<font color=green>// 値の入力</font>
+<font color=blue>bool</font> InputValue(SNode*&amp; pRoot);
+<font color=green>// 値を探す</font>
+<font color=blue>bool</font> FindValue(SNode* pRoot);
+
+<font color=green>// 二分探索木の操作</font>
+
+<font color=green>// ノードの初期化</font>
+<font color=blue>bool</font> InitNode(SNode* pNode, <font color=blue>const char</font>* id, <font color=blue>int</font> num);
+<font color=green>// ノードの追加（再帰）</font>
+<font color=blue>bool</font> AddNode(SNode*&amp; pRoot, <font color=blue>const char</font>* id, <font color=blue>int</font> num);
+<font color=green>// ノードを探す（再帰）</font>
+SNode*&amp; FindNode(SNode*&amp; pRoot, <font color=blue>const char</font>* id);
+
+<font color=green>// 木を表示する</font>
+<font color=blue>void</font> DispTree(SNode* pRoot);
+<font color=green>// 木を表示する（再帰サブルーチン）</font>
+<font color=blue>void</font> Rec_DispTree(SNode* pRoot, <font color=blue>int</font> nDepth);
+
+<font color=green>// 木を解放（再帰）</font>
+<font color=blue>void</font> FreeTree(SNode* pRoot);
+<font color=green>// ノードを解放</font>
+<font color=blue>void</font> FreeNode(SNode* pNode);
+
+<font color=blue>int</font> main()
+{
+    SNode* pRoot = NULL;
+
+    <font color=blue>while</font>(InputValue(pRoot));
+    <font color=blue>while</font>(FindValue(pRoot));
+    DispTree(pRoot);
+    FreeTree(pRoot);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// 値の入力</font>
+<font color=blue>bool</font> InputValue(SNode*&amp; pRoot)
+{
+    <font color=blue>char</font> id[BUFSIZE];
+    <font color=blue>int</font>  num;
+
+    cout &lt;&lt; <font color=darkcyan>"文字列と値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; id &gt;&gt; num;
+    <font color=blue>if</font>(strcmp(id, <font color=darkcyan>"q"</font>) == <font color=darkcyan>0</font> || num == <font color=darkcyan>-1</font>)
+        <font color=blue>return false</font>;
+
+    <font color=blue>return</font> AddNode(pRoot, id, num);
+}
+
+<font color=green>// 値を探す</font>
+<font color=blue>bool</font> FindValue(SNode* pRoot)
+{
+    <font color=blue>char</font> id[BUFSIZE];
+    cout &lt;&lt; <font color=darkcyan>"ＩＤ文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; id;
+    <font color=blue>if</font>(strcmp(id, <font color=darkcyan>"q"</font>) == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    SNode*&amp; pFind = FindNode(pRoot, id);
+    <font color=blue>if</font>(pFind == NULL)
+        cout &lt;&lt; <font color=darkcyan>"見つかりません。"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"値は "</font> &lt;&lt; pFind-&gt;num &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 二分探索木の操作</font>
+
+<font color=green>// ノードの初期化</font>
+<font color=blue>bool</font> InitNode(SNode* pNode, <font color=blue>const char</font>* id, <font color=blue>int</font> num)
+{
+    <font color=green>// strdup は文字列を複製する関数です
+    // このとき、メモリを確保します
+    // このメモリの解放は free という関数で行います</font>
+    pNode-&gt;id  = strdup(id);
+    <font color=blue>if</font>(pNode-&gt;id == NULL)
+        <font color=blue>return false</font>;
+
+    pNode-&gt;num = num;
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; 2; i++)
+        pNode-&gt;pChild[i] = NULL;
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// ノードの追加（再帰）</font>
+<font color=blue>bool</font> AddNode(SNode*&amp; pRoot, <font color=blue>const char</font>* id, <font color=blue>int</font> num)
+{
+    SNode*&amp; pAdd = FindNode(pRoot, id);  <font color=green>// 追加位置を探します</font>
+
+    <font color=green>// 既にノードがある場合は上書きします</font>
+    <font color=blue>if</font>(pAdd != NULL)
+    {
+        pAdd-&gt;num = num;
+        <font color=blue>return true</font>;
+    }
+
+    <font color=green>// ノードを確保します</font>
+    pAdd = <font color=blue>new</font> SNode;
+    <font color=blue>if</font>(pAdd == NULL)
+        <font color=blue>return false</font>;
+
+    <font color=green>// ノードを初期化します</font>
+    <font color=blue>if</font>(!InitNode(pAdd, id, num))
+    {
+        <font color=green>// 失敗したら解放します</font>
+        FreeNode(pAdd);
+        pAdd = NULL;
+        <font color=blue>return false</font>;
+    }
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// ノードを探す（再帰）</font>
+SNode*&amp; FindNode(SNode*&amp; pRoot, <font color=blue>const char</font>* id)
+{
+    <font color=green>// 見つからなかったらそのまま返す</font>
+    <font color=blue>if</font>(pRoot == NULL)
+        <font color=blue>return</font> pRoot;
+
+    <font color=green>// 比較</font>
+    <font color=blue>int</font> fComp = strcmp(pRoot-&gt;id, id);
+
+    <font color=green>// 見つかったらそのノードを返す</font>
+    <font color=blue>if</font>(fComp == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> pRoot;
+
+    <font color=green>// 次のノードに進む</font>
+    <font color=blue>return</font> FindNode(pRoot-&gt;pChild[fComp &lt; <font color=darkcyan>0</font>], id);
+}
+
+<font color=green>// 木を表示する</font>
+<font color=blue>void</font> DispTree(SNode* pRoot)
+{
+    Rec_DispTree(pRoot, <font color=darkcyan>0</font>);
+}
+
+<font color=green>// 木を表示する（再帰サブルーチン）</font>
+<font color=blue>void</font> Rec_DispTree(SNode* pRoot, <font color=blue>int</font> nDepth)
+{
+    <font color=blue>if</font>(pRoot == NULL)
+        <font color=blue>return</font>;
+
+    Rec_DispTree(pRoot-&gt;pChild[<font color=darkcyan>0</font>], nDepth + 1);
+
+    cout &lt;&lt; setw(nDepth * <font color=darkcyan>2</font>) &lt;&lt; <font color=darkcyan>""</font> &lt;&lt; pRoot-&gt;id
+         &lt;&lt; <font color=darkcyan>" : "</font> &lt;&lt; pRoot-&gt; num &lt;&lt; endl;
+
+    Rec_DispTree(pRoot-&gt;pChild[<font color=darkcyan>1</font>], nDepth + 1);
+}
+
+<font color=green>// 木を解放（再帰）</font>
+<font color=blue>void</font> FreeTree(SNode* pRoot)
+{
+    <font color=blue>if</font>(pRoot == NULL)
+        <font color=blue>return</font>;
+
+    <font color=green>// 子ノードを解放してから</font>
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>2</font>; i++)
+        FreeTree(pRoot-&gt;pChild[i]);
+    <font color=green>// 自分を解放する</font>
+    FreeNode(pRoot);
+}
+
+<font color=green>// ノードを解放</font>
+<font color=blue>void</font> FreeNode(SNode* pNode)
+{
+    <font color=green>// strdup で確保した領域は free で解放します
+    // free は malloc という関数で確保したメモリを解放するための関数です
+    // Ｃ言語には new はなく、malloc 関数を使ってメモリを確保します
+    // strdup はＣ言語の時代の関数なので、内部で malloc を使っています</font>
+    free(pNode-&gt;id);
+
+    <font color=green>// free と delete が混在するのは
+    // ちょっと気持ちが悪いですね（汗）</font>
+    <font color=blue>delete</font> pNode;
+}</pre></td></tr>
+
+<tr><td><pre>文字列と値を入力して下さい > 最近は 1
+文字列と値を入力して下さい > 動的確保とか 2
+文字列と値を入力して下さい > 再帰関数とか 3
+文字列と値を入力して下さい > バンバン使ってるけど 4
+文字列と値を入力して下さい > どうでしょうか？ 5
+文字列と値を入力して下さい > もうそろそろ 6
+文字列と値を入力して下さい > 慣れてきましたか？ 7
+文字列と値を入力して下さい > q -1
+ＩＤ文字列を入力して下さい > バンバン使ってるけど
+値は 4 です。
+ＩＤ文字列を入力して下さい > 慣れてきましたか？
+値は 7 です。
+ＩＤ文字列を入力して下さい > ぼちぼちやっていきましょう
+見つかりません。
+ＩＤ文字列を入力して下さい > q
+      どうでしょうか？ : 5
+        もうそろそろ : 6
+    バンバン使ってるけど : 4
+      慣れてきましたか？ : 7
+  再帰関数とか : 3
+最近は : 1
+  動的確保とか : 2</pre></td></tr>
+
+</table></center>
+
+<p>　はい。こんなもんですね。</p>
+
+<p>　この例を見て分かると思いますが、二分探索木は<font color=red>バランスが悪くなる</font>ときもあります。「もうそろそろ」を探し出すには５回の比較が必要になってしまいます。もし、一番バランスが良ければ、全部で７つの要素があるので、最大でも３回の比較で済みます。反対に、<font color=red>ソートされた配列の先頭から二分探索木に順番に値を追加していくと、バランスは最悪になります</font>。どんな場合においても必ず効率がいいという保証がないのが、二分探索木のちょっとした弱みになっています。</p>
+
+<p>　しかし、ソートされたデータを追加するときに注意しさえすれば、それほどデータが偏ることはないと思います。上の例でも、もっと追加していけばあまり偏りの気にならない状態になるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>比較しつつ木を進み、その端に要素を追加したものが二分探索木。</li>
+<li>一般に、二分探索木は高速に要素を探し当てることができる。</li>
+<li>ソートされた順番で要素を追加するとパフォーマンスが落ちる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回のような探索の速いデータ構造というものは、他にもいくつか考案されています。次回はそのうちでも有名なあるデータ構造を紹介したいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03034.html" target="main">第３４章　大樹の如く</a> | <a href="cpp03036.html" target="main">第３６章　魔法の数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.10</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

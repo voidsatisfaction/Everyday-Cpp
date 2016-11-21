@@ -1,0 +1,249 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３０章 静かなるメンバ３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３０章　静かなるメンバ３</font>
+</center>
+<hr>
+
+<p>　前回まではメンバ変数を静的にしてきました。では、メンバ関数を静的にするとどうなるのでしょうか？　今回はそういうことをやりたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ関数は実体がなくても呼べる。</li>
+<li>静的メンバ関数は静的メンバしか使えない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の SMember2.cpp をもう一度見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// SMember2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CNumOf
+{
+<font color=blue>private</font>:
+    <font color=blue>static int</font> m_nNumOf;  <font color=green>// CNumOf の全実体数</font>
+
+<font color=blue>public</font>:
+    CNumOf()   { m_nNumOf++; }
+    ~CNumOf()  { m_nNumOf--; }
+    <font color=blue>void</font> Disp(){ cout &lt;&lt; m_nNumOf &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> CNum::m_nNumOf;
+
+<font color=blue>int</font> main()
+{
+    CNumOf a, b, c;
+    a.Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　ここで、a.Disp(); というのがありますが、これは別に b.Disp(); であっても、c.Disp(); であっても問題ありません。</p>
+
+<p>　それどころか、よくよく考えてみれば<font color=red>実体が存在しないときでも使えそう</font>です。先ず、静的メンバ変数は実体がなくても常に存在しています。そして、静的メンバ変数はプログラムの初めに初期化されているのですから、コンストラクタが呼ばれていなくても m_nNumOf を参照することに問題はありません。</p>
+
+<p>　静的メンバ変数は外部変数でも（やるべきではありませんが）一応置き換えられるのでしたね。置き換えた場合、このようにできると思います。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> g_nNumOf;  <font color=green>// CNumOf の全実体数</font>
+
+<font color=blue>class</font> CNumOf
+{
+<font color=blue>public</font>:
+    CNumOf() { g_nNumOf++; }
+    ~CNumOf(){ g_nNumOf--; }
+};
+
+<font color=blue>void</font> Disp(){ cout &lt;&lt; g_nNumOf &lt;&lt; endl; }
+
+<font color=blue>int</font> main()
+{
+    Disp();
+    CNumOf a, b, c;
+    Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　そうです。普通の関数を呼べばいいですね。</p>
+
+<p>　こういうことをメンバ関数を使って実現するにはどうすればいいのでしょうか？</p>
+
+<hr>
+
+<p>　そういうときは、<font color=red>メンバ関数に static を付ければいい</font>のです。</p>
+
+<p>　static の付いたメンバ関数、つまり<font color=red>静的メンバ関数</font>は、<font color=red>実体がなくても呼べるメンバ関数</font>です。</p>
+
+<p>　そのかわり、静的メンバ関数は this を持ちません。つまり、<font color=red>静的メンバ以外のメンバを操作できません</font>。</p>
+
+<p>　静的メンバ関数を呼ぶには、従来の a.Disp(); でも構いませんし、</p>
+
+<pre><font color=red>CNumOf::Disp();</font></pre>
+
+<p>という風にすることもできます。<a href="cpp02021.html" target="main">第２１章</a>でも出てきた文法ですね。</p>
+
+<p>　以上を踏まえてプログラムを作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// SMember2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CNumOf
+{
+<font color=blue>private</font>:
+    <font color=blue>static int</font> m_nNumOf;  <font color=green>// CNumOf の全実体数</font>
+
+<font color=blue>public</font>:
+    CNumOf() { m_nNumOf++; }
+    ~CNumOf(){ m_nNumOf--; }
+    <font color=red>static</font> <font color=blue>void</font> Disp(){ cout &lt;&lt; m_nNumOf &lt;&lt; endl; }
+};
+
+<font color=blue>int</font> CNum::m_nNumOf;
+
+<font color=blue>int</font> main()
+{
+    <font color=red>CNumOf::</font>Disp();
+    CNumOf a, b, c;
+    <font color=red>CNumOf::</font>Disp();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0
+3</pre></td></tr>
+
+</table></center>
+
+<p>　実体が作られる前は 0 、実体を３つ作った後は 3 と表示されました。期待通りの動作ですね。</p>
+
+<hr>
+
+<p>　普通のメンバ関数と静的メンバ関数との違いは、構造体と普通の関数を使って考えてみるとよく分かると思います。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// SMember4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>struct</font> SNum
+{
+    <font color=blue>int</font> num;
+};
+
+<font color=blue>int</font> g_nNum;  <font color=green>// SNum の全実体数</font>
+
+<font color=green>// コンストラクタ</font>
+<font color=blue>void</font> InitSNum(<font color=red>SNum* psnum</font>, <font color=blue>int</font> num)
+{
+    psnum-&gt;num = num;
+    g_nNum++;
+}
+
+<font color=green>// デストラクタ</font>
+<font color=blue>void</font> DestSNum(<font color=red>SNum* psnum</font>)
+{
+    g_nNum--;
+}
+
+<font color=green>// 普通のメンバ変数の値を表示</font>
+<font color=blue>void</font> DispSNum(<font color=red>SNum* psnum</font>)
+{
+    cout &lt;&lt; psnum-&gt;num &lt;&lt; endl;
+}
+
+<font color=green>// 静的メンバ変数に相当する値を表示</font>
+<font color=blue>void</font> Disp()
+{
+    cout &lt;&lt; m_nNum &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Disp();
+
+    SNumOf a, b;
+    InitSNum(<font color=red>&a</font>, <font color=darkcyan>100</font>);
+    InitSNum(<font color=red>&b</font>, <font color=darkcyan>300</font>);
+
+    Disp();
+    DispSNum(<font color=red>&a</font>);
+    DispSNum(<font color=red>&b</font>);
+
+    DestSNum(<font color=red>&a</font>);
+    DestSNum(<font color=red>&b</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>0
+2
+100
+300</pre></td></tr>
+
+</table></center>
+
+<p>　<font color=red>メンバ関数は呼ぶときに使った実体のアドレスを渡す</font>のでした。しかし、<font color=red>静的メンバ関数では実体のアドレスを渡しません</font>。実体がなくても呼べますしね。これが普通のメンバ関数と静的メンバ関数の大きな違いです。</p>
+
+<p>　呼んだときに使った実体のアドレスが渡されないのですから、静的メンバ関数内では静的メンバしか扱えません。上の SMember4.cpp の Disp 内で、SNum の num や DispSNum が使えないのと同じことなのです。</p>
+
+<p>　このように、静的メンバの挙動が分からなくなったら、一旦メンバ関数を使わなかったらどうなるかを考えるといいでしょう。</p>
+
+<p><br></p>
+
+<p>　前回の全実体の Disp を呼ぶという関数 DispAll も静的メンバ変数しか利用してないので、静的メンバ関数にしてしまうといいでしょう。</p>
+
+<p>　静的メンバ関数をクラスの宣言外で実装するときは、静的メンバ変数と同じく static を付けません（もちろんプロトタイプには付けます）。注意しましょう。</p>
+
+<p>　静的メンバ関数内で Disp を呼んでいますが、それは静的メンバ変数に実体のアドレスを保存しているからです。呼んだときの実体がどれかということは全く関係無しに、同じ動作を行います。そして、呼んだときの実体がどれかということで分岐することもできません。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ関数は実体がなくても呼べる。</li>
+<li>静的メンバ関数は静的メンバしか使えない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　ようやくクラスの基本が終わりました。次からはテンプレートというものについて話したいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02029.html" target="main">第２９章　静かなるメンバ３</a> | <a href="cpp02031.html" target="main">第３１章　冶金工場</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.10.29</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

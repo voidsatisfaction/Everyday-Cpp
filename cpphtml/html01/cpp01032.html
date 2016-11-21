@@ -1,0 +1,104 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３２章 ポインタ天国 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３２章　ポインタ天国</font>
+</center>
+<hr>
+
+<p>　Ｃ／Ｃ＋＋言語ならばなくてはならないポインタ。その重要性は果てしないです。ですが、それだけ易しく教えますので安心して下さい。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ポインタはアドレスを格納するための変数。</li>
+<li>ある &lt;型&gt; のアドレスを格納するポインタはその &lt;型&gt; に * を付けた型で宣言する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の復習を少しします。変数はメモリ上にあります。なので、変数はメモリ上の位置であるアドレスを持っています。座標のようなものですね。</p>
+
+<p>　で、アドレスは単なる数値でした。単なる数値なら変数に入れてやることができるはず、と、ここまで前回話しました。</p>
+
+<p>　その変数というのが、今回話す<font size=+3 color=red>ポインタ</font>です。ポインタなんて名前が付いていますが、基本的にただの変数です。int に毛が生えた程度です。</p>
+
+<p>　では、早速そのポインタというのを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ptr1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> a;
+    <font color=red>char* p;</font>
+
+    <font color=red>p = &a;</font>
+    cout &lt;&lt; <font color=darkcyan>" p = "</font> &lt;&lt; (<font color=blue>unsigned int</font>) p &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"&a = "</font> &lt;&lt; (<font color=blue>unsigned int</font>)&a &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre> p = 6618608
+&a = 6618608</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　<font color=red>p がポインタです。char の後に * の付いた型名になっています。</font>これは <font color=red>char 型の変数のアドレスを入れられる</font>ということになります。int 型のを入れたいなら int* 、float 型のを入れたいならなら float* になります。</p>
+
+<p>　では早速アドレスを入れてみましょう。</p>
+
+<pre>p = &a;</pre>
+
+<p>　変数のアドレスは変数の前に & を付ければ得られました。で、それを p に代入しています。何のひねりもありません。</p>
+
+<p>　では、p と &a がきちんと同じになっているか表示してみましょう。unsigned int で型キャストをしているのは符号なしの１０進数として表示するためです。ここはあまり気にしないで下さい。</p>
+
+<p>　両方とも 6618608 になっています。無事代入が成功したようです。（失敗などしないのですが...。）</p>
+
+<p>　<font color=red>このように、ポインタはアドレスを格納できるのです。</font></p>
+
+<hr>
+
+<p>　はい、今回はこれでお終いです。短いですけど、気にしないで下さい。ポインタは重要なのでゆっくりやっていきたいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ポインタはアドレスを格納するための変数。</li>
+<li>ある &lt;型&gt; のアドレスを格納するポインタはその &lt;型&gt; に * を付けた型で宣言する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はアドレスを保管してそれをどう使うかについて話します。それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01031.html" target="main">第３１章　メモリとアドレス</a> | <a href="cpp01033.html" target="main">第３３章　ポインタ天国２</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.31</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

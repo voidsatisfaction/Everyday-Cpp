@@ -1,0 +1,329 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３８章 速読法２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３８章　速読法２</font>
+</center>
+<hr>
+
+<p>　今回も前回に続いて文字列照合について話していきたいと思います。２つの有名なアルゴリズムのうち、今回はその一方について話します。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>どこから比較しなおすかを表にする手法をＫＭＰ法と呼ぶ。</li>
+<li>ＫＭＰ法を使うと読み戻しがなくなる。</li>
+<li>ＫＭＰ法は大きなファイルを小出しに照合していくときに便利。</li>
+<li>表の作成にもＫＭＰ法が使える。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の Match.txt を思いだしてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>Match.txt</th></tr>
+
+<tr><td><pre>tomatu
+tomati
+tomata
+tomate
+tomato</pre></td></tr>
+
+</table></center>
+
+<p>　では、この中から "tomato" を探すことにします。先ず、先頭をあわせて比較してみましょう。</p>
+
+<pre>src : <font color=red>tomat</font>u[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat : <font color=red>tomat</font>o</pre>
+
+<p>　"tomat" までは同じですが、最後が異なるので先に進むことにします。</p>
+
+<p>　しかし、ちょっとここで考えてみましょう。<font color=red>"tomat" までが同じだったことを利用する</font>ことはできないでしょうか？</p>
+
+<p>　"tomat" は "t" で終わっています。これは "tomato" の最初の文字 "t" と同じですね。ということは、<font color=red>その次が "omato" であればよい</font>ことになります。</p>
+
+<pre>
+src : toma<font color=blue>t</font><font color=green>u[\n]to</font>mati[\n]tomata[\n]tomate[\n]tomato
+pat :     <font color=blue>t</font><font color=green>o ma to</font></pre>
+
+<p>　このように、<font color=red>比較した終わりの部分が検索文字列の先頭と同じであれば、その部分から検索文字列の残りの部分との比較を行ったのでよい</font>わけです。そして、<font color=red>同じでなければ、その部分までに "tomato" がない</font>ことになるので、<font color=red>その次から pat との比較を始めればよい</font>のです。</p>
+
+<p>　説明文だけではピンとこないかもしれないので、いくつか例を挙げていきたいと思います。</p>
+
+<hr>
+
+<p>１．src : "tomatomata tomatomato" 、pat : "tomatomato"</p>
+
+<blockquote>
+
+<p>　先ず、先頭をあわせて比較します。</p>
+
+<pre>src : <font color=red>tomatomat</font>a tomatomato
+pat : <font color=red>tomatomat</font>o</pre>
+
+<p>　"tomatomat" まで同じですが、最後が異なるので先に進むことにします。</p>
+
+<p>　ここで、<font color=red>今まで比較したところが検索文字列と重なっていないか</font>を確かめます。すると、"tomat" までが重なっていることが分かります。</p>
+
+<pre>toma<font color=red>tomat</font>
+    <font color=red>tomat</font>omato</pre>
+
+<p>なので、<font color=red>次が "omato" かどうか</font>を確かめればいいわけです。</p>
+
+<pre>src : toma<font color=blue>tomat</font><font color=green>a tom</font>atomato
+pat :     <font color=blue>tomat</font><font color=green>omato</font></pre>
+
+<p>　やはり違います。ここで、やはり今まで比較したところが検索文字列と重なっていないかを確かめます。<font color=red>"tomat" までは比較された扱い</font>になり、</p>
+
+<pre>toma<font color=red>t</font>
+    <font color=red>t</font>omatomato</pre>
+
+<p>となります。次が "omatomato" であるかを確かめればいいわけですね。</p>
+
+<pre>src : tomatoma<font color=blue>t</font><font color=green>a tomatom</font>ato
+pat :         <font color=blue>t</font><font color=green>omatomato</font></pre>
+
+<p>　今度は全く異なっているので、普通に比較を続けます。</p>
+
+<pre>src : tomatomata tomatomato
+pat :           tomatomato</pre>
+
+<pre>src : tomatomata <font color=red>tomatomato</font>
+pat :            <font color=red>tomatomato</font></pre>
+
+<p>　これで終了です。</p>
+
+</blockquote>
+
+<hr>
+
+<p>２．src : "I could drink cocoa." 、pat : "cocoa"</p>
+
+<blockquote>
+
+<p>　初めの "I" と " " は普通に進み、次に一部が等しくなる部分が出てきます。</p>
+
+<pre>src : I <font color=red>co</font>uld drink cocoa.
+pat :   <font color=red>co</font>coa</pre>
+
+<p>　ここで、やはり今まで比較したところが検索文字列と重なっていないかを確かめます。</p>
+
+<pre>co
+  cocoa</pre>
+
+<p>　先頭から重なるのは当たり前なので除外します。となると、全く重ならないことがわかります。つまり、<font color=red>"I co" の部分までには "cocoa" はない</font>ということが分かります。ということで、その次の "uld dri..." から比較を続ければよいことになります。</p>
+
+<pre>src : I could drink cocoa.
+pat :     cocoa</pre>
+
+<p>　これを続けていけば、最終的に</p>
+
+<pre>
+src : I could drink <font color=red>cocoa</font>.
+pat :               <font color=red>cocoa</font></pre>
+
+<p>となります。</p>
+
+</blockquote>
+
+<hr>
+
+<p>　これで大体感じはつかめましたか？　まだしっくり来ない人も、何度か試してみると何となく分かってくると思います。</p>
+
+<hr>
+
+<p>　では次に、これをどのようにプログラムすればいいかについて話します。</p>
+
+<p>　<font color=red>「今まで比較したところが検索文字列と重なっていないかを確かめる」</font>とはいっても、毎回毎回確かめるのは無駄になります。なので、検索する前に全部確かめて、何らかの<font color=red>表</font>を作っておけばいいでしょう。</p>
+
+<p>　では、どのような表を作ればよいのでしょうか？　最初の例では <font color=red>"omato" から比較し始めればよい</font>と、次の例では <font color=red>"omatomato" から比較し始めればよい</font>といいました。このような<font color=red>どこから比較し始めればよいか</font>を表にしておくのがいいでしょう。これを <font color=red>ini</font> と呼ぶことにします。</p>
+
+<p>　次に、そのような表をどうやって作ればいいかについて考えましょう。例えば "tomato" で考えてみましょう。</p>
+
+<p>　今まで比較したところが検索文字列と重なっていればいいわけなので、自分自身と比較していって重なっているか確かめればいいわけですね。先ず、最初の "t" は無視するとして、次の "o" から実際にやってみましょう。</p>
+
+<pre>to<font color=gray>mato</font>
+ t<font color=gray>omato</font></pre>
+
+<p>全く重なりませんね。このような場合は最初から比較しなおすことになるので、これを０とします。</p>
+
+<pre>pat : to<font color=gray>mato</font>
+ini : 00</pre>
+
+<p>　さぁ、どんどんいきましょう。次は "m" です。</p>
+
+<pre>tom<font color=gray>ato</font>
+  t<font color=gray>omato</font></pre>
+
+<p>やはり全く重なりません。これは次の "a" も同じです。なので、これまでのところ ini は次のようになります。</p>
+
+<pre>pat : toma<font color=gray>to</font>
+ini : 00<font color=red>00</font></pre>
+
+<p>　そして、次です。</p>
+
+<pre>toma<font color=red>to</font>
+    <font color=red>to</font><font color=gray>mato</font></pre>
+
+<p>やっと重なりました。"t" までが等しい場合は "omato" と、"to" までが等しい場合は "mato" と等しければいいので、ini は次のようになります。</p>
+
+<pre>pat : tomato
+ini : 0000<font color=red>12</font></pre>
+
+<p>　これで ini が完成しました。あとは、これを使えば上でやった文字列照合ができるわけです。また、ini の作り方を注意してみれば、上の<font color=red>文字列照合と同じような方法を使っている</font>ことも分かります。</p>
+
+<p>　この文字列照合法は D.E.Knuth, J.H.Morris, V.R.Pratt によって開発され、その頭文字を取って<font color=red>ＫＭＰ法</font>と呼ばれます。</p>
+
+<p>　この文字列照合法の特徴は、<font color=red>src をさかのぼって参照することがない</font>ことです。ある程度の速度も重要なのですが、一番重要なのはその <font color=red>src をさかのぼらないこと</font>そのものです。このことは、<font color=red>大きなファイルの中から検索する</font>という場合に力を発揮します。</p>
+
+<p>　大きなファイルを一気にメモリにロードして比較するのは辛い場合があります。そこで、例えば１０２４バイトずつ読み出してから比較していくとします。このような場合、src をさかのぼることがあれば、１０２４バイト目からさかのぼるときなどは、<font color=red>また前の所をロードしなおさなくてはいけません</font>。こういったことが起こりにくいようにする工夫もあるにはあるのですが（ダブルバッファリング。<a href="cpp03040.html" target="main">第４０章</a>参照）、多少面倒です。そこをいくと、ＫＭＰ法は src をさかのぼることがないので、そのようなことに煩わされることはないのです。</p>
+
+<hr>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Match4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Match2.h"</font>
+
+<font color=blue>static int</font> KMPMatch(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                    <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat);
+
+<font color=blue>int</font> main()
+{
+    Match(<font color=darkcyan>"Match.txt"</font>, KMPMatch);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>static int</font> KMPMatch(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                    <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat)
+{
+    <font color=green>// エラーチェック</font>
+    <font color=blue>if</font>(pat[<font color=darkcyan>0</font>] == <font color=darkcyan>0</font>        ||
+       src[nBufSize] != <font color=darkcyan>0</font> ||
+       nFirst &gt; nBufSize)
+        <font color=blue>return</font> MATCH_NOTFOUND;
+
+    <font color=green>// 開始位置をずらします</font>
+    src += nFirst;
+
+    <font color=blue>const int</font> nKMPIniSize = <font color=darkcyan>1024</font>;
+    <font color=blue>int</font> ini[nKMPIniSize];
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> j;
+
+    <font color=green>// 表の作成</font>
+    i = <font color=darkcyan>1</font>;
+    j = <font color=darkcyan>0</font>;
+    ini[<font color=darkcyan>0</font>] = <font color=darkcyan>0</font>;  <font color=green>// 最初は必ず０</font>
+    <font color=blue>while</font>(pat[i] != <font color=darkcyan>0</font>)
+    {
+        <font color=blue>if</font>(i &gt; nKMPIniSize)  <font color=green>// pat が大きすぎる場合</font>
+            <font color=blue>return</font> MATCH_NOTFOUND;
+
+        <font color=green>// 同じ場合は比較を続けます
+        //           v i = 4
+        // pat : tomato
+        // pat :     tomato
+        //           ^ j = 0
+        // ini : 000012</font>
+        <font color=blue>if</font>(pat[i] == pat[j])
+        {
+            <font color=green>// ここは ini[i++] = ++j; でもＯＫ</font>
+            j++;
+            ini[i] = j;
+            i++;
+        }
+        <font color=green>// 初めから違う場合、ini を０にして先に進みます
+        //        v i = 1
+        // pat : tomato
+        // pat :  tomato
+        //        ^ j = 0
+        // ini : 000012</font>
+        <font color=blue>else if</font>(j == <font color=darkcyan>0</font>)
+        {
+            ini[i] = <font color=darkcyan>0</font>;
+            i++;
+        }
+        <font color=green>// 途中まで同じだった場合、
+        // まさにＫＭＰ法の比較の如く、
+        // 途中から比較できるか確かめます
+        //              v i = 7
+        // pat : totetototo
+        // pat :     totetototo
+        //              ^ j = 3
+        // ini : 0010123232
+        //         ^ j - 1 = 2</font>
+        <font color=blue>else</font>
+            j = ini[j - <font color=darkcyan>1</font>];
+    }
+
+    <font color=green>// 照合
+    // やっていることは、表を作るときとほとんど同じです
+    // 具体的には、ini への代入をなくし、
+    // ループ条件を変えただけです</font>
+    i = j = <font color=darkcyan>0</font>;
+    <font color=blue>while</font>(pat[i] != <font color=darkcyan>0</font> &amp;&amp; src[i] != <font color=darkcyan>0</font>)
+    {
+        <font color=blue>if</font>(src[i] == pat[j])
+        {
+            i++; j++;
+        }
+        <font color=blue>else if</font>(j == <font color=darkcyan>0</font>)
+            i++;
+        <font color=blue>else</font>
+            j = ini[j - <font color=darkcyan>1</font>];
+    }
+
+    <font color=green>// pat[j] が０のとき検索成功です
+    // i が j の分だけ進みすぎているので j を引きます</font>
+    <font color=blue>if</font>(pat[j] == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> i - j + nFirst;
+    <font color=blue>return</font> MATCH_NOTFOUND;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　コメントで分厚くなっているので分かりにくいかもしれませんが、それ程長いプログラムではありません。大きなファイルの検索に適用するプログラムなどは、各自自分で作ってみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>どこから比較しなおすかを表にする手法をＫＭＰ法と呼ぶ。</li>
+<li>ＫＭＰ法を使うと読み戻しがなくなる。</li>
+<li>ＫＭＰ法は大きなファイルを小出しに照合していくときに便利。</li>
+<li>表の作成にもＫＭＰ法が使える。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は高速文字列照合アルゴリズムについて話したいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03037.html" target="main">第３７章　速読法</a> | <a href="cpp03039.html" target="main">第３９章　速読法３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

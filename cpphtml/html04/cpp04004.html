@@ -1,0 +1,177 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４章 偽ポインタ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４章　偽ポインタ</font>
+</center>
+<hr>
+
+<p>　<a href="cpp04002.html" target="main">第２章</a>で「配列のようなものに対するループ処理を行う関数テンプレート」といいました。この「のようなもの」と言ったのには意味があります。今回はそういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ポインタと似た動作を行うクラスをイテレータと呼ぶ。</li>
+<li>アルゴリズムにはイテレータも渡せる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　いきなりですが、<a href="cpp04002.html" target="main">第２章</a>で自作した min_element をもう一度よく見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>template</font> &lt;<font color=blue>typename</font> <font color="#808000">TYPE</font>&gt;
+<font color="#808000">TYPE</font> min_element(<font color="#808000">TYPE</font> pBegin, <font color="#808000">TYPE</font> pEnd)
+{
+    <font color="#808000">TYPE</font> pMin;
+    <font color=blue>for</font>(<font color="#808000">TYPE</font> p = pMin = pBegin; p != pEnd; ++p)
+        <font color=blue>if</font>(*p &lt; *pMin)
+            pMin = p;
+    <font color=blue>return</font> pMin;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　この関数テンプレートに int 型の配列を渡すと、TYPE が int* に置き換わった関数が作られます。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=red>int*</font> min_element&lt;<font color=red>int*</font>&gt;(<font color=red>int*</font> pBegin, <font color=red>int*</font> pEnd)
+{
+    <font color=red>int*</font> pMin;
+    <font color=blue>for</font>(<font color=red>int*</font> p = pMin = pBegin; p != pEnd; ++p)
+        <font color=blue>if</font>(*p &lt; *pMin)
+            pMin = p;
+    <font color=blue>return</font> pMin;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　さて、ここで配列でもポインタでもなく、クラスを渡してみるとどうなるでしょうか？　例えばクラス名を CIterator とすると、</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=red>CIterator</font> min_element&lt;<font color=red>CIterator</font>&gt;(<font color=red>CIterator</font> pBegin, <font color=red>CIterator</font> pEnd)
+{
+    <font color=red>CIterator</font> pMin;
+    <font color=blue>for</font>(<font color=red>CIterator</font> p = pMin = pBegin; p != pEnd; ++p)
+        <font color=blue>if</font>(*p &lt; *pMin)
+            pMin = p;
+    <font color=blue>return</font> pMin;
+}</pre></td></tr>
+
+</table></center>
+
+<p>という関数が作られることになります。</p>
+
+<p>　<a href="../html02/cpp02035.html" target="main">第２部第３５章</a>でやったように、置き換えた後にエラーさえ出なければテンプレートには何を渡してもいいのでした。では、今回の場合はどうなるでしょうか？</p>
+
+<p>　ここでの CIterator のインスタンスに対する操作というのは</p>
+
+<ul>
+<li><font color=red>値渡し</font>（引数）</li>
+<li><font color=red>代入</font>　　　　　　p <font color=red>=</font> pMin <font color=red>=</font> pBegin</li>
+<li><font color=red>比較</font>　　　　　　p <font color=red>!=</font> pEnd</li>
+<li><font color=red>インクリメント</font>　<font color=red>++</font>p</li>
+<li><font color=red>参照</font>　　　　　　<font color=red>*</font>p</li>
+<li><font color=red>値返し</font>（戻り値）</li>
+</ul>
+
+<p>の６つです。つまり、<font color=red>CIterator クラスがこの６つの操作に対してエラーを起こさなければアルゴリズムに渡せてしまう</font>わけです。</p>
+
+<p>　では、実際に実験してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Iter1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;algorithm&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>class</font> CIterator
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_p;
+<font color=blue>public</font>:
+    CIterator(<font color=blue>int</font>* p) : m_p(p) { }
+
+    <font color=green>// 値渡しと値返しは自動的に行われます</font>
+
+    <font color=green>// 代入</font>
+    CIterator&amp; <font color=blue>operator</font>=(<font color=blue>const</font> CIterator&amp; it)
+        { m_p = it.m_p; <font color=blue>return</font> *<font color=blue>this</font>; }
+
+    <font color=green>// 比較</font>
+    <font color=blue>bool operator</font>!=(<font color=blue>const</font> CIterator&amp; it)
+        { <font color=blue>return</font> (m_p != it.m_p); }
+
+    <font color=green>// インクリメント（前置）</font>
+    CIterator&amp; <font color=blue>operator</font>++()
+        { m_p++; <font color=blue>return</font> *<font color=blue>this</font>; }
+
+    <font color=green>// 参照</font>
+    <font color=blue>int</font>&amp; <font color=blue>operator</font>*()
+        { <font color=blue>return</font> *m_p; }
+};
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> data[] = { <font color=darkcyan>4</font>, <font color=darkcyan>2</font>, <font color=darkcyan>9</font>, <font color=darkcyan>7</font>, <font color=darkcyan>1</font>, };
+
+    CIterator itBegin(data), itEnd(data + numof(data));
+
+    cout &lt;&lt; <font color=red>*</font>min_element(<font color=red>itBegin</font>, <font color=red>itEnd</font>) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>1</pre></td></tr>
+
+</table></center>
+
+<p>　見事アルゴリズムをだますのに成功しました。このように、<font color=red>アルゴリズムにはポインタと似たような動作をするクラスも渡すことができる</font>わけです。このようなクラスのことを<font color=red>イテレータ</font>（iterator：反復子）と呼びます。動詞 iterate は「繰り返す」という意味です。つまり、イテレータは繰り返しに使うためのクラスというわけです。</p>
+
+<p>　このイテレータが使えるということで、<font color=red>アルゴリズムは配列以外のもののループ処理にも利用できる</font>というわけです。例えば、工夫すれば<a href="../html03/cpp03032.html" target="main">第３部第３２章</a>でやったリストのループ処理にも応用できそうですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ポインタと似た動作を行うクラスをイテレータと呼ぶ。</li>
+<li>アルゴリズムにはイテレータも渡せる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回からはコンテナについて話したいと思います。ＳＴＬの便利さを強く実感するクラス群になると思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp04003.html" target="main">第３章　アル・コワリズミ２</a> | <a href="cpp04005.html" target="main">第５章　コンテナ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.7.8</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

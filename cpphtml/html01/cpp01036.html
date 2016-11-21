@@ -1,0 +1,175 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３６章 配列再々考 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３６章　配列再々考</font>
+</center>
+<hr>
+
+<p>　今回は配列がどうどうどうなっているか、実際にプログラムを組んで確かめてみたいと思います。諸般の事情により表示には今回もまた printf を使います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列変数はメモリ上に確かに連続して存在している。</li>
+<li>配列変数名は確かに配列の先頭アドレスを指すことができる。</li>
+<li>ポインタを使えば、確かに配列変数を受け渡すことができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　前回とあまり変わりませんね。では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回<font color=red>「配列変数はメモリ上に連続して存在している」</font>と言いました。では、わかりやすいように、大きさが１バイトである char 型を使ってそれを確かめてみましょう。</p>
+
+<p>　ついでに<font color=red>「配列変数名は配列の先頭アドレスを指す」</font>というのも確かめてみます。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Array3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>char</font> array[<font color=darkcyan>10</font>];
+
+    <font color=green>// %d は整数表示、\n は改行です</font>
+    printf(<font color=darkcyan>"array     : %d\n\n"</font>, array);
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>10</font>; i++)
+        printf(<font color=darkcyan>"&array[%d] : %d\n"</font>, i, &array[i]);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>array     : 6618600
+
+&array[0] : 6618600
+&array[1] : 6618601
+&array[2] : 6618602
+&array[3] : 6618603
+&array[4] : 6618604
+&array[5] : 6618605
+&array[6] : 6618606
+&array[7] : 6618607
+&array[8] : 6618608
+&array[9] : 6618609</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　偶然ですが、非常にわかりやすい値になってくれました。きちんと順番に並んでいることがよくわかります。</p>
+
+<p>　そして、<font color=red>array と &array[0] はきちんと同じ値になっています</font>。array[0] は配列の先頭ですから、そのアドレスは配列全体の先頭アドレスになります。それと array とが同じということは、array は配列全体の先頭アドレスを指していることになります。</p>
+
+<hr>
+
+<p>　では、今度はこの配列を関数に渡したものと比べてみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Array3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>void</font> DisplayAddresses(<font color=blue>char</font>* pointer)
+{
+    <font color=blue>int</font> i;
+
+    printf(<font color=darkcyan>"pointer     : %d\n"</font>, pointer);
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>10</font>; i++)
+        printf(<font color=darkcyan>"&pointer[%d] : %d\n"</font>, i, &pointer[i]);
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>char</font> array[<font color=darkcyan>10</font>];
+
+    printf(<font color=darkcyan>"array       : %d\n"</font>, array);
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>10</font>; i++)
+        printf(<font color=darkcyan>"&array[%d]   : %d\n"</font>, i, &array[i]);
+
+    printf(<font color=darkcyan>"\n"</font>);
+    DisplayAddresses(array);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>array       : 6618600
+&array[0]   : 6618600
+&array[1]   : 6618601
+&array[2]   : 6618602
+&array[3]   : 6618603
+&array[4]   : 6618604
+&array[5]   : 6618605
+&array[6]   : 6618606
+&array[7]   : 6618607
+&array[8]   : 6618608
+&array[9]   : 6618609
+
+pointer     : 6618600
+&pointer[0] : 6618600
+&pointer[1] : 6618601
+&pointer[2] : 6618602
+&pointer[3] : 6618603
+&pointer[4] : 6618604
+&pointer[5] : 6618605
+&pointer[6] : 6618606
+&pointer[7] : 6618607
+&pointer[8] : 6618608
+&pointer[9] : 6618609</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　array 、つまり、配列変数 array の先頭のアドレスを引数 pointer に受け渡します。すると、pointer[3] や pointer[7] などは pointer から３バイト、７バイト離れたところにある変数になります。</p>
+
+<p>　array[0] と pointer[0] から array[9] と pointer[9] まで、お互いのアドレスは常に一致しています。<font color=red>アドレスが同じ</font>なのですから、<font color=red>array[1] と pointer[1] などは全く同じ変数</font>になっていることになりますよね。</p>
+
+<p>　このように、ポインタは配列の受け渡しに欠かせないものなのです。</p>
+
+<p>　しかし、これを見ただけでは array と pointer の区別が付きませんね。完璧と思えるほどに array と pointer は同様の操作で同様の結果をはじいてくれます。</p>
+
+<p>　ただし、もちろん<font color=red>全てが同じわけではありません</font>。pointer はポインタなので代入ができますが、array はポインタではないのでできません。他にもまだ異なる結果になるものはあります。このことには注意しましょう。</p>
+
+<hr>
+
+<p>　今回はもうこれで終わりです。それでは、要点を振り返ってみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列変数はメモリ上に確かに連続して存在している。</li>
+<li>配列変数名は確かに配列の先頭アドレスを指すことができる。</li>
+<li>ポインタを使えば、確かに配列変数を受け渡すことができる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01035.html" target="main">第３５章　配列再考</a> | <a href="cpp01037.html" target="main">第３７章　参照</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.4.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

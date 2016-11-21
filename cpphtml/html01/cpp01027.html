@@ -1,0 +1,135 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２７章 インクルード -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２７章　インクルード</font>
+</center>
+<hr>
+
+<p>　今まで「おまじない」ですませてきた #include について今回は話していきます。少し短いですが、たまにはいいでしょうね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>#include を使えば、別のファイルを埋め込むことができる。</li>
+<li>ファイル名を &lt; &gt; で囲めば設定されたフォルダの、" " で囲めば今のフォルダのファイルになる。</li>
+<li>ファイルの先頭でインクルードするファイルをヘッダーファイルと言う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　変数や関数は宣言しなければ使えないと言ってきました。ですが、cout や strlen の宣言を書いた覚えはありません。それにも関わらずこれらを使うことができました。これはどういうことなのでしょうか。</p>
+
+<p>　実は、これらの宣言は別のファイル内で行われているのです。それが、iostream.h や、string.h なのです。</p>
+
+<p>　そして、<font color=red>そのファイルを埋め込んで、２つ以上のファイルを合成する命令が #include なのです</font>。そして、この作業を<font color=red>「インクルードする」</font>といいます。include というのは「含む」という意味です。</p>
+
+<p>　この説明だけでは少しわかりづらいでしょう。なので、ここで例を示してみます。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム１</th><th>プログラム２</th><th>プログラム１＋２</th></tr>
+
+<tr>
+<td><pre><font color=green>// Include1.h</font>
+
+<font color=blue>void</font> Hello();</pre></td>
+
+<td><pre><font color=green>// Include1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=red>#include "Include1.h"</font>
+
+<font color=blue>int</font> main()
+{
+    Hello();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> Hello()
+{
+    cout &lt;&lt; <font color=darkcyan>"やぁ、こんちは。"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre><font color=green>// Include1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=red>// Include1.h
+
+void Hello();</font>
+
+<font color=blue>int</font> main()
+{
+    Hello();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> Hello()
+{
+    cout &lt;&lt; <font color=darkcyan>"やぁ、こんちは。"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　関数のプロトタイプだけを Include1.h というファイルに分けて書きました。そして、Include1.cpp に</p>
+
+<pre>#include "Include1.h"</pre>
+
+<p>と書き、このファイルを取り込みました。すると、実際には <font color=red>Include1.cpp は「プログラム１＋２」であるとして、<a href="../htmlword/words014.html" target="words">コンパイル</a>される</font>のです。</p>
+
+<p>　本当はさらに iostream.h も展開されます。そして、この中に cout の宣言が入っているのです。また、string.h には strlen の宣言が、stdio.h には sprintf の宣言がそれぞれ入っているのです。</p>
+
+<p>　で、strlen などの関数の中身はというと、それはまたさらに別のところにあって、それは自動的に<a href="../htmlword/words015.html" target="words">リンク</a>されます。</p>
+
+<p>　また、このようにファイルの先頭でインクルードされるファイルのことを<font size=+2 color=red>ヘッダーファイル</font>と言います。</p>
+
+<hr>
+
+<p>　上のを見て少し変に思った方もいるでしょう。iostream.h は &lt; &gt; で囲んでいるのに、自分で作った Include1.h は " " で囲んでいるではありませんか。これはどういうことなのでしょう。</p>
+
+<p>　それは、ファイルの置いてある場所に関係してきます。</p>
+
+<p>　<font color=red>ツール側の提供しているヘッダーファイルをインクルードする時は &lt; &gt; で囲みます。</font>ツール側の提供しているヘッダーファイルはあるフォルダに入れられています。そして、そのフォルダ内のファイルをインクルードするときに &lt; &gt; を使うのです。</p>
+
+<p>　<font color=red>一方 " " は自分で作ったヘッダーファイルをインクルードするときに使います。</font>ヘッダーファイルに限らず、自分で作ったファイルはそのワークスペースに対応したフォルダの中にあります。そして、そのフォルダ内のファイルをインクルードするときに " " を使うのです。</p>
+
+<hr>
+
+<p>　今回はもうこれで終わりです。短かったですが、今回のことは重要です。とはいえ、大きなプログラムを作るときはいやでも使うことなので、そのうち自然に覚えてしまうでしょう。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>#include を使えば、別のファイルを埋め込むことができる。</li>
+<li>ファイル名を &lt; &gt; で囲めば設定されたフォルダの、" " で囲めば今のフォルダのファイルになる。</li>
+<li>ファイルの先頭でインクルードするファイルをヘッダーファイルと言う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01026.html" target="main">第２６章　プロトタイプ</a> | <a href="cpp01028.html" target="main">第２８章　マクロの手始め</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.16</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

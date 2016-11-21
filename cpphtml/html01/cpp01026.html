@@ -1,0 +1,203 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２６章 プロトタイプ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２６章　プロトタイプ</font>
+</center>
+<hr>
+
+<p>　関数の定義は今まで main の前に書いてきました。しかし、main の後ろに書くこともできるのです。今回はそういうことを話していきます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数のプロトタイプを書けば、定義を後ろに回すことができる。</li>
+<li>関数のプロトタイプは関数の中身を書かないだけのもの。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、関数は使う前に宣言する必要があります。ですが、関数の量が多くなってくると、関数を並べる順番を考えるのが面倒になってきます。</p>
+
+<p>　このようなときは<font color=red>関数のプロトタイプ</font>を使うと便利になります。</p>
+
+<p>　では、先ず次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Proto1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>int f(int x, int y);</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"f(1, 2) = "</font> &lt;&lt; f(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>) &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"f(158, 144) = "</font> &lt;&lt; f(<font color=darkcyan>158</font>, <font color=darkcyan>144</font>) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>int</font> f(<font color=blue>int</font> x, <font color=blue>int</font> y)
+{
+    <font color=blue>return</font> <font color=darkcyan>5</font> * x - <font color=darkcyan>2</font> * y;
+}</pre></td>
+<td><pre>f(1, 2) = 1
+f(158, 144) = 502</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　少し f の中身が変わっていますが、関数の説明の時に使ったものとほとんど同じですね。</p>
+
+<p>　f の定義はきちんと main の後ろにかかれていますね。ですが、その代わりに何かが上に書かれているようです。</p>
+
+<pre>int f(int x, int y);</pre>
+
+<p>　これが噂の<font color=red>関数のプロトタイプ</font>です。</p>
+
+<p>　どんな変わったことをするのかと思えば、何でもない。<font size=+1 color=red>ただ中身が書かれていないだけ</font>ですね。ただ、引数の名前が書かれていますが、<font color=red>別に書かれていなくても構いません</font>。</p>
+
+<p>　で、定義の部分はといえば、ごく普通の関数の定義の書式です。本当に何の変わりもありません。</p>
+
+<hr>
+
+<p>　この方法の利点はいろいろあります。そのうちの１つは次章に話すインクルードというものが関係してきます。</p>
+
+<p>　そして、もう１つはさっき話した通り、関数の順番を気にしなくていいということです。</p>
+
+<p>　新しい関数を作るときには、普通、使う関数の下に書きたくなるでしょう。ですが、今までの方法ではそれができませんでした。これからは、そういうときは関数のプロトタイプを書いておいてから、そういう順番に並べてやればいいのです。</p>
+
+<table border=1 align=right>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Proto2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> func6(){
+    cout &lt;&lt; <font color=darkcyan>"ご苦労さん"</font> &lt;&lt; endl;
+}
+
+<font color=blue>void</font> func5(){ func6(); }
+<font color=blue>void</font> func4(){ func5(); }
+<font color=blue>void</font> func3(){ func4(); }
+<font color=blue>void</font> func2(){ func3(); }
+<font color=blue>void</font> func1(){ func2(); }
+
+<font color=blue>int</font> main()
+{
+    func1();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table>
+
+<p>　例えば右のような感じのプログラムを作ることがあったとしましょう。（このまんまのを作ることは、まずないでしょうが。）</p>
+
+<p>　このとき、プログラムの流れを読もうとすると、下から読まなくてはいけませんね。これは非常に面倒です。</p>
+
+<p><br clear=right><br></p>
+
+<table border=1 align=right>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Proto2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> func1();
+<font color=blue>void</font> func2();
+<font color=blue>void</font> func3();
+<font color=blue>void</font> func4();
+<font color=blue>void</font> func5();
+<font color=blue>void</font> func6();
+
+<font color=blue>int</font> main()
+{
+    func1();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> func1(){ func2(); }
+<font color=blue>void</font> func2(){ func3(); }
+<font color=blue>void</font> func3(){ func4(); }
+<font color=blue>void</font> func4(){ func5(); }
+<font color=blue>void</font> func5(){ func6(); }
+<font color=blue>void</font> func6(){
+    cout &lt;&lt; <font color=darkcyan>"ご苦労さん"</font> &lt;&lt; endl;
+}</pre></td></tr>
+
+</tbody></table>
+
+<p>　そこを、右のようにすれば、見やすくなると思います。</p>
+
+<p>　打ち込む量は増えますが、見やすく、作りやすくなる上に<font color=red>全関数リストができる</font>ので、その有用性は高いと思います。</p>
+
+<p><br clear=right><br></p>
+
+<p>　実際に大きなプログラムを作るときは次章の方法を使うので、<font color=red>この方法を使わざるを得なくなります</font>。今のうちに慣れておくことをおすすめします。</p>
+
+<hr>
+
+<p>　何故これでいいのか気になる人がいるかもしれません。一応説明しますが、<font color=red>今わからなくても別に気にする必要はありません</font>。</p>
+
+<p>　何故これでいいかは、ビルドの方法に起因します。</p>
+
+<p>　ビルドというのは２つのプロセスから成り立っています。１つはコンパイルで、もう１つはリンクです。</p>
+
+<p>　コンパイルというのは、プログラムを実行ファイルの前段階のファイルに変換する作業です。そしてリンクというのは、そのファイルをいくつか集めて１つの実行ファイルを作る作業です。</p>
+
+<p>　コンパイルはファイルの先頭から順に見ていき、そして変換します。なので変数や関数は使う前に宣言しておかなければなりません。</p>
+
+<p>　しかし、コンパイルの時には実は関数の場所はまだ定まっていません。「こうこうこういう関数がある」ということは決まっていても、その関数を使うにはどこに飛べばいいかは決まっていないのです。つまり、コンパイル時にはどこに飛ぶかがどうせ決まっていないのですから、プロトタイプを書くだけで事足りるのです。</p>
+
+<p>　関数の場所が決まり、どこに飛ぶかを設定するのはリンクの仕事です。「実は中身が定義されていなかった」ということがあれば、リンク時にエラーが出るわけです。</p>
+
+<p>　重ねて言いますが、今このことがわからなくてもとりあえずプログラムを組むのには支障ありません。そのうちわかるようになるはずですから、焦らないで下さいね。</p>
+
+<hr>
+
+<p>　次章では、ついに #include の秘密が解き明かされます。楽しみにして下さい。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数のプロトタイプを書けば、定義を後ろに回すことができる。</li>
+<li>関数のプロトタイプは関数の中身を書かないだけのもの。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回まで、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01025.html" target="main">第２５章　ひとやすみ...</a> | <a href="cpp01027.html" target="main">第２７章　インクルード</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.16</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

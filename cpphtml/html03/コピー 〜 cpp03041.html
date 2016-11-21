@@ -1,0 +1,376 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４１章 私はαでありωである -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４１章　私はαでありωである</font>
+</center>
+<hr>
+
+<p>　ようやく長かったアルゴリズム編も終わり、また言語の話に戻ります。第４０章の難しさとのギャップを堪能してください（笑）。</p>
+
+<p>　今回は今まで語られなかった main 関数についての話をしようと思います。なぜ戻り値が int なのか、なぜ 0 を返していたのか、そのあたりを話していこうと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>プログラムは終了コードを持つ。</li>
+<li>終了コードは main の戻り値で指定する。</li>
+<li>０は正常終了、それ以外は異常終了である。</li>
+<li>void main は使うな。</li>
+<li>system でプログラムを実行できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　main 関数についての話をしたのは<a href="../html01/cpp01002.html" target="main">第１部第２章</a>と<a href="../html01/cpp01007.html" target="main">同第７章</a>です。これらの章で話したことをまとめると、</p>
+
+<ul>
+<li>プログラムは main の初めから実行される。</li>
+<li>main も関数の１つである。</li>
+</ul>
+
+<p>の２つです。</p>
+
+<p>　適当な場所からプログラムを始められるようにすると、どこからプログラムが実行されるのかが分かりにくくなります。そこで、main という関数を特別に扱って、その関数を最初に実行しようという風にしているわけです（厳密には、main より前に外部変数の初期化処理が実行されるので main が必ず最初に実行されるわけではありませんが、その話は例外ということで）。</p>
+
+<p>　ここまでの話は特に問題はありません。しかし、<font color=red>「main の中から始まるんは分かったんやけど、何で main に戻り値があるん？」</font>という疑問を持った方も多いことでしょう。main を直接呼ぶことはないのだから、戻り値なんてなくても構わないと思いませんか？</p>
+
+<p>　しかし、何と<font color=red>この戻り値を使うことがある</font>のです。main を直接呼ぶことはなしに、です。</p>
+
+<p>　main が終わるとプログラムが終わるので、main はプログラムの始まりでもあり、同時に<font color=red>プログラムの終わりでもある</font>わけです。ということは、その main の返す戻り値はどうなるでしょうか？</p>
+
+<p>　プログラムが終わった後は、<font color=red>プログラムを呼んだ「何か」</font>に処理が戻ります。<font color=red>main の戻り値はその「何か」に渡されます。</font>それはＯＳであったり、別のプログラムであったりします。ＭＳ−ＤＯＳではバッチファイル、ＵＮＩＸではシェルであることもあります。とにかく、main の戻り値はその「何か」に渡されます。</p>
+
+<p>　main の戻り値はプログラムの<font color=red>終了コード</font>と呼ばれます。どういう状態でプログラムが終わったかを表すわけです。基本的には<font color=red>０が正常終了で、その他が異常終了</font>です。stdlib.h（Standard Library の略）というヘッダファイルには終了コード用のマクロが用意されていて、<font color=red>EXIT_SUCCESS が正常終了で、EXIT_FAILURE が異常終了</font>です。</p>
+
+<p>　この話をしていなかったので、今までは混乱を避けるためにどんな状態でも０を返していました。ですが、これからは異常終了の場合には EXIT_FAILURE など、別の値を返すことにします。</p>
+
+<p>　この終了コードを受け取った「何か」は、終了コードをもとに処理を分岐することができます。<font color=red>プログラムがどういう状態で終わったかによって処理を分岐することができる</font>わけですね。このために、main は戻り値を持つわけです。</p>
+
+<p>　void main にしてもエラーの出ない環境もありますが、その場合<font color=red>戻り値は不定</font>です。初期化していない変数にどんな値が入っているのか分からないのと同じような状態です。場合によっては不便なこともあるので、void main は使わない、いや、<font color=red>使ってはいけない</font>のが常套です。はい。</p>
+
+<p>　また、戻り値の型も return 文も書かなくてよい環境もあるでしょう。その場合は勝手に０が返されるようになっているはずです。そうなっていないようでしたら、おとなしく return 文を書きましょう。<font color=red>戻り値の型は、実は省略すると勝手に int になる</font>ので、戻り値の型は書かなくても大丈夫でしょう。でも、なるべく戻り値の型は全部きちんと書くことを奨めます。また、クラス内ではコンストラクタと勘違いされるので戻り値の型を省略することはできません。</p>
+
+<hr>
+
+<p>　それでは、実際に main の戻り値を使ってみましょう。先ずは１つプログラムを作ります。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Main1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>1024</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"九九表をファイルに出力します。"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"出力ファイル名を入力してください &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+
+    <font color=green>// $ を入力すると、終了します</font>
+    <font color=blue>if</font>(strcmp(buffer, <font color=darkcyan>"$"</font>) != <font color=darkcyan>0</font>)
+        <font color=blue>return</font> <font color=red>EXIT_FAILURE</font>;
+
+    <font color=green>// ファイルの存在確認です
+    // ファイルがあれば異常終了します
+    // つまり、上書きしないようにしたいわけです</font>
+    FILE* file = fopen(buffer, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(file != NULL)
+    {
+        fclose(file);
+        <font color=blue>return</font> <font color=red>EXIT_FAILURE</font>;
+    }
+
+    <font color=green>// ファイルを開きます
+    // 今度は開けなかった場合に異常終了します</font>
+    file = fopen(buffer, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(file == NULL)
+        <font color=blue>return</font> <font color=red>EXIT_FAILURE</font>;
+
+    <font color=green>// 九九表を書き込みます</font>
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>1</font>; i &lt;= <font color=darkcyan>9</font>; i++)
+    {
+        <font color=blue>for</font>(<font color=blue>int</font> j = <font color=darkcyan>1</font>; j &lt;= <font color=darkcyan>9</font>; j++)
+            <font color=blue>if</font>(fprintf(file, <font color=darkcyan>" %2d"</font>, i * j) &lt; <font color=darkcyan>0</font>)
+                <font color=blue>return</font> <font color=red>EXIT_FAILURE</font>;
+        <font color=blue>if</font>(fputc(<font color=darkcyan>'\n'</font>, file) == EOF)
+            <font color=blue>return</font> <font color=red>EXIT_FAILURE</font>;
+    }
+    fclose(file);
+
+    <font color=blue>return</font> <font color=red>EXIT_SUCCESS</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　ファイル名を入力して、九九表を出力するプログラムです。今までのプログラムと違うところは、九九表を作れなかった場合に <font color=red>EXIT_FAILURE</font> を返しているところでしょう。これで、<font color=red>EXIT_SUCCESS（０）が返されたときにしか九九表が完成されていない</font>と判断できますね。</p>
+
+<p>　では、このプログラムの名前を kuku.exe とでもしましょう。この名前は好きにしてもらって構いません。このファイルは、環境によって置く場所は違いますが、ＶＣ＋＋ではソースファイルと同じ場所に置いて下さい。</p>
+
+<p>　そして、次にもう１つプログラムを作ります。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Main2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+
+<font color=blue>typedef int</font> kuku_t[<font color=darkcyan>9</font>][<font color=darkcyan>9</font>];
+
+<font color=green>// 九九表の読み出し</font>
+<font color=blue>bool</font> KuKu(FILE* file, kuku_t&amp; kuku);
+<font color=green>// 表示</font>
+<font color=blue>bool</font> Disp(kuku_t&amp; kuku);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>1024</font>];
+
+    <font color=blue>if</font>(<font color=red>system</font>(<font color=darkcyan>"kuku.exe"</font>) != EXIT_SUCCESS)
+    {
+        cout &lt;&lt; <font color=darkcyan>"九九表が正しく作られませんでした。"</font> &lt;&lt; endl;
+        <font color=blue>return</font> EXIT_FAILURE;
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"作成した九九表のファイル名を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+
+    FILE* file = fopen(buffer, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(file == NULL)
+    {
+        cout &lt;&lt; <font color=darkcyan>"ファイルが開けません。"</font> &lt;&lt; endl;
+        <font color=blue>return</font> EXIT_FAILURE;
+    }
+
+    kuku_t kuku;
+    <font color=blue>if</font>(!KuKu(file, kuku))
+    {
+        cout &lt;&lt; <font color=darkcyan>"ファイルエラー。"</font> &lt;&lt; endl;
+        <font color=blue>return</font> EXIT_FAILURE;
+    }
+
+    <font color=blue>while</font>(Disp(kuku));
+
+    <font color=blue>return</font> EXIT_SUCCESS;
+}
+
+<font color=green>// 九九表の読み出し</font>
+<font color=blue>bool</font> KuKu(FILE* file, kuku_t&amp; kuku)
+{
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>9</font>; i++)
+        <font color=blue>for</font>(<font color=blue>int</font> j = <font color=darkcyan>0</font>; j &lt; <font color=darkcyan>9</font>; j++)
+        {
+            <font color=blue>int</font> fRet = fscanf(file, <font color=darkcyan>"%d"</font>, &amp;kuku[i][j]);
+            <font color=blue>if</font>(fRet == <font color=darkcyan>0</font> || fRet == EOF)
+                <font color=blue>return false</font>;
+        }
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 表示</font>
+<font color=blue>bool</font> Disp(kuku_t&amp; kuku)
+{
+    <font color=blue>int</font> i, j;
+
+    cout &lt;&lt; <font color=darkcyan>"どこを表示しますか &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; i &gt;&gt; j;
+
+    <font color=blue>if</font>(i &lt; <font color=darkcyan>1</font> || <font color=darkcyan>9</font> &lt; i ||
+       j &lt; <font color=darkcyan>1</font> || <font color=darkcyan>9</font> &lt; j)
+        <font color=blue>return false</font>;
+
+    cout &lt;&lt; kuku[i - <font color=darkcyan>1</font>][j - <font color=darkcyan>1</font>] &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    <font color=blue>return true</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
+
+
+
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// .cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>
+</pre></td>
+</tr>
+
+</table></center>
+
+
+
+<hr>
+
+<p></p>
+
+
+<p>　余談ですが、void main を使っているかいないかでその参考書が良し悪しが大体判断できるらしいです。あんまりこういうことをいうと営業妨害になるかもしれませんが、参考書を選ぶ際に心にとめておくといいかもしれませんね。</p>
+
+<hr>
+
+<p align=right><a href="cpp03040.html" target="main">第４０章　二世帯住宅</a>
+<!--
+ | <a href="cpp03042.html" target="main">第４２章　私はαでありωである２</a>
+-->
+</p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.19</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

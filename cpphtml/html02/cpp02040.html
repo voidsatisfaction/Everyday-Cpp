@@ -1,0 +1,336 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４０章 シリアル入り -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４０章　シリアル入り</font>
+</center>
+<hr>
+
+<p>　実はテンプレート引数には型以外のものもとることができます。それは一体何なのでしょうか？</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>テンプレート引数には整数定数をとることができる。</li>
+<li>クラステンプレートではデフォルト引数がとれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は疑似乱数生成のためのクラスを作りたいと思います。疑似乱数については<a href="../html03/cpp03031.html" target="main">第３部第３１章</a>を参考にして下さい。</p>
+
+<p>　第３部第３１章では、乱数を作るために使う変数「乱数種」にはグローバル変数を使っていました。なので、乱数列は同時に１つしか作ることができません。いろいろ凝ったことをやっていると、それでは不便なことも出てきます。</p>
+
+<p>　ということで、一度に何個も乱数列を作れるようにクラス化してみましょう。この作業自体は第３部第３１章のソースを改造するだけで簡単にできますね。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Rand.h</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;time.h&gt;</font>
+
+<font color=green>// 使用する上位ビットの数</font>
+<font color=blue>const int</font>          CRAND_BITS = <font color=darkcyan>15</font>;
+<font color=green>// 乱数の上限</font>
+<font color=blue>const unsigned int</font> CRAND_MAX  = (<font color=darkcyan>1</font> &lt;&lt; CRAND_BITS) - <font color=darkcyan>1</font>;
+
+<font color=blue>class</font> CRand
+{
+<font color=blue>private</font>:
+    <font color=blue>unsigned int</font> m_nSeed;  <font color=green>// 乱数種</font>
+
+<font color=blue>public</font>:
+    <font color=green>// 初期化</font>
+    <font color=blue>void</font> Init(<font color=blue>unsigned int</font> nSeed);
+    CRand(<font color=blue>unsigned int</font> nSeed);
+
+    <font color=green>// 現在の時間で初期化</font>
+    <font color=blue>void</font> Init();
+    CRand();
+
+    <font color=green>// 乱数種の取得</font>
+    <font color=blue>unsigned int</font> GetSeed();
+
+    <font color=green>// 疑似乱数生成</font>
+    <font color=blue>int</font> Rand();
+    <font color=blue>operator int</font>();
+    <font color=blue>operator unsigned int</font>();
+
+    <font color=green>// [0, 1)（０以上１未満）の疑似乱数生成</font>
+    <font color=blue>double</font> RandD();
+    <font color=blue>operator double</font>();
+
+    <font color=green>// ある数未満の乱数を生成</font>
+    <font color=blue>int</font> Rand(<font color=blue>int</font> nLimit);
+};
+
+<font color=green>// 初期化</font>
+<font color=blue>inline void</font> CRand::Init(<font color=blue>unsigned int</font> nSeed)
+{
+    m_nSeed = nSeed;
+}
+
+<font color=blue>inline</font> CRand::CRand(<font color=blue>unsigned int</font> nSeed)
+{
+    Init(nSeed);
+}
+
+<font color=green>// 現在の時間で初期化</font>
+<font color=blue>inline void</font> CRand::Init()
+{
+    Init((<font color=blue>unsigned int</font>)time(NULL));
+}
+
+<font color=blue>inline</font> CRand::CRand()
+{
+    Init();
+}
+
+<font color=green>// 乱数種の取得</font>
+<font color=blue>inline unsigned int</font> CRand::GetSeed()
+{
+    <font color=blue>return</font> m_nSeed;
+}
+
+<font color=green>// 疑似乱数生成</font>
+<font color=blue>inline</font> CRand::<font color=blue>operator int</font>()
+{
+    <font color=blue>return</font> Rand();
+}
+
+<font color=blue>inline</font> CRand::<font color=blue>operator unsigned int</font>()
+{
+    <font color=blue>return</font> Rand();
+}
+
+<font color=green>// [0, 1)（０以上１未満）の疑似乱数生成</font>
+<font color=blue>inline double</font> CRand::RandD()
+{
+    <font color=blue>return</font> (<font color=blue>double</font>)Rand() * (<font color=darkcyan>1.0</font> / (CRAND_MAX + <font color=darkcyan>1</font>));
+}
+
+<font color=blue>inline</font> CRand::<font color=blue>operator double</font>()
+{
+    <font color=blue>return</font> Rand();
+}
+
+<font color=green>// ある数未満の乱数を生成</font>
+<font color=blue>inline int</font> CRand::Rand(<font color=blue>int</font> nLimit)
+{
+    <font color=green>// % nLimit よりも上質の分布になります
+    // ただし、１６ビット機では long でやらないといけません</font>
+    <font color=blue>return</font> Rand() * nLimit / (CRAND_MAX + <font color=darkcyan>1</font>);
+}</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Rand.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Rand.h"</font>
+
+<font color=green>// 疑似乱数生成</font>
+<font color=blue>int</font> CRand::Rand()
+{
+    m_nSeed = m_nSeed * <font color=darkcyan>48828125</font> + <font color=darkcyan>1</font>;
+    <font color=green>// 上位ビットを返します</font>
+    <font color=blue>return</font> m_nSeed &gt;&gt; (<font color=darkcyan>32</font> - CRAND_BITS);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　どうせクラスにするのならと、便利そうな機能を追加しておきました。CRand はこんなもんですね。</p>
+
+<hr>
+
+<p>　さて、ここでマニアックな処理をしたい人が<font color=red>「使用する上位ビットの数」「乱数生成に使う 48828125 と 1 の値」もいろいろ変えたい</font>という要求を出してきましたとします。</p>
+
+<p>　それならとこれをメンバ変数にとってみると、<font color=red>「処理が遅くなる。定数にしろ」</font>と言ってきます。</p>
+
+<p>　となると、定数を変えたクラスを別々に作らなければいけないのでしょうか？　答は半分ＹＥＳで半分ＮＯです。というのも、これは<font color=red>クラステンプレートを使って解決できる</font>からです。</p>
+
+<p>　例えば CArray を考えると、CArray &lt;int&gt; と CArray &lt;char&gt; とは別々の実体が作られるけれども、プログラム自体は CArray というクラステンプレートを作るだけで構いません。これが半分ＹＥＳで半分ＮＯということです。</p>
+
+<p>　何はともあれ、テンプレート引数には<font color=red>型だけではなく整数定数も指定できるようにすることができる</font>のです。例えば、１を指定したとき、２を指定したときなどで別々のクラスを作ることができるわけです。これは<font color=red>関数テンプレートでもできます</font>。</p>
+
+<p>　どうやるかは簡単です。テンプレート引数に <font color=red>&lt;型&gt; &lt;仮引数名&gt;</font> と加えてやればいいだけです。型には int か unsigned int が使えます。double など、小数は使えません。</p>
+
+<pre><font color=blue>template</font> &lt;<font color=red>unsigned int TMPL_BITS</font>&gt;
+<font color=blue>class</font> CRandTmpl
+{
+    :
+    :</pre>
+
+<p>　そして、使うときはテンプレート引数を指定してやります。</p>
+
+<pre>CRandTmpl &lt;<font color=red>10</font>&gt; rnd;</pre>
+
+<p>　しかも、クラステンプレートなら<font color=red>デフォルト引数も指定できます</font>。実は、これは <font color=red>typename に対しても使えます</font>。</p>
+
+<pre><font color=blue>template</font> &lt;<font color=blue>unsigned int</font> TMPL_BITS <font color=red>= 15</font>&gt;
+<font color=blue>class</font> CRandTmpl
+{
+    :
+    :
+
+CRandTmpl &lt;&gt; rnd;  <font color=green>// テンプレート引数には１５が指定されます
+                   // 山カッコは必要</font>
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE <font color=red>= int</font>&gt;
+<font color=blue>class</font> CArray
+{
+    :
+    :
+
+CArray &lt;&gt; array;</pre>
+
+<p>　ただし、関数テンプレートではデフォルト引数は使えません。</p>
+
+<hr>
+
+<p>　以上を踏まえて CRand を改造してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Rand.h</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;time.h&gt;</font>
+
+<font color=green>// unsigned は unsigned int と同等です</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS = <font color=darkcyan>15</font>,
+          <font color=blue>unsigned</font> TMPL_A    = <font color=darkcyan>48828125</font>,
+          <font color=blue>unsigned</font> TMPL_C    = <font color=darkcyan>1</font>&gt;
+<font color=blue>class</font> CRandTmpl
+{
+<font color=blue>private</font>:
+    <font color=blue>unsigned</font> m_nSeed;  <font color=green>// 乱数種</font>
+
+    <font color=green>// 定数群</font>
+<font color=blue>public</font>:
+    <font color=blue>static const unsigned</font> BITS;  <font color=green>// 使用する上位ビットの数</font>
+    <font color=blue>static const unsigned</font> MAX;   <font color=green>// 乱数の上限</font>
+    <font color=blue>static const unsigned</font> A;     <font color=green>// 傾き</font>
+    <font color=blue>static const unsigned</font> C;     <font color=green>// 切片</font>
+
+<font color=blue>public</font>:
+    <font color=green>// 初期化</font>
+    <font color=blue>void</font> Init(<font color=blue>unsigned</font> nSeed){ m_nSeed = nSeed; }
+    CRandTmpl(<font color=blue>unsigned</font> nSeed){ Init(nSeed); }
+
+    <font color=green>// 現在の時間で初期化</font>
+    <font color=blue>void</font> Init(){ Init((<font color=blue>unsigned</font>)time(NULL)); }
+    CRandTmpl(){ Init(); }
+
+    <font color=green>// 乱数種の取得</font>
+    <font color=blue>unsigned</font> GetSeed(){ <font color=blue>return</font> m_nSeed; }
+
+    <font color=green>// 疑似乱数生成</font>
+    <font color=blue>int</font> Rand();
+    <font color=blue>operator int</font>()     { <font color=blue>return</font> Rand(); }
+    <font color=blue>operator unsigned</font>(){ <font color=blue>return</font> Rand(); }
+
+    <font color=green>// [0, 1)（０以上１未満）の疑似乱数生成</font>
+    <font color=blue>double</font> RandD();
+    <font color=blue>operator double</font>(){ <font color=blue>return</font> RandD(); }
+
+    <font color=green>// ある数未満の乱数を生成</font>
+    <font color=blue>int</font> Rand(<font color=blue>int</font> nLimit);
+};
+
+<font color=green>////////////////////////////////////////////////////////////////
+// 定数群
+
+// 使用する上位ビットの数</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>const unsigned</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    BITS = TMPL_BITS;
+
+<font color=green>// 乱数の上限</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>const unsigned</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    MAX = (<font color=darkcyan>1</font> &lt;&lt; TMPL_BITS) - <font color=darkcyan>1</font>;
+
+<font color=green>// 傾き</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>const unsigned</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    A = TMPL_A;
+
+<font color=green>// 切片</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>const unsigned</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    C = TMPL_C;
+
+<font color=green>////////////////////////////////////////////////////////////////
+// メンバ関数の実装
+
+// 疑似乱数生成</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>int</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    Rand()
+{
+    m_nSeed = m_nSeed * TMPL_A + TMPL_C;
+    <font color=green>// 上位ビットを返します</font>
+    <font color=blue>return</font> m_nSeed &gt;&gt; (<font color=darkcyan>32</font> - TMPL_BITS);
+}
+
+<font color=green>// [0, 1)（０以上１未満）の疑似乱数生成</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>inline double</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    RandD()
+{
+    <font color=blue>return</font> (<font color=blue>double</font>)Rand() * (<font color=darkcyan>1.0</font> / (MAX + <font color=darkcyan>1</font>));
+}
+
+<font color=green>// ある数未満の乱数を生成</font>
+<font color=blue>template</font> &lt;<font color=blue>unsigned</font> TMPL_BITS, <font color=blue>unsigned</font> TMPL_A, <font color=blue>unsigned</font> TMPL_C&gt;
+<font color=blue>inline int</font> CRandTmpl &lt;TMPL_BITS, TMPL_A, TMPL_C&gt; ::
+    Rand(<font color=blue>int</font> nLimit)
+{
+    <font color=green>// % nLimit よりも上質の分布になります
+    // ただし、１６ビット機では long でやらないといけません</font>
+    <font color=blue>return</font> Rand() * nLimit / (MAX + <font color=darkcyan>1</font>);
+}
+
+<font color=green>// 普通は CRand を使えば充分、という風にしておきます</font>
+<font color=blue>typedef</font> CRandTmpl &lt;&gt; CRand;</pre></td></tr>
+
+</table></center>
+
+<p>　何というかかなりうるさいコードになりましたが、とりあえずこれでテンプレート化できました。これで注文を出した人も満足してくれることでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>テンプレート引数には整数定数をとることができる。</li>
+<li>クラステンプレートではデフォルト引数がとれる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回まででテンプレートについては大体話し終わりました。次回からはちょっと高度な話に入ろうと思います。それではさようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp02039.html" target="main">第３９章　クラステンプレート３</a> | <a href="cpp02041.html" target="main">第４１章　キャスト</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.14</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

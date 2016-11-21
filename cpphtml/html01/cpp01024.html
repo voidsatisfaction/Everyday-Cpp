@@ -1,0 +1,276 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２４章 文字列をいじろう -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２４章　文字列をいじろう</font>
+</center>
+<hr>
+
+<p>　文字列をいじくる関数はいろいろあります。そのうち、今回は strlen と sprintf について話します。</p>
+
+<p>　これら以外のものは、後に出てくることもあるかもしれませんが、自分で調べてみるのもいいでしょう。</p>
+
+<hr>
+
+<p>　今回の要点はこんなところです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>strlen で、文字列の長さを取得できる。</li>
+<li>sprintf で、文字列を編集できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回 for を使って文字列の要素を表示しましたね。</p>
+
+<pre>for(i = 0; i &lt; 14; i++)
+    cout &lt;&lt; (int)(unsigned char)szHello[i] &lt;&lt; ", ";</pre>
+
+<p>　この 14 という数値は szHello の大きさ−１です。何故１を引いているかといえば、最後の１つだけは ", " を表示しないので、処理を別にする必要があったからでした。</p>
+
+<p>　しかし、文字列を変更するようなことがあったらどうなるでしょうか？　いちいちこの数字も変えなくてはならないのは面倒です。そんなときのために、文字列の長さを取得する関数が用意されています。</p>
+
+<pre>strlen(szHello)</pre>
+
+<p>　この関数の戻り値は文字列の長さになります。このとき注意するのは、<font size=+1 color=red>ヌルキャラクタは数えられない</font>というところです。例えば、"やぁ、こんちは" では、14 が返ってくることになります。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// String1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>char</font> szHello[] = <font color=darkcyan>"やぁ、こんちは"</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"「"</font> &lt;&lt; szHello &lt;&lt; <font color=darkcyan>"」を文字コードに変えると、"</font> &lt;&lt; endl;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=red>strlen(szHello)</font>; i++)
+        cout &lt;&lt; (<font color=blue>int</font>)(<font color=blue>unsigned char</font>)szHello[i] &lt;&lt; <font color=darkcyan>", "</font>;
+
+    cout &lt;&lt; (<font color=blue>int</font>)(<font color=blue>unsigned char</font>)szHello[i] &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"になります。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　ん？　何か見慣れないものがありますね。</p>
+
+<pre>#include &lt;string.h&gt;</pre>
+
+<p>　これは、文字列操作をするために必要なものです。詳しくは<a href="cpp01027.html" target="main">第２７章</a>に話します。</p>
+
+<p>　まぁそれは置いておいて、これで文字列を変更してもループの回数のところを変更しなくてすむようになりました。このように、様々な変更に耐えうるプログラムを組むことはバグの抑制につながります。</p>
+
+<hr>
+
+<p>　次は文字列を作ってみましょう。</p>
+
+<p>　例えば、第８章の Func1b.cpp を見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Func1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> f(<font color=blue>int</font> x, <font color=blue>int</font> y)
+{
+    cout &lt;&lt; <font color=darkcyan>"f("</font> &lt;&lt; x &lt;&lt; <font color=darkcyan>", "</font> &lt;&lt; y
+         &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; <font color=darkcyan>2</font> * x + y &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    f(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    f(<font color=darkcyan>182</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　cout のところがかなり面倒になっていますね。では、この表示される文字列をあらかじめ作っておいて、それを表示するようにしてみましょう。</p>
+
+<p>　そのための関数が sprintf です。この関数は覚えるのがかなり面倒な関数ですが、利用価値は大きいです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr><td><pre><font color=green>// Func1c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>void</font> f(<font color=blue>int</font> x, <font color=blue>int</font> y)
+{
+    <font color=blue>char</font> szResult[<font color=darkcyan>50</font>];
+
+    sprintf(szResult, <font color=darkcyan>"f(%d, %d) = %d"</font>, x, y, <font color=darkcyan>2</font> * x + y);
+    cout &lt;&lt; szResult &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    f(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    f(<font color=darkcyan>182</font>, <font color=darkcyan>144</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>f(1, 2) = 4
+f(182, 144) = 508</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　また</p>
+
+<pre>#include &lt;stdio.h&gt;</pre>
+
+<p>という見慣れないものがありますが、これも sprintf を使うために必要なものです。</p>
+
+<p>　先ず、作った文字列を入れておく容器が必要になります。それが szResult です。<font color=red>大きさは大きめにとっておく</font>とよいでしょう。もし小さすぎても、この関数はそんなことお構いなしに文字列を入れてしまいます。そうなるとどうなってしまうかは、わかりません。</p>
+
+<p>　で、文字列を作るのは</p>
+
+<pre>sprintf(szResult, "f(%d, %d) = %d", x, y, 2 * x + y);</pre>
+
+<p>の部分です。はじめの引数から順に説明していきます。</p>
+
+<p>　先ず、第１引数は作った文字列を入れる容器です。ここにはもちろんさっき作った szResult を入れます。</p>
+
+<p>　次に、第２引数は作る文字列の鋳型です。<font color=red>%d のところが第３引数以降に書いてある数値に置き換わって、それが第１引数 szResult に入る</font>という要領です。</p>
+
+<p>　すなわち、第３引数以降の引数は %d の数だけ必要になります。<font color=red>引数の個数が一定でないことに注意して下さい。</font></p>
+
+<p>　ここでは、初めは x = 1, y = 2, 2 * x + y = 4 なので、順に 1, 2, 4 の入った文字列が作られます。次は x = 184, y = 144, 2 * x + y = 508 なので、順に 184, 144, 508 の入った文字列が作られます。</p>
+
+<hr>
+
+<p>　sprintf はもっといろいろなパーツを組み合わせて文字列を作ることができます。<font color=red>パーツの種類は %... で表します。</font>例えば %s は文字列を埋め込むことができます。そのほかにもいろいろありますが、多すぎて全部の機能をここで紹介することはできません。一部だけ表にします。</p>
+
+<center><table border=2>
+<colgroup><col valign=middle><col align=center valign=middle><col align=center valign=middle><col align=center valign=middle><col align=center valign=middle><col align=center valign=middle></colgroup>
+<tbody>
+
+<tr>
+<th bgcolor=lightgreen>記号</th>
+<td bgcolor=yellow>%d</td>
+<td bgcolor=yellow>%x</td>
+<td bgcolor=yellow>%f</td>
+<td bgcolor=yellow>%c</td>
+<td bgcolor=yellow>%s</td>
+</tr>
+
+<tr>
+<th bgcolor=lightgreen>パーツ</th>
+<td bgcolor=cyan>整数</td>
+<td bgcolor=cyan>１６進数</td>
+<td bgcolor=cyan>小数</td>
+<td bgcolor=cyan>１文字</td>
+<td bgcolor=cyan>文字列</td>
+</tr>
+
+</tbody></table></center>
+
+<p>　あと、実はこの書式と同じようにして文字列を表示する関数も存在します。それは printf です。ですから、ここは</p>
+
+<pre>printf("f(%d, %d) = %d", x, y, 2 * x + y);</pre>
+
+<p>とすることもできます。</p>
+
+<hr>
+
+<p>　文字列を操作する関数は他にもいろいろあります。ですが、ここで逐一全てを説明するには限界があります。なので、重要なものを表にするに止めて、あとはヘルプで「文字列操作ルーチン」を確認して下さい。</p>
+
+<center><table border=1 width=95%>
+
+<tr>
+  <th width=10%>関数名</th>
+  <th width=25%>引数</th>
+  <th width=60%>機能</th>
+</tr>
+
+<tr>
+  <td>strcpy</td>
+  <td>第１引数：容器<br>第２引数：文字列</td>
+  <td>第２引数の文字列を第１引数にコピーします。</td>
+</tr>
+
+<tr>
+  <td>strcat</td>
+  <td>文字列を２つ</td>
+  <td>第２引数の文字列を第１引数に追加します。<font color=red>第１引数の容量をオーバーしないよう気を付けて下さい。</font></td>
+</tr>
+
+<tr>
+  <td>strcmp</td>
+  <td>文字列を２つ</td>
+  <td>文字列の比較を行います。等しいときは０を返します。<font color=red>文字列を直接 == で比較することはできない</font>ので注意して下さい。</td>
+</tr>
+
+<tr>
+  <td>strchr</td>
+  <td>第１引数：文字列<br>第２引数：文字</td>
+  <td>指定した文字列の中で、指定した文字が最初に現れるアドレスを返します。見つからなければ NULL というものを返します。</td>
+</tr>
+
+<tr>
+  <td>strrchr</td>
+  <td>第１引数：文字列<br>第２引数：文字</td>
+  <td>指定した文字列の中で、指定した文字が最後に現れるアドレスを返します。見つからなければ NULL というものを返します。</td>
+</tr>
+
+</table></center>
+
+<hr>
+
+<h4>補足</h4>
+
+<p>　新しいコンパイラでは、&lt;string.h&gt; の代わりに &lt;cstring&gt; と書きます。 &lt;iostream.h&gt; の場合は ".h" を除いただけですが、今回は<font color=red>頭に "c" をつけます</font>。これは、C++ より前、つまり <font color=red>C の時代からある機能</font>であることを表します。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>strlen で、文字列の長さを取得できる。</li>
+<li>sprintf で、文字列を編集できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は第２５章ということで「ひとやすみ」と題し、ＶＣ＋＋のヘルプ機能について話していきます。</p>
+
+<p>　では、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01023.html" target="main">第２３章　文字列の扱い方</a> | <a href="cpp01025.html" target="main">第２５章　ひとやすみ...</a></p>
+<p align=right><font size=-1><i>Last update was done on 2004.1.22</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

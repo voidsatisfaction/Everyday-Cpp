@@ -1,0 +1,179 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１２章 もっと条件分岐 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１２章　もっと条件分岐</font>
+</center>
+<hr>
+
+<p>　前回条件分岐の話をしました。今回はもうちょっとその話の続きをしたいと思います。２つの例をもとに if 文の使い方を考えてみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>if 文は変数などがある値をとったときの処理を決める。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　if は条件分岐に使いますが、これを詳しく言うと<font color=red>「変数や関数の戻り値などがある値をとったときの処理を決める」</font>となります。</p>
+
+<p>　では、２つの値を入力してその割り算をし、商と余りを表示するプログラムを作るとしましょう。</p>
+
+<p>　このとき、特別な処理をする必要があります。そうです。２番目の値に０を入れられたときの処理を決めてやる必要があります。そのまま割り算をしてしまうとエラーが出てしまいます。</p>
+
+<p>　そこで、２番目の値に０が入力されたときには、「０では割れません！」という警告を出すことにします。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// If2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Divide()
+{
+    <font color=blue>int</font> a, b;
+
+    cout &lt;&lt; <font color=darkcyan>"１番目の値を入力してください &gt; "</font>;
+    cin &gt;&gt; a;
+
+    cout &lt;&lt; <font color=darkcyan>"２番目の値を入力してください &gt; "</font>;
+    cin &gt;&gt; b;
+
+    <font color=blue>if</font>(b == <font color=darkcyan>0</font>)
+    {
+        cout &lt;&lt; <font color=darkcyan>"０では割れません！"</font> &lt;&lt; endl;
+    }
+    <font color=blue>else</font>
+    {
+        cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" / "</font> &lt;&lt; b &lt;&lt; <font color=darkcyan>" = "</font>
+             &lt;&lt; a / b &lt;&lt; <font color=darkcyan>" ... "</font> &lt;&lt; a % b &lt;&lt; endl;
+    }
+    <font color=blue>return</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    Divide();
+    Divide();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>１番目の値を入力してください &gt; 15
+２番目の値を入力してください &gt; 4
+15 / 4 = 3 ... 3
+１番目の値を入力してください &gt; 5
+２番目の値を入力してください &gt; 0
+０では割れません！</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<hr>
+
+<p>　条件文には関数を含むことも可能です。では、西暦年号を昭和元号に変換する関数を例に考えてみましょう。</p>
+
+<p>　昭和は１９２６年から１９８９年の６４年間使われた元号です。つまり、西暦年号から１９２５を引けば昭和元号になります。</p>
+
+<p>　ですが、１９９９年は昭和ではありませんし、１８００年なんかも昭和ではありません。ただ１９２５を引けばよいというものではありません。</p>
+
+<p>　そこで、引数が上の範囲内の時は１９２５を引いた値を返し、範囲外の時は０を返すことにします。</p>
+
+<p>　では、下のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// If3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> ChangeToShohwa(<font color=blue>int</font> a)
+{
+    <font color=blue>if</font>(<font color=darkcyan>1926</font> &lt;= a && a &lt;= <font color=darkcyan>1989</font>)
+        <font color=blue>return</font> a - <font color=darkcyan>1925</font>;
+    <font color=blue>else</font>
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>void</font> Shohwa()
+{
+    <font color=blue>int</font> a;
+
+    cout &lt;&lt; <font color=darkcyan>"西暦を入力して下さい &gt; "</font>;
+    cin &gt;&gt; a;
+
+    <font color=blue>if</font>(ChangeToSyohwa(a) == <font color=darkcyan>0</font>)
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和ではありません。"</font> &lt;&lt; endl;
+    <font color=blue>else</font>
+        cout &lt;&lt; <font color=darkcyan>"その年は昭和 "</font> &lt;&lt; ChangeToShohwa(a)
+             &lt;&lt; <font color=darkcyan>" 年です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    Shohwa();
+    Shohwa();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>西暦を入力して下さい > 1979
+その年は昭和 54 年です。
+西暦を入力して下さい > 1999
+その年は昭和ではありません。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　入力した西暦が昭和時代のものでないときは０が返されます。そこで、</p>
+
+<pre>if(ChangeToShohwa(a) == 0) ...</pre>
+
+<p>として、昭和でないときの処理をし、</p>
+
+<pre>else ...</pre>
+
+<p>で、昭和のときの処理を行いました。</p>
+
+<p>　このプログラムでは if と else の後の文を { } で囲っていませんが、<font color=red>１文なら囲まなくて良い</font>と前に言いましたね。ちなみに文というのはセミコロンで終わるようなものでした。</p>
+
+<hr>
+
+<p>　今回は具体例を元に if 文の使い方をもう一度話してみました。どうでしょう。if の使い方が大体分かってきたでしょうか？</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>if 文は変数などがある値をとったときの処理を決める。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01011.html" target="main">第１１章　条件分岐</a> | <a href="cpp01013.html" target="main">第１３章　さらに条件分岐</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.2.27</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

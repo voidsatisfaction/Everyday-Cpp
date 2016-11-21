@@ -1,0 +1,145 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６１章 多次元配列 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６１章　多次元配列</font>
+</center>
+<hr>
+
+<p>　例えば九九表を作るとします。この情報を nKuKu[9 * 9] という配列変数に入れるのも不格好です。今回はこういうときのための方法について話します。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>[ ] の数を増やせば、多次元配列になる。</li>
+<li>多次元配列は思わぬ大きさになることがある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ず、始めに言った通り<font color=red>九九表を作って、それを一旦変数に入れてみよう</font>と思います。さて、多くの連続したデータを１つの変数で扱うということから、配列変数を使うことになるのはすぐ分かることと思います。</p>
+
+<p>　さて、今まで話したことだけでは、</p>
+
+<pre><font color=blue>const int</font> KUKU_LIMIT = <font color=darkcyan>9</font>;
+<font color=blue>int</font>       nKuKu[KUKU_LIMIT * KUKU_LIMIT];
+<font color=blue>int</font>       i, j;
+
+<font color=blue>for</font>(i = <font color=darkcyan>1</font>; i &lt;= KUKU_LIMIT; i++)
+    <font color=blue>for</font>(j = <font color=darkcyan>1</font>; j &lt;= KUKU_LIMIT; j++)
+        nKuKu[(i - <font color=darkcyan>1</font>) * KUKU_LIMIT + (j - <font color=darkcyan>1</font>)] = i * j;</pre>
+
+<p>ということになるでしょう。九九表の対称性を利用して、処理を軽減することもできますね（これについては、自分で考えてみて下さい）。</p>
+
+<p>　で、i * j の値を取り出すときは nKuKu[(i - 1) * KUKU_LIMIT + (j - 1)] です（i * j とすればいいというミもフタもないことは言いっこなしです(^ ^;）。</p>
+
+<p>　これらは非常に分かりにくいですね。このようなときのために、<font color=red>番号をいくつもとれる</font>ような配列を作ることができます。それが<font color=red>多次元配列</font>です。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Array2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>const int</font> KUKU_LIMIT = <font color=darkcyan>9</font>;
+    <font color=blue>int</font>       <font color=red>nKuKu[KUKU_LIMIT][KUKU_LIMIT]</font>;
+    <font color=blue>int</font>       i, j;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>1</font>; i &lt;= KUKU_LIMIT; i++)
+        <font color=blue>for</font>(j = <font color=darkcyan>1</font>; j &lt;= KUKU_LIMIT; j++)
+            <font color=red>nKuKu[i - 1][j - 1]</font> = i * j;
+
+    printf(<font color=darkcyan>"    1  2  3  4  5  6  7  8  9\n"</font>);
+    <font color=blue>for</font>(i = <font color=darkcyan>1</font>; i &lt;= KUKU_LIMIT; i++)
+    {
+        printf(<font color=darkcyan>" %d "</font>, i);
+        <font color=blue>for</font>(j = <font color=darkcyan>1</font>; j &lt;= KUKU_LIMIT; j++)
+            printf(<font color=darkcyan>"%2d "</font>, <font color=red>nKuKu[i - 1][j - 1]</font>);
+        putchar(<font color=darkcyan>'\n'</font>);
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>    1  2  3  4  5  6  7  8  9
+ 1  1  2  3  4  5  6  7  8  9
+ 2  2  4  6  8 10 12 14 16 18
+ 3  3  6  9 12 15 18 21 24 27
+ 4  4  8 12 16 20 24 28 32 36
+ 5  5 10 15 20 25 30 35 40 45
+ 6  6 12 18 24 30 36 42 48 54
+ 7  7 14 21 28 35 42 49 56 63
+ 8  8 16 24 32 40 48 56 64 72
+ 9  9 18 27 36 45 54 63 72 81</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　この <font color=red>nKuKu[KUKU_LIMIT][KUKU_LIMIT]</font> というのが<font color=red>多次元配列</font>です。こうすると、番号を２つ取ることのできる配列になります。取る番号の数が２つなので、<font color=red>２次元配列</font>とも言います。</p>
+
+<p>　番号によって、それぞれが違う変数を示すことになります。片方が同じ番号でも、もう片方の番号が違えば別の変数になります。</p>
+
+<p>　この配列の要素にアクセスするためには、それぞれの [ ] に番号を入れるだけです。たとえば、４×６は nKuKu[3][5] に入れればいいですし、７×１は nKuKu[6][0] に入れればいいのです（もちろん、nKuKu[5][3], nKuKu[0][6] に入れたのでも別に構いませんが）。</p>
+
+<hr>
+
+<p>　今回の例は２次元配列でしたが、もちろん、３次元、４次元、５次元配列なども作れます。それらも、[ ] の数を増やすだけで簡単に作ることができます。</p>
+
+<p>　では、と、調子に乗って次のような配列変数を作ってしまうと、ちょっと厄介です。</p>
+
+<pre>int array[256][256][256];</pre>
+
+<p>　一見何の変哲もないようですが、この変数のサイズは一体いくらになるでしょうか？　２５６×２５６×２５６×４＝６７１０８８６４バイト、すなわち６４<a href="../htmlword/words022.html" target="words">メガバイト</a>になります。</p>
+
+<p>　第３部で話す予定ですが、<font color=red>メモリの総量とは別に、内部変数のサイズの総量にはある限りがあります</font>。この総量は普通１メガバイト程度であり（２０００年７月２５日現在）、６４メガバイトというのはこの総量を越えてしまいます（このことを<font color=red>スタックオーバーフロー</font>といいます）。このサイズは変更できますが、それでも６４メガバイトは大きいでしょう。</p>
+
+<p>　では、グローバル変数ではどうなのかといえば、それならとりあえず動くでしょう。ですが、６４メガバイトはちょっと大きすぎて、メモリが足りないと起動できなくなるでしょう。</p>
+
+<p>　int array[16777256]; としていればその無茶さはわかりますが、３次元配列にすると各番号が小さくなり、パッと見無茶な大きさかどうかが分かりにくくなります。<font color=red>多次元配列を作る際は、きちんとサイズを確認しましょう。</font></p>
+
+<p>　もちろん、<font color=red>１次元配列でも</font>、無茶なサイズの配列変数は作らないようにしましょう。</p>
+
+<p>補足：このような大きな配列を作るとき、普通は、後に話す「メモリの動的確保」というものを使います。ですが、１６メガバイトとなると、スペックの低い環境ではそれでもメモリが足りないこともあるでしょう。そういうメモリを確保する方法もありますが、方法はＯＳに依存することになります。ファイルを利用して一度にメモリ上に置くデータを減らすという手、使わないデータを圧縮しておくという手など、メモリにのらないほどの巨大配列を扱うにはいろいろ工夫が必要でしょう。</p>
+
+<hr>
+
+<p>　では、最後に今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>[ ] の数を増やせば、多次元配列になる。</li>
+<li>多次元配列は思わぬ大きさになることがある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は、多次元配列の初期化とメモリ上でのデータの並び方について話します。では。</p>
+
+<hr>
+
+<p align=right><a href="cpp01060.html" target="main">第６０章　構造体３</a> | <a href="cpp01062.html" target="main">第６２章　多次元配列２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2009.9.13</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

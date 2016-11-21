@@ -1,0 +1,246 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３２章 数珠繋ぎ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３２章　数珠繋ぎ</font>
+</center>
+<hr>
+
+<p>　今回からはデータ構造に関する話に入っていきます。手始めに、リストに関して話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>リストはポインタを介してデータを数珠繋ぎにしたもの。</li>
+<li>リストは要素の挿入、削除が簡単。</li>
+<li>リストは順々にしかデータを扱えない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　挿入ソートで配列に要素を挿入するとき、挿入する場所まで要素を交換し続けるという面倒な事をしました。<font color=red>配列は「途中に挿入する」ということには弱い</font>わけです。同じく、<font color=red>「途中の要素を削除する」</font>ということにも弱いです。</p>
+
+<p>　あまり「挿入」や「削除」という操作を行うことがない場合はこれで問題ありませんが、頻繁に挿入や削除を行いたいようなデータではちょっと不便ですね。そういう場合は、<font color=red>データをリストにする</font>と便利です。</p>
+
+<p>　では、その「リスト」とは一体何なのでしょうか？　先ずは下の図を見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0303201.gif" width=330 height=70 alt="リスト"></td></tr>
+
+<tr><th>図．１　リスト</th></tr>
+
+</table></center>
+
+<p>　一番上に４つの要素が並んでいます。この要素の１つ１つは<font color=red>構造体またはクラス</font>です。</p>
+
+<p>　要素の中に矢印が描いてありますが、これは<font color=red>次の要素へのポインタ</font>です。つまり、リストというのは<font color=red>次の要素へのポインタを持たせることでデータを数珠繋ぎにしたもの</font>ということになります。</p>
+
+<p>　先ず初めに赤色の要素があります。そして、そのメンバに次の要素へのポインタがあります。矢印は黄色ですから、次の要素は黄色の要素になります。次に黄色の要素があります。そこにある矢印は緑色の矢印なので、次の要素は緑色の要素になります。同じように次の要素は水色の要素となり、ここで矢印は<font color=red>リストの終わり</font>を示す灰色の矢印になっていて、これが最後の要素になります。リストの終わりを示すには、実際には NULL ポインタか、終わりを示す特別な実体のアドレスを使うことになります。</p>
+
+<p>　このように、赤色の要素の位置さえ分かっていれば、たとえ赤色、黄色、緑色、水色の要素が<font color=red>メモリ上でバラバラに存在していたとしても、全部の要素を参照することができる</font>わけです。</p>
+
+<p>　では、この黄色の要素と緑色の要素の間に紫色の要素を挿入したいと思います。こういう場合、どうしたらいいと思いますか？</p>
+
+<p>　そうですね。緑色の要素へのポインタを紫色の要素に、そして紫色の要素へのポインタを黄色の要素に持たせればいいわけです。</p>
+
+<p>　このとき、<font color=red>紫色の要素はメモリ上のどこにいても構わない</font>点に注意して下さい。これを図で描くとこうなります。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0303202.gif" width=400 height=230 alt="リストへの挿入"></td></tr>
+
+<tr><th>図．２　リストへの挿入</th></tr>
+
+</table></center>
+
+<p>　こうしておけば、赤色、黄色、紫色、緑色、水色の順で要素を参照していくことができるわけです。</p>
+
+<p>　また、途中の要素の削除も簡単です。紫色の要素を削除したいときは、黄色の要素にある次の要素へのポインタに、紫の要素内にある同じポインタの値を代入すればいいだけです。（もし紫色の要素を動的に確保していれば、delete する必要があります。）</p>
+
+<hr>
+
+<p>　では、ちょっと例を見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// List1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=green>// 色を表す文字列</font>
+<font color=blue>static const char</font> g_asColor[][<font color=darkcyan>3</font>] = {
+    <font color=darkcyan>"赤"</font>, <font color=darkcyan>"橙"</font>, <font color=darkcyan>"黄"</font>, <font color=darkcyan>"緑"</font>, <font color=darkcyan>"青"</font>, <font color=darkcyan>"藍"</font>, <font color=darkcyan>"紫"</font>,
+};
+
+<font color=green>// 色の上限、下限値</font>
+<font color=blue>const int</font> COL_FIRST = <font color=darkcyan>0</font>;
+<font color=blue>const int</font> COL_LAST  = numof(g_asColor) - <font color=darkcyan>1</font>;
+
+<font color=green>// 色を保持するリストの要素</font>
+<font color=blue>struct</font> SColor
+{
+    <font color=blue>int</font>     color;  <font color=green>// 色</font>
+    <font color=red>SColor* pNext;  // 次の要素へのポインタ</font>
+};
+
+<font color=green>// 最初の要素のアドレスを保持する特別な要素</font>
+<font color=blue>static</font> SColor g_ColFirst = { <font color=darkcyan>0</font>, NULL };
+
+<font color=green>// index で示す位置に色を挿入</font>
+<font color=blue>bool</font> InsertColor(<font color=blue>int</font> index, <font color=blue>int</font> color)
+{
+    SColor* pNew = <font color=blue>new</font> SColor;  <font color=green>// 動的に要素を確保する</font>
+    <font color=blue>if</font>(pNew == NULL)
+        <font color=blue>return false</font>;
+    pNew-&gt;color = color;
+
+    SColor* pOld;  <font color=green>// 要素を挿入する位置</font>
+    <font color=blue>int</font>     i;
+
+    <font color=green>// index の位置に来るか、最後に来るかしたら、そこへ挿入します
+    // 分かりづらければ０〜２個の要素で考えてみて下さい</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>, pOld = &amp;g_ColFirst;
+        i &lt; index &amp;&amp; pOld-&gt;pNext != NULL; i++)
+    {
+        pOld = pOld-&gt;pNext;
+    }
+    <font color=green>// 挿入</font>
+    pNew-&gt;pNext = pOld-&gt;pNext;
+    pOld-&gt;pNext = pNew;
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// リストを解放</font>
+<font color=blue>void</font> Release()
+{
+    SColor* pDel = g_ColFirst.pNext;
+
+    <font color=blue>while</font>(pDel != NULL)
+    {
+        <font color=green>// delete したあとに pDel-&gt;pNext を取得してはいけません</font>
+        SColor* pNext = pDel-&gt;pNext;
+        <font color=blue>delete</font> pDel;
+        pDel = pNext;
+    }
+    g_ColFirst.pNext = NULL;
+}
+
+<font color=green>// 入力と挿入</font>
+<font color=blue>bool</font> Input()
+{
+    <font color=blue>int</font> index;
+    <font color=blue>int</font> color;
+
+    cout &lt;&lt; <font color=darkcyan>"何色にする？"
+            "（０１２３４５６→赤橙黄緑青藍紫）&gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; color;
+    <font color=blue>if</font>(color &lt; COL_FIRST || COL_LAST &lt; color)
+        <font color=blue>return false</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"何番目に挿入する？ &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; index;
+    <font color=blue>if</font>(index &lt; <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    <font color=green>// 色を挿入</font>
+    <font color=blue>if</font>(!InsertColor(index, color))
+        <font color=blue>return false</font>;
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// リストの内容を表示</font>
+<font color=blue>void</font> DispColors()
+{
+    SColor* pColor = g_ColFirst.pNext;
+
+    <font color=blue>while</font>(pColor != NULL)
+    {
+        cout &lt;&lt; <font color=darkcyan>"色："</font> &lt;&lt; g_asColor[pColor-&gt;color]
+             &lt;&lt; <font color=darkcyan>" , アドレス："</font> &lt;&lt; pColor &lt;&lt; endl;
+        pColor = pColor-&gt;pNext;
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(Input());
+    DispColors();
+    Release();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+};</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>何色にする？（０１２３４５６→赤橙黄緑青藍紫）&gt; 0
+何番目に挿入する？ &gt; 0
+何色にする？（０１２３４５６→赤橙黄緑青藍紫）&gt; 2
+何番目に挿入する？ &gt; 1
+何色にする？（０１２３４５６→赤橙黄緑青藍紫）&gt; 3
+何番目に挿入する？ &gt; 2
+何色にする？（０１２３４５６→赤橙黄緑青藍紫）&gt; 4
+何番目に挿入する？ &gt; 3
+何色にする？（０１２３４５６→赤橙黄緑青藍紫）&gt; 6
+何番目に挿入する？ &gt; 2
+何色にする？（０１２３４５６→赤橙黄緑青藍紫）&gt; 7
+色：赤 , アドレス：0x00022078
+色：黄 , アドレス：0x00022088
+色：紫 , アドレス：0x000220B8
+色：緑 , アドレス：0x00022098
+色：青 , アドレス：0x000220A8</pre></td></tr>
+
+</table></center>
+
+<p>　リストを使えば、挿入操作はポインタの代入２回だけですみます。配列では後の要素を全部ずらしていく必要があるのに、これは大きな差です。</p>
+
+<p>　そして、要素を１つずつ動的に確保していっても順番を保つことができます。可変長配列メンバをもつ構造体のように１つ１つの要素の大きさが違っていても、全く問題ありません。</p>
+
+<hr>
+
+<p>　では、最後にポインタの配列とリストとの比較を行ってみます。</p>
+
+<p>　ポインタの配列を使う利点は、<font color=red>インデックスを使って簡単に要素を参照できる</font>というところです。リストを使うと、上の InsertColor 関数のように使うたびに for 文で数えていく必要があります。このため、リストには<font color=red>二分探索は使えません</font>。ソートには挿入ソートが使えますね。</p>
+
+<p>　一方ポインタの配列を使う欠点は、<font color=red>挿入</font>に無駄が多いというところと、もう１つ<font color=red>自由な拡張</font>がしにくいところにあります。ポインタの配列を使ってしまうと、その配列のサイズを気にする必要があります。配列のサイズを超えるような場合には、配列を再確保する必要がありますね。再確保するということは、新しい配列を用意して、<font color=red>さらに、前の配列を全てコピーしてこなくてはなりません</font>。ここに無駄が生じます。</p>
+
+<p>　このように、リストも配列も一長一短であり、データを扱うときはどちらを使ったらいいか考える必要があります。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>リストはポインタを介してデータを数珠繋ぎにしたもの。</li>
+<li>リストは要素の挿入、削除が簡単。</li>
+<li>リストは順々にしかデータを扱えない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回もリストです。しかし、ちょっと違います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03031.html" target="main">第３１章　出鱈目？　規則的？</a> | <a href="cpp03033.html" target="main">第３３章　数珠繋ぎ２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

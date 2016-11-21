@@ -1,0 +1,232 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３８章 クラステンプレート２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３８章　クラステンプレート２</font>
+</center>
+<hr>
+
+<p>　今回は前回のソースを見て、どこがどうなっているのかを解説したいと思います。とは言っても、どうなっているかほとんど予想が付いている人もいるかもしれませんが。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>template はクラス宣言の前と各関数の実装の前の全てに付ける。</li>
+<li>クラステンプレートは明示的にテンプレート引数を指定して使う。</li>
+<li>メンバ関数の実装時にもクラス名にテンプレート引数を指定する。</li>
+<li>引数にとる場合でもテンプレート引数を指定する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今やることの確認です。CIntArray は int 型の配列しか使えなかったので、これをどの型の配列でも作れるようにしたいのでした。これには<font color=red>クラステンプレート</font>が利用できます。</p>
+
+<p>　クラステンプレートはクラスのテンプレートです。一部の型を自由に決めることができるわけです。</p>
+
+<p>　関数テンプレートとクラステンプレートは同じ「テンプレート」なので、<font color=red>そう文法が違うわけではありません</font>。</p>
+
+<p>　関数テンプレートでは関数の前に template &lt;typename TYPE&gt; のように書くのでした。これはクラステンプレートでも同じです。</p>
+
+<center><table border=1>
+
+<tr><th>CIntArray</th></tr>
+
+<tr><td><pre><font color=blue>class</font> CIntArray
+{
+   ...</pre></td></tr>
+
+<tr><th>CArray</th></tr>
+
+<tr><td><pre><font color=red>template &lt;typename TYPE&gt;</font> <font color=blue>class</font> CArray
+{
+   ...</pre></td></tr>
+
+</table></center>
+
+<p>　そして、int の配列を扱う部分を TYPE 用に書き換えてやればいいわけです。</p>
+
+<center><table border=1>
+
+<tr><th>CIntArray</th></tr>
+
+<tr><td><pre>    ....
+    <font color=blue>int</font>* m_pnum;
+    ...
+    int Get(<font color=blue>const int</font> index) <font color=blue>const</font>;
+    ...
+    <font color=blue>operator const</font> int*() <font color=blue>const</font>;  <font color=green>// 配列の直接参照</font>
+    ...</pre></td></tr>
+
+<tr><th>CArray</th></tr>
+
+<tr><td><pre>    ....
+    <font color=red>TYPE</font>* m_pnum;
+    ...
+    <font color=red>TYPE</font> Get(<font color=blue>const int</font> index) <font color=blue>const</font>;
+    ...
+    <font color=blue>operator const</font> <font color=red>TYPE</font>*() <font color=blue>const</font>;  <font color=green>// 配列の直接参照</font>
+    ...</pre></td></tr>
+
+</table></center>
+
+<p>　ここまでは何も問題ありませんね。</p>
+
+<hr>
+
+<p>　次に、メンバ関数の実装は無視して、クラステンプレートを使う部分を見てみましょう。</p>
+
+<pre>CArray <font color=red>&lt;char&gt;</font> str2(<font color=blue>sizeof</font> str1);</pre>
+
+<p>　明示的にテンプレート引数を指定していますね。このようにクラステンプレートでは<font size=+2 color=red>テンプレート引数は必ず明示的に指定します</font>。関数テンプレートと違い自動的に判断できる状況が少ないので、ややこしいので初めから自動的に判断できなくなっているわけです。</p>
+
+<p>　このことは後々話すことにも影響してきます。クラステンプレートの文法を考えるとき、このことを意識すれば大抵説明がつきます。</p>
+
+<hr>
+
+<p>　さて、問題のメンバ関数の実装です。</p>
+
+<center><table border=1>
+
+<tr><th>CIntArray</th><th>CArray</th></tr>
+
+<tr>
+
+<td valign=top><pre><font color=green>// メンバの初期化</font>
+<font color=blue>void</font> CArray::Init()
+{
+    m_pnum   = NULL;
+    m_nNumOf = <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre><font color=green>// メンバの初期化</font>
+<font color=red>template &lt;typename TYPE&gt;</font>
+<font color=blue>void</font> CArray <font color=red>&lt;TYPE&gt;</font> ::Init()
+{
+    m_pnum   = NULL;
+    m_nNumOf = <font color=darkcyan>0</font>;
+}</pre></td>
+
+</tr>
+
+</table></center>
+
+<p>　先ず、<font color=red>メンバ関数の実装にも template &lt;typename TYPE&gt; が付いています</font>。そして、それだけではなく<font color=red>クラス名を書く部分に &lt;TYPE&gt; というのが付いています</font>。</p>
+
+<p>　ああ、そういう文法なんだと済ませてもいいのですが、ちょっとどうなっているのか考えてみましょう。</p>
+
+<p>　普通のメンバ関数、例えば CIntArray クラスのメンバ関数を実装するときは</p>
+
+<pre><font color=blue>void</font> <font color=red>CIntArray</font>::Init()</pre>
+
+<p>のように、関数名の前に「&lt;クラス名&gt;::」を書くのでした。</p>
+
+<p>　ああそうなんだと</p>
+
+<pre><font color=blue>void</font> <font color=red>CArray</font>::Init()</pre>
+
+<p>とするだけでは、エラーになります。</p>
+
+<p>　CArray は「クラステンプレート」であって「クラス」ではないからです。クラステンプレートは「実体化」して初めて「クラス」になるわけです。</p>
+
+<p>　ということは、CArray だけではなく、テンプレート引数も指定しないといけないわけです。クラステンプレートは常にテンプレート引数を必要とする、ということがここで効いてきます。しかし、</p>
+
+<pre><font color=blue>void</font> CArray <font color=red>&lt;int&gt;</font> ::Init()</pre>
+
+<p>のように各実体に対して実装してはテンプレートの意味がありません。そこで、ここでテンプレートを利用して、</p>
+
+<pre><font color=red>template &lt;typename TYPE&gt;</font>
+<font color=blue>void</font> CArray <font color=red>&lt;TYPE&gt;</font> ::Init()</pre>
+
+<p>とするわけです。このように考えれば、この文法もすっきり理解できると思います。</p>
+
+<p>　そして、このことを踏まえればクラステンプレートのメンバ関数の<font color=red>特殊化</font>は</p>
+
+<pre><font color=blue>template</font> <font color=red>&lt; &gt;</font>
+<font color=blue>void</font> CArray <font color=red>&lt;char&gt;</font> ::Init()</pre>
+
+<p>とできることも分かります。</p>
+
+<p>　注意することは、この理解の方法が厳密に正しいかどうかは自分も知らないということです。あくまで予測に基づく「解釈」や「こじつけ」でしかないということを言っておきます。実際、「template &lt;TYPE&gt; を付けたが、それだけではその TYPE がどういう意味を持っているか分からないので CArray &lt;TYPE&gt; と明示的に指定している」と解釈しても構いません。</p>
+
+<p>　どちらにしろ、<font color=red>そういう文法にしないとコンパイラが解釈しづらい</font>ということです。（Ｃ／Ｃ＋＋は特殊な文法をできるだけ増やさないように作ってある感じがしますね。）</p>
+
+<hr>
+
+<p>　では、次に進みます。次は<font color=red>クラステンプレートを引数にとる関数</font>についてです。</p>
+
+<p>　これもクラステンプレートは常にテンプレート引数が必要だということを踏まえれば簡単に分かります。</p>
+
+<p>　先ず、CIntArray では</p>
+
+<pre>CIntArray::CIntArray(<font color=blue>const</font> CIntArray&amp; rother)</pre>
+
+<p>となっていました。これをそのまま</p>
+
+<pre>CArray::CArray(<font color=blue>const</font> CArray&amp; rother)</pre>
+
+<p>とすることはできません。先ず、クラステンプレートのメンバ関数なので</p>
+
+<pre><font color=red>template &lt;TYPE&gt;</font>
+CArray <font color=red>&lt;TYPE&gt;</font> ::CArray(<font color=blue>const</font> CArray&amp; rother)</pre>
+
+<p>となります。そして、引数にある CArray にもテンプレート引数を指定してやる必要があります。<font color=red>この場合は</font>同じテンプレート引数で実体化されたクラスへの参照を受け取りたいので、TYPE をそのまま指定してやればいいことになります。</p>
+
+<pre><font color=blue>template</font> &lt;TYPE&gt;
+CArray &lt;TYPE&gt; ::CArray(<font color=blue>const</font> CArray &lt;<font color=red>TYPE</font>&gt; &amp; rother)</pre>
+
+<p>これで完了です。</p>
+
+<p>　このことを踏まえれば、任意テンプレート引数で実体化されたクラステンプレートを受け付ける関数テンプレート</p>
+
+<pre><font color=red>template &lt;TYPE&gt;</font>
+<font color=blue>void</font> Func(<font color=blue>const</font> CArray <font color=red>&lt;TYPE&gt;</font> &amp; rarray);</pre>
+
+<p>や、その特殊化</p>
+
+<pre><font color=red>template &lt; &gt;</font>
+<font color=blue>void</font> Func(<font color=blue>const</font> CArray &lt;<font color=red>char</font>&gt; &amp; rarray);</pre>
+
+<p>そして、特定のテンプレート引数で実体化されたクラスのみを受け付けるような関数</p>
+
+<pre><font color=blue>void</font> Func2(<font color=blue>const</font> CArray &lt;<font color=red>char</font>&gt; &amp; rarray);</pre>
+
+<p>を作ることも簡単です。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。え？　CArray の残り？　しょうがないですね。<a href="cp020381.html" target="_blank">ここ</a>に CArray のソースを全部載せておきます。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>template はクラス宣言の前と各関数の実装の前の全てに付ける。</li>
+<li>クラステンプレートは明示的にテンプレート引数を指定して使う。</li>
+<li>メンバ関数の実装時にもクラス名にテンプレート引数を指定する。</li>
+<li>引数にとる場合でもテンプレート引数を指定する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02037.html" target="main">第３７章　クラステンプレート</a> | <a href="cpp02039.html" target="main">第３９章　クラステンプレート３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

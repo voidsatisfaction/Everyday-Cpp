@@ -1,0 +1,331 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５４章 融合２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５４章　融合２</font>
+</center>
+<hr>
+
+<p>　前回に引き続き仮想継承について話していきます。バッファを読み書きするクラスを例にじっくり考えていきましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想継承されたクラスのコンストラクタは、２つ以上先の派生クラスでも呼ぶ必要がある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回から数章に渡って、あるバッファを読み書きするクラス CBufferRW を作ってみましょう。</p>
+
+<p>　このクラスをどうやって設計するかは人それぞれだと思いますが、今回は次のようにしてみたいと思います。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CBuffer</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CBufferRead</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CBufferWrite</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CBufferRW</th>
+</tr>
+
+</table></center>
+
+<p>　<font color=red>バッファクラス CBuffer</font> を基底に、<font color=red>バッファを読むクラス CBufferRead</font> 、<font color=red>バッファに書くクラス CBufferWrite</font> を経由して CBufferRW クラスを作りたいと思います。</p>
+
+<p>　バッファは CBuffer で作るわけですが、<font color=red>仮想継承しないと読むときと書くときでバッファが別になってしまいます</font>。ここでは仮想継承が必須になりますね。</p>
+
+<p>　また、読むだけで構わないときは CBufferRead を、書くだけで構わないときは CBufferWrite を使うこともできます。故意に読めないように、書けないようにしたいときには便利ですね。</p>
+
+<hr>
+
+<p>　では、骨格を作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// BufferRW.h</font>
+<font color=blue>#ifndef</font> __BUFFERRW_H__INCLUDED__
+<font color=blue>#define</font> __BUFFERRW_H__INCLUDED__
+
+<font color=blue>class</font> CBuffer
+{
+<font color=blue>protected</font>:
+    <font color=blue>unsigned char</font>* m_pBuffer;  <font color=green>// バッファ</font>
+    <font color=blue>int</font>            m_nSize;    <font color=green>// バッファサイズ</font>
+    <font color=blue>int</font>            m_nPos;     <font color=green>// 現在位置</font>
+
+<font color=blue>public</font>:
+    CBuffer(<font color=blue>int</font> nSize);
+    <font color=blue>virtual</font> ~CBuffer();
+
+<font color=blue>public</font>:
+    <font color=blue>int</font> SetPos(<font color=blue>int</font> nPos);  <font color=green>// 位置設定</font>
+    <font color=blue>int</font> AddPos(<font color=blue>int</font> nAdd);  <font color=green>// 位置を進ませる</font>
+};
+
+<font color=blue>class</font> CBufferRead : <font color=blue>virtual public</font> CBuffer
+{
+<font color=blue>public</font>:
+    CBufferRead(<font color=blue>int</font> nSize);
+
+<font color=blue>public</font>:
+    <font color=green>// バッファから読み出す</font>
+    <font color=blue>int</font> Read(<font color=blue>void</font>* pRead, <font color=blue>int</font> nReadSize,
+             <font color=blue>int</font> nUnit = <font color=darkcyan>1</font>);
+};
+
+<font color=blue>class</font> CBufferWrite : <font color=blue>virtual public</font> CBuffer
+{
+<font color=blue>public</font>:
+    CBufferWrite(<font color=blue>int</font> nSize);
+
+<font color=blue>public</font>:
+    <font color=green>// バッファに書き込む</font>
+    <font color=blue>int</font> Write(<font color=blue>const void</font>* pWrite, <font color=blue>int</font> nWriteWord,
+              <font color=blue>int</font> nUnit = <font color=darkcyan>1</font>);
+};
+
+<font color=blue>class</font> CBufferRW : <font color=blue>public</font> CBufferRead,
+                  <font color=blue>public</font> CBufferWrite
+{
+<font color=blue>public</font>:
+    CBufferRW(<font color=blue>int</font> nSize);
+};
+
+<font color=blue>#endif</font> <font color=green>// #ifndef __BUFFERRW_H__INCLUDED__</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// BufferRW.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"BufferRW.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;new&gt;</font>
+
+CBuffer::CBuffer(<font color=blue>int</font> nSize)
+    : m_pBuffer(NULL), m_nSize(<font color=darkcyan>0</font>), m_nPos(<font color=darkcyan>0</font>)
+{
+    m_pBuffer = <font color=blue>new unsigned char</font>[nSize];
+    <font color=blue>if</font>(m_pBuffer == NULL)
+        <font color=blue>throw</font> std::bad_alloc();  <font color=green>// 例外を投げます</font>
+    m_nSize = nSize;
+
+    memset(m_pBuffer, <font color=darkcyan>0</font>, nSize);
+}
+
+CBuffer::~CBuffer()
+{
+    <font color=blue>if</font>(m_pBuffer != NULL)
+    {
+        <font color=blue>delete</font> [] m_pBuffer;
+        m_pBuffer = NULL;  <font color=green>// 一応、ね</font>
+    }
+}
+
+<font color=green>// 位置設定</font>
+<font color=blue>int</font> CBuffer::SetPos(<font color=blue>int</font> nPos)
+{
+    <font color=blue>if</font>(nPos &gt; m_nSize)
+        m_nPos = m_nSize;
+    <font color=blue>else if</font>(nPos &lt; <font color=darkcyan>0</font>)
+        m_nPos = <font color=darkcyan>0</font>;
+    <font color=blue>else</font>
+        m_nPos = nPos;
+    <font color=blue>return</font> m_nPos;
+}
+
+<font color=green>// 位置を進ませる</font>
+<font color=blue>int</font> CBuffer::AddPos(<font color=blue>int</font> nAdd)
+{
+    <font color=blue>return</font> SetPos(m_nPos + nAdd);
+}
+
+CBufferRead::CBufferRead(<font color=blue>int</font> nSize) : CBuffer(nSize){ }
+
+<font color=green>// バッファから読み出す</font>
+<font color=blue>int</font> CBufferRead::Read(
+    <font color=blue>void</font>* pRead, <font color=blue>int</font> nReadWord, <font color=blue>int</font> nUnit)
+{
+    <font color=green>// 残り単位</font>
+    <font color=blue>const int</font> nLeftWord = (m_nSize - m_nPos) / nUnit;
+    <font color=blue>if</font>(nReadWord &gt; nLeftWord)  <font color=green>// 読み込みすぎのとき</font>
+        nReadWord = nLeftWord;
+
+    <font color=green>// 読み込みサイズ</font>
+    <font color=blue>const int</font> nReadSize = nReadWord * nUnit;
+    memcpy(pRead, m_pBuffer + m_nPos, nReadSize);
+    m_nPos += nReadSize;
+    <font color=blue>return</font> nReadWord;
+}
+
+CBufferWrite::CBufferWrite(<font color=blue>int</font> nSize) : CBuffer(nSize){ }
+
+<font color=green>// バッファに書き込む</font>
+<font color=blue>int</font> CBufferWrite::Write(
+    <font color=blue>const void</font>* pWrite, <font color=blue>int</font> nWriteWord, <font color=blue>int</font> nUnit)
+{
+    <font color=green>// 残り単位</font>
+    <font color=blue>const int</font> nLeftWord = (m_nSize - m_nPos) / nUnit;
+    <font color=blue>if</font>(nWriteWord &gt; nLeftWord)  <font color=green>// 読み込みすぎのとき</font>
+        nWriteWord = nLeftWord;
+
+    <font color=green>// 読み込みサイズ</font>
+    <font color=blue>const int</font> nWriteSize = nWriteWord * nUnit;
+    memcpy(m_pBuffer + m_nPos, pWrite, nWriteSize);
+    m_nPos += nWriteSize;
+    <font color=blue>return</font> nWriteWord;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　作ったメンバ変数・メンバ関数は次の通りです。</p>
+
+<center><table border=1>
+
+<tr bgcolor=lightgreen>
+  <th>変数・関数名</th>
+  <th>機能</th>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>CBuffer</b></td>
+  <td bgcolor="#80D0FF">CBuffer のコンストラクタです。バッファのサイズを渡して、バッファを作成します。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>~CBuffer</b></td>
+  <td bgcolor="#80D0FF">CBuffer のデストラクタです。バッファを解放します。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>m_pBuffer</b></td>
+  <td bgcolor="#80D0FF">バッファへのポインタです。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>m_nSize</b></td>
+  <td bgcolor="#80D0FF">バッファのサイズです。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>m_nPos</b></td>
+  <td bgcolor="#80D0FF">読み書きを始める位置です。ファイルのファイルポインタと同じようなものだと考えてください。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>SetPos</b></td>
+  <td bgcolor="#80D0FF">m_nPos を変更します。絶対位置を指定します。<br>新しい位置を返します。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBuffer::<b>AddPos</b></td>
+  <td bgcolor="#80D0FF">m_nPos を変更します。m_nPos からの相対位置を指定します。<br>新しい位置を返します。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBufferRead::<b>CBufferRead</b></td>
+  <td bgcolor="#80D0FF">CBufferRead のコンストラクタです。CBuffer のコンストラクタを呼ぶだけです。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBufferRead::<b>Read</b></td>
+  <td bgcolor="#80D0FF">バッファから読み出します。<br>読み出すサイズには倍率を指定できます。例えば int のデータを１０個読み出したい場合は、buf.Read(buffer, 10, sizeof int); のようにします。<br>戻り値は実際に読み込んだデータの個数になります。サイズを倍率で割った数になります。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBufferWrite::<b>CBufferWrite</b></td>
+  <td bgcolor="#80D0FF">CBufferWrite のコンストラクタです。CBuffer のコンストラクタを呼ぶだけです。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBufferWrite::<b>Write</b></td>
+  <td bgcolor="#80D0FF">バッファに書き込みます。<br>書き込むサイズには倍率を指定できます。例えば double のデータを７個書き込みたい場合は、buf.Write(buffer, 7, sizeof double); のようにします。<br>戻り値は実際に書き込んだデータの個数になります。サイズを倍率で割った数になります。</td>
+</tr>
+
+<tr>
+  <td bgcolor="#FFFFA0">CBufferRW::<b>CBufferRW</b></td>
+  <td bgcolor="#80D0FF">CBufferRW のコンストラクタですが...。</td>
+</tr>
+
+</table></center>
+
+<p>　どういう実装になっているかはとりあえず置いておいて、この表だけ把握してもらえれば充分です。</p>
+
+<hr>
+
+<p>　さて、ここで <font color=red>CBufferRW のコンストラクタ</font>を見て下さい。まだ実装していません。ここでどういう実装にすればいいのか考えてみましょう。</p>
+
+<p>　CBufferRW は CBufferRead と CBufferWrite の両方から派生しているので CBufferRead と CBufferWrite の両方のコンストラクタを呼ぶ必要があります。</p>
+
+<p>　しかし、<font color=red>CBuffer のコンストラクタ</font>はどうなるのでしょうか？　CBufferRead と CBufferWrite の両方のコンストラクタから呼ばれてしまうと、２回呼ばれることになります。となるとバッファの確保が２回行われ、２回目の確保の時に１回目のアドレスを破棄するので<font color=red>メモリリークを起こす</font>はずです。</p>
+
+<p>　このように、二重に初期化してしまわないように、<font color=red>CBuffer のコンストラクタは CBufferRW から CBufferRead や CBufferWrite のコンストラクタを呼んでも呼ばれないようになっています</font>。</p>
+
+<p>　そうなると、CBufferRW では CBuffer のコンストラクタが呼ばれないことになってしまうので、<font color=red>CBuffer のコンストラクタは CBufferRW でも呼ぶ必要があります</font>。</p>
+
+<p>　つまり、次のようになるわけです。</p>
+
+<pre>CBufferRW::CBufferRW(<font color=blue>int</font> nSize)
+    : <font color=red>CBuffer(nSize)</font>, CBufferRead(nSize), CBufferWrite(nSize)
+{
+}</pre>
+
+<p>　こうすると、先ず CBuffer のコンストラクタが呼ばれ、その次に CBufferRead と CBufferWrite のコンストラクタが呼ばれるわけです。CBuffer のコンストラクタは１回しか呼ばれず、メモリリークを起こすことはありません。</p>
+
+<p>　このように、<font color=red>仮想継承されたクラスのコンストラクタは、２つ以上先の派生クラスでも呼ぶ必要があります</font>。CBufferRW から派生するクラスでも、CBuffer のコンストラクタを呼ぶ必要があります。</p>
+
+<p>　もちろん、<font color=red>CBufferRead のオブジェクトを作るときには CBuffer のコンストラクタは呼ばれます</font>。上の話はコロンの後で基底クラスのコンストラクタを呼ぶときの話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想継承されたクラスのコンストラクタは、２つ以上先の派生クラスでも呼ぶ必要がある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03053.html" target="main">第５３章　融合</a> | <a href="cpp03055.html" target="main">第５５章　融合３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.6.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

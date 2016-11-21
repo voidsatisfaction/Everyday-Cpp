@@ -1,0 +1,275 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１１章 子孫 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１１章　子孫</font>
+</center>
+<hr>
+
+<p>　今回からは、ちょっと気分を変えて新しいクラスを作っていきます。そして、新しい概念「継承」についての話をしていこうと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>あるクラスを元に、新しいクラスを作ることができる。</li>
+<li>継承は class &lt;クラス名&gt; : &lt;アクセス指定子&gt; &lt;基底クラス名&gt; と行う。</li>
+<li>派生先のクラスは派生元のクラスのメンバを全て持っている。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、前回までの CIntArray は一旦置いておいて、今度はファイルを操作するクラスを作ろうと思います。</p>
+
+<p>　ファイルの操作クラスはとても CIntArray と似ているところがあります。ファイルを開くのに失敗すると、ヌルポインタを返してくるあたりがそうです。このあたりの実装は CIntArray ととてもよく似た感じになりますね。</p>
+
+<p>　ということで、CFile クラスを作ってみましょう。モードは<font color=red>バイナリモードで固定</font>したいと思います。ファイル操作については<a href="../html01/cpp01051.html" target="main">第１部第５１章</a>から第５５章までを参考にして下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td valign=top><pre><font color=green>// MainDefs.h</font>
+<font color=blue>#ifndef</font> __MAINDEFS_H__INCLUDED__
+<font color=blue>#define</font> __MAINDEFS_H__INCLUDED__
+
+<font color=blue>#define</font> numof(array)   (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td valign=top><pre><font color=green>// File.h</font>
+<font color=blue>#ifndef</font> __FILE_H__INCLUDED__
+<font color=blue>#define</font> __FILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>class</font> CFile
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    FILE* m_pfile;  <font color=green>// ファイル</font>
+    <font color=blue>bool</font>  m_bCopy;  <font color=green>// コピーコンストラクタで作られたかどうか</font>
+
+    <font color=green>// コンストラクタ・デストラクタ</font>
+<font color=blue>public</font>:
+    CFile();                     <font color=green>// コンストラクタ</font>
+    CFile(<font color=blue>const</font> CFile& rother);  <font color=green>// コピーコンストラクタ</font>
+    ~CFile();                    <font color=green>// デストラクタ</font>
+
+    <font color=green>// ファイルの開閉</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags);
+                   <font color=green>// ファイルを開く</font>
+    <font color=blue>void</font> Close();  <font color=green>// ファイルを閉じる</font>
+
+<font color=blue>private</font>:
+    <font color=blue>bool</font> ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize);
+                   <font color=green>// フラグの調整</font>
+
+    <font color=green>// ファイルの操作</font>
+<font color=blue>public</font>:
+    size_t Read(<font color=blue>void</font>* pData, size_t nSize);         <font color=green>// ファイルから読み出す</font>
+    size_t Write(<font color=blue>const void</font>* pData, size_t nSize);  <font color=green>// ファイルに書き込む</font>
+
+    <font color=green>// 評価</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> IsValid() <font color=blue>const</font>;  <font color=green>// m_pfile の値が有効かどうか</font>
+    <font color=blue>bool</font> Eof();  <font color=green>// ファイルの終端に達したかどうか</font>
+};
+
+<font color=green>// m_pfile の値が有効かどうか</font>
+<font color=blue>inline bool</font> CFile::IsValid() <font color=blue>const</font>
+{
+    <font color=blue>return</font> (m_pfile != NULL);
+}
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td valign=top><pre><font color=green>// File.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"MainDefs.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=green>// コンストラクタ</font>
+CFile::CFile()
+{
+    m_pfile = NULL;
+    m_bCopy = <font color=blue>false</font>;
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CFile::CFile(<font color=blue>const</font> CFile& rother)
+{
+    m_pfile = rother.m_pfile;
+    m_bCopy = <font color=blue>true</font>;
+}
+
+<font color=green>// デストラクタ</font>
+CFile::~CFile()
+{
+    <font color=blue>if</font>(m_bCopy == <font color=blue>false</font>)
+        Close();
+}
+
+<font color=green>// ファイルを開く</font>
+<font color=blue>bool</font> CFile::Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags)
+{
+    Close();
+
+    <font color=blue>char</font> bufFlags[<font color=darkcyan>8</font>];
+    <font color=blue>if</font>(ModifyFlags(pszFlags, bufFlags, numof(bufFlags)) == <font color=blue>false</font>)
+        <font color=blue>return false</font>;
+
+    m_pfile = fopen(pszFile, bufFlags);
+    <font color=blue>return</font> (m_pfile != NULL);
+}
+
+<font color=green>// ファイルを閉じる</font>
+<font color=blue>void</font> CFile::Close()
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>true</font>)
+    {
+        fclose(m_pfile);
+        m_pfile = <font color=darkcyan>0</font>;
+    }
+}
+
+<font color=green>// フラグの調整</font>
+<font color=blue>bool</font> CFile::ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize)
+{
+    <font color=blue>bool</font> bBinary;  <font color=green>// 'b' の指定があるかどうか</font>
+
+    <font color=green>// strchr は、指定した文字が初めに出てくる位置を返す関数です
+    // ただ単に文字が含まれているかどうかを確認するのにも使えます</font>
+    bBinary = (strchr(pszSource, <font color=darkcyan>'b'</font>) != NULL);
+
+    <font color=green>// フラグが多すぎるときは false を返す</font>
+    <font color=blue>if</font>((<font color=blue>int</font>)strlen(pszSource) &gt; nSize - <font color=darkcyan>1</font> - !bBinary)
+        <font color=blue>return false</font>;
+
+    <font color=green>// 強制的にバイナリモードで開きます
+    // strcpy は文字列をコピーする関数、strcat は文字列を追加する関数です</font>
+    strcpy(pszDest, pszSource);
+    <font color=blue>if</font>(bBinary == <font color=blue>false</font>)
+        strcat(pszDest, <font color=darkcyan>"b"</font>);
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// ファイルから読み出す</font>
+size_t CFile::Read(<font color=blue>void</font>* pData, size_t nSize)
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    <font color=blue>return</font> fread(pData, <font color=darkcyan>1</font>, nSize, m_pfile);
+}
+
+<font color=green>// ファイルに書き込む</font>
+size_t CFile::Write(<font color=blue>const void</font>* pData, size_t nSize)
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+    <font color=blue>return</font> fwrite(pData, <font color=darkcyan>1</font>, nSize, m_pfile);
+}
+
+<font color=green>// ファイルの終端に達したかどうか</font>
+<font color=blue>bool</font> CFile::Eof()
+{
+    <font color=blue>if</font>(IsValid() == <font color=blue>false</font>)
+        <font color=blue>return true</font>;
+    <font color=blue>return</font> (feof(m_pfile) != <font color=darkcyan>0</font>);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　文字列操作関数については<a href="../html01/cpp01024.html" target="main">第１部第２４章</a>を、void* については<a href="../html03/cpp03004.html" target="main">第３部第４章</a>を参考にして下さい</p>
+
+<p>　かなり長いのですが、やってることは大したことはありません。コンストラクタ、デストラクタは単純ですし、読み出し、書き込みもほとんどそのまま関数を呼ぶだけです。</p>
+
+<p>　こうして、バイナリモードでファイルを扱うクラスができました。</p>
+
+<hr>
+
+<p>　さて、次はテキストモードでファイルを扱うことを考えたいと思います。</p>
+
+<p>　テキストモードでは、<font color=red>テキストを扱うのに特有な関数</font>を用意しておくと便利です。しかし、これをバイナリモード時には使う必要はありません。ということで、CFile クラスは CFile クラスで置いておいて、<font color=red>別のクラス CTextFile</font> として作りたいと思います。</p>
+
+<p>　しかし、ファイルを開く部分、読み書きする部分など、<font color=red>CTextFile クラスは CFile クラスと似たようになる</font>はずです。全く別のクラスとして作るのも面倒ですね。CFile を<font color=red>再利用</font>してやることはできないのでしょうか？</p>
+
+<p>　そういうときに使うのが<font size=+2 color=red>継承</font>です。継承は、<font color=red>あるクラスを元に新しいクラスを作る</font>ことです。そして、継承元のクラスを<font color=red>基底クラス</font>、継承してできた新しいクラスのことを、元のクラスの<font color=red>派生クラス</font>と呼びます。</p>
+
+<p>　<font color=red>派生クラスは基底クラスのメンバを全て持っています。</font>基底クラスのメンバ関数を呼んだり、基底クラスのメンバ変数を使ったりできるわけです。</p>
+
+<p>　では、実際にちょっと継承してみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// TextFile.h</font>
+<font color=blue>#ifndef</font> __TEXTFILE_H__INCLUDED__
+<font color=blue>#define</font> __TEXTFILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=blue>class</font> CTextFile <font color=red>: public CFile</font>
+{
+<font color=blue>public</font>:
+    <font color=blue>int</font> WriteString(<font color=blue>const char</font>* pszString);  <font color=green>// 文字列を書き込む</font>
+};
+
+<font color=green>// 文字列を書き込む</font>
+<font color=blue>inline int</font> CTextFile::WriteString(<font color=blue>const char</font>* pszString)
+{
+    <font color=blue>return</font> Write(pszString, strlen(pszString));
+}
+
+<font color=blue>#endif</font></pre></td></tr>
+
+</table></center>
+
+<p>　class CTextFile に続いて、<font color=red>コロンを挟んで public CFile</font> と書いてあります。これが継承の仕方です。</p>
+
+<p>　public と書いてあるのは、<font color=red>派生元の public メンバを派生先でも public にする</font>ということです。ここを private にすると、CTextFile のオブジェクトでは Open 関数などが使えなくなってしまいます。</p>
+
+<p>　で、新しくメンバ関数 WriteString を作っています。これは文字列を書き込む関数で、実装は上にあるとおりです。ここでは<font color=red>基底クラスのメンバ関数 Write を呼んでいます</font>。問題なく使えますね。</p>
+
+<hr>
+
+<p>　ソースが長くなったので、今回はこれで終わろうと思います。内容は少ないんですけどね...。</p>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>あるクラスを元に、新しいクラスを作ることができる。</li>
+<li>継承は class &lt;クラス名&gt; : &lt;アクセス指定子&gt; &lt;基底クラス名&gt; と行う。</li>
+<li>派生先のクラスは派生元のクラスのメンバを全て持っている。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02010.html" target="main">第１０章　不動の構え</a> | <a href="cpp02012.html" target="main">第１２章　第３のアクセス指定子</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.20</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

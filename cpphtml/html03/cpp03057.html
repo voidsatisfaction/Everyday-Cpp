@@ -1,0 +1,172 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５７章 メンバ関数ポインタ天国 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５７章　メンバ関数ポインタ天国</font>
+</center>
+<hr>
+
+<p>　ポインタ天国最終章、メンバ関数ポインタ天国の始まり始まり〜。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ関数は普通の関数ポインタに代入できる。</li>
+<li>メンバ関数ポインタの型名にはクラス名が必要になる。</li>
+<li>メンバ関数ポインタを使うときは .* や -&gt;* 演算子が必要。</li>
+<li>this-&gt;* は省略できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて。<a href="cpp03009.html" target="main">第９章</a>で関数ポインタについて話しました。その冒頭でこういう風に話しました。</p>
+
+<center><table border=1 width=85%><tr><td>関数もアドレスが取れると言いました。アドレスはただの数値です。となると関数のアドレスを入れることのできる変数があってもいいじゃないですか。今回はそういう変数についてのお話です。</td></tr></table></center>
+
+<p>　これはもちろん<font color=red>メンバ関数</font>にも言えることで、<font color=red>メンバ関数ポインタ</font>というのも作ることができます。</p>
+
+<p>　では、どんな文法なのかちょっと考えてみましょう。恒例ですね。</p>
+
+<p>　先ず、普通の関数ポインタは次のようになるのでしたね。</p>
+
+<pre><font color=blue>void</font> Func();
+<font color=blue>void</font> (*fpFunc)() = Func;</pre>
+
+<p>void *fpFunc(); だと<font color=red>戻り値の型が void* の関数のプロトタイプと判断される</font>ので<font color=red>カッコをつける</font>のでした。</p>
+
+<p>　では、先ずはこれにメンバ関数のアドレスを代入できるか試してみましょう。</p>
+
+<pre><font color=blue>class</font> CTest { <font color=blue>public</font>: <font color=blue>void</font> Func(); };
+<font color=blue>void</font> (*fpFunc)() = CTest::Func;
+
+<font color=red>error C2440: 'void (__thiscall CTest::*)(void)' から 'void (__cdecl *)(void)' に変換することはできません。</font></pre>
+
+<p>　はい。エラーになりました。この理由は<a href="../html02/cpp02030.html" target="main">第２部第３０章</a>で話したことを踏まえれば簡単なことです。メンバ関数には <font color=red>this ポインタ</font>が隠し引数として渡されるので、普通の関数と同じようには扱えないのです。また、同時に<font color=red>静的メンバ関数なら普通の関数ポインタに代入できる</font>ということも分かると思います。</p>
+
+<pre><font color=blue>class</font> CTest { <font color=blue>public</font>: <font color=red>static</font> <font color=blue>void</font> Func(); };
+<font color=blue>void</font> (*fpFunc)() = CTest::Func;  <font color=green>// ＯＫ</font></pre>
+
+<hr>
+
+<p>　これで、普通の関数ポインタに何かを付け足す必要があることが分かりました。では、何を付け足せばいいのでしょうか？</p>
+
+<p>　メンバ関数ポインタを使って関数を呼ぶときには、<font color=red>同時にオブジェクトを指定します</font>。これが<font color=red>隠し引数</font>である this ポインタになるわけですね。このとき、<font color=red>全く無関係なクラスのメンバ関数が呼べてしまうと困ります</font>。</p>
+
+<p>　つまり、メンバ関数ポインタには<font color=red>クラス名も指定してやる必要がある</font>ことになりますね。</p>
+
+<p>　問題はどこにどのように付け足すかです。「どのように」というのは、クラス名を指定するときのお約束で CTest:: のような<font color=red>アクセス解決</font>で良さそうです。</p>
+
+<p>　「どこに」ですが、これは簡単に２つ考えられます。</p>
+
+<pre><font color=blue>void</font> (CTest::*fpFunc)();
+<font color=blue>void</font> (*CTest::fpFunc)();</pre>
+
+<p>　しかし、static メンバ変数としてメンバ関数ポインタを作った時を考えると、後者の方では問題があることが分かります。</p>
+
+<pre><font color=blue>class</font> CTest2
+{
+<font color=blue>public</font>: <font color=blue>static void</font> (CTest::*m_fpFund)();
+};
+<font color=blue>static void</font> (CTest::*CTest2::m_fpFund)();
+
+<font color=blue>class</font> CTest2
+{
+<font color=blue>public</font>: <font color=blue>static void</font> (*CTest::m_fpFund)();
+};
+<font color=blue>static void</font> (*CTest::CTest2::m_fpFund)();
+<font color=blue>static void</font> (*CTest2::CTest::m_fpFund)();  <font color=green>// どっち？？</font></pre>
+
+<p>　ということで、void (CTest::*fpFunc)(); が正しいメンバ関数ポインタになりそうです。では、確認してみましょう。</p>
+
+<pre><font color=blue>class</font> CTest { <font color=blue>public</font>: <font color=blue>void</font> Func(); };
+<font color=blue>void</font> (CTest::*fpFunc)() = CTest::Func;</pre>
+
+<p>　はい。問題なくコンパイルできたと思います。このように、メンバ関数ポインタの文法は</p>
+
+<pre><font color=red>&lt;戻り値の型&gt; (&lt;クラス名&gt;::*&lt;変数名&gt;(&lt;引数リスト&gt;);</font></pre>
+
+<p>となります。型名は、やはり名前を除いた <font color=red>&lt;戻り値の型&gt; (&lt;クラス名&gt;::*)(&lt;引数リスト&gt;)</font> となります。</p>
+
+<hr>
+
+<p>　さて、メンバ関数ポインタを使いたいのですが、まだ分からないことがあります。それはどうやって呼ぶかです。</p>
+
+<p>　先ず、</p>
+
+<pre>fpFunc();</pre>
+
+<p>のように呼んでもダメです。くどいようですが、メンバ関数には隠し引数である this ポインタがあるのでしたね。これを渡してやる必要があるわけです。</p>
+
+<p>　これには、メンバ関数ポインタを使って関数を呼ぶとき<font color=red>専用</font>の演算子を使います。それが <font color=red>.*</font> と <font color=red>-&gt;*</font> です。.* はオブジェクトそのまま（または参照など）を使って呼ぶときに、-&gt;* はポインタを使って呼ぶときに使います。要は普通にメンバ関数を呼ぶ感じに書いて、* を挟めばいいわけです。</p>
+
+<pre>CTest c, *p = &c;
+c.*fpFunc();
+p-&gt;*fpFunc();</pre>
+
+<p>　<font size=+2 color=red>おっと！　ここで注意です！</font>　<font color=red>.* や -&gt;* は関数呼び出しの ( ) よりも優先順位が低い</font>ので、これでは</p>
+
+<pre>c.*(fpFunc());
+p-&gt;*(fpFunc());</pre>
+
+<p>と同じ事になり、結局同じエラーが出ることになります。つまり、</p>
+
+<pre>CTest c, *p = &c;
+<font color=red>(</font>c.*fpFunc<font color=red>)</font>();
+<font color=red>(</font>p-&gt;*fpFunc<font color=red>)</font>();</pre>
+
+<p>と、<font color=red>カッコで囲んでやる必要がある</font>のです。何ともダサい仕様ですが、そうなっているので仕方がありません。</p>
+
+<p>　さらに、void (CTest::*)(); と CTest 用のメンバ関数ポインタだからといって、CTest のメンバ関数内から呼ぶときに <font color=red>this-&gt;* が省略できるわけではありません</font>。つまり、</p>
+
+<pre>
+<font color=blue>class</font> CTest
+{
+<font color=blue>public</font>:
+    <font color=blue>void</font> Func();
+    <font color=blue>void</font> Func2();
+};
+
+<font color=blue>void</font> CTest::Func()
+{
+    <font color=blue>void</font> (CTest::*fpFunc)() = Func2;
+    (<font color=red>this-&gt;*</font>fpFunc)();
+}</pre>
+
+<p>とする必要があるわけです。なんか釈然としませんが、これもそうなっているので仕方がありません。</p>
+
+<hr>
+
+<p>　長くなるのでこれ以上の話は次回に回したいと思います。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的メンバ関数は普通の関数ポインタに代入できる。</li>
+<li>メンバ関数ポインタの型名にはクラス名が必要になる。</li>
+<li>メンバ関数ポインタを使うときは .* や -&gt;* 演算子が必要。</li>
+<li>this-&gt;* は省略できない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03056.html" target="main">第５６章　クロスキャスト</a> | <a href="cpp03058.html" target="main">第５８章　メンバ関数ポインタ天国２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.6.9</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３９章 速読法３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３９章　速読法３</font>
+</center>
+<hr>
+
+<p>　今回も文字列照合について話していきたいと思います。２つの有名なアルゴリズムのうちのもう１つです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ＢＭ法では、後の方から照合していく。</li>
+<li>全ての文字について、検索文字列の右端以外のどこに現れるかを表にしておく。</li>
+<li>ＢＭ法は読み飛ばしが生じる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、前回のＫＭＰ法とは違った角度から、もう一度文字列照合について考えてみましょう。では、Match.txt から "mato" を検索しましょう。</p>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat : mato</pre>
+
+<p>"toma" と "mato" は１文字目から違うので、１つ先に進みます...と今まではやってきました。</p>
+
+<p>　ここでちょっと考えてみましょう。どうにかして<font color=red>一度に２つ以上進む</font>ことはできないでしょうか？　これができれば、かなり速くなりそうです。</p>
+
+<p>　pat の先頭から比べる限りそれは無理な話です。しかし、ここは逆転の発想で <font color=red>pat の後から比べていけば何とかなる</font>かもしれません。つまり、上の例では</p>
+
+<pre>src : tom<font color=red>a</font>tu[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat : mat<font color=red>o</font></pre>
+
+<p>の赤くなっている部分から逆に比べていくようになります。後から比べれば、その情報を活かして読み飛ばせる可能性が出てきます。</p>
+
+<p>　では、どう情報を活かせばよいのでしょうか？　今回の比較では、やはり一番最後も異なっています。このとき、src で比較に使われた文字は "a" です。<font color=red>もし、この "a" が pat の中に出てこなければ、ここまでの中には pat は出てこない</font>ということが分かるはずです。</p>
+
+<p>　しかし、今回は pat は "a" を含みます。この場合はどうすればよいでしょうか？</p>
+
+<p>　この "a" を含む部分に pat が見つかるとします。その場合は、<font color=red>必ずこの "a" と pat 内の "a" は重なっています</font>。つまり、<font color=red>お互いの "a" が重なるようにずらせばいい</font>わけです。</p>
+
+<pre>src : tom<font color=red>a</font>t<font color=red>u</font>[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat :   m<font color=red>a</font>t<font color=red>o</font></pre>
+
+<p>　今度も一番最後が異なります。そして、pat は "u" を含みません。というわけで、<font color=red>一気に４つ飛ばすことができます</font>。</p>
+
+<pre>src : tomatu[\n]<font color=red>to</font>mati[\n]tomata[\n]tomate[\n]tomato
+pat :        ma <font color=red>to</font></pre>
+
+<p>　次は "to" の２つが同じです。しかし、それ以上は違います。ここでまた最後の "o" が pat に出てこないかどうかを調べます。pat の最後に "o" がありますが、先に進めないと行けないのでこれは無視します。すると、やはり "o" は出てこないことになります。ということで、やはり一気に４つ飛ばすことができます。</p>
+
+<pre>src : tomatu[\n]tomat<font color=red>i</font>[\n]tomata[\n]tomate[\n]tomato
+pat :             mat<font color=red>o</font></pre>
+
+<p>　これを続けていけば最終的に最後にある "mato" が見つかることになります。</p>
+
+<hr>
+
+<p>　では、今度は "tamaty" を探してみましょう。</p>
+
+<pre>src : tomat<font color=red>u</font>[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat : tamat<font color=red>y</font></pre>
+
+<p>　そもそも src に "y" は含まれないので、毎回必ず異なることが分かります。なので、ここでは先に進むことに専念しましょう。</p>
+
+<p>　"u" は pat に含まれていないので、一気に６つ進みます。</p>
+
+<pre>src : tomatu[\n]tom<font color=red>a</font>ti[\n]tomata[\n]tomate[\n]tomato
+pat :        ta mat<font color=red>y</font></pre>
+
+<p>　"a" は pat にも含まれます。しかし、<font color=red>２つ</font>含まれています。このような場合はどれだけ進めればいいのでしょうか？</p>
+
+<p>　読み飛ばしすぎると等しいのに飛ばしてしまう可能性が出てきます。ということは、<font color=red>一番右を除いて最も右側に出てくるところ</font>を重ねるのが筋ですね。</p>
+
+<pre>src : tomatu[\n]tom<font color=red>a</font>ti[\n]tomata[\n]tomate[\n]tomato
+pat :           tam<font color=red>a</font>t<font color=red>y</font></pre>
+
+<p>　さぁ、これを続けていきましょう。</p>
+
+<pre>src : tomatu[\n]tomati[\n]tom<font color=red>a</font>ta[\n]tomate[\n]tomato
+pat :                  ta mat<font color=red>y</font></pre>
+
+<pre>src : tomatu[\n]tomati[\n]tom<font color=red>a</font>t<font color=red>a</font>[\n]tomate[\n]tomato
+pat :                     tam<font color=red>a</font>t<font color=red>y</font></pre>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tom<font color=red>a</font>te[\n]tomato
+pat :                            ta mat<font color=red>y</font></pre>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tom<font color=red>a</font>t<font color=red>e</font>[\n]tomato
+pat :                               tam<font color=red>a</font>t<font color=red>y</font></pre>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tom<font color=red>a</font>to
+pat :                                      ta mat<font color=red>y</font></pre>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tom<font color=red>a</font>t<font color=red>o</font>
+pat :                                         tam<font color=red>a</font>t<font color=red>y</font></pre>
+
+<pre>src : tomatu[\n]tomati[\n]tomata[\n]tomate[\n]tomato
+pat :                                               tamat<font color=red>y</font></pre>
+
+<p>...と、いきすぎてしまいました。このように、ＢＭ法はいきすぎてしまいます。つまり、終了条件がヌルターミネータという訳にはいかないのです。<font color=red>あらかじめ src の長さを確認しておいていきすぎないように確認する必要がある</font>わけです。</p>
+
+<p>　もしくは、<font color=red>src のお尻に 0 を pat の長さ分つけておいて src に 0 が現れれば終わり</font>、とか、<font color=red>src の最後に pat をコピーしておき、それが検索されたら検索失敗</font>、とかとすることもできます。長さを確認する方法の方が汎用性の高いでしょうが、後者のような方法も頭の隅にでも置いておけば、いつか役に立つこともあるかもしれません。</p>
+
+<hr>
+
+<p>　では、今度は src に出てきた文字が pat のどこに現れるかを確かめるにはどうすればよいでしょうか？　これはＫＭＰ法をやっていれば分かるように、やっぱり<font color=red>表にしておく</font>とよいでしょう。文字コードは０〜２５５のどれかなので、ＫＭＰ法と違い<font color=red>表のサイズは一定</font>です。</p>
+
+<p>　この一連の文字列照合法を<font color=red>ＢＭ法</font>と呼びます。本来のＢＭ法は表を２つ使いますが、ここでは１つだけしか使わない簡略版のＢＭ法を紹介しました。</p>
+
+<p>　ＢＭ法は基本的に後ろ向きに比較していくので、ＫＭＰ法のような<font color=red>「読み戻しがない」という特徴はありません</font>。この点ではＫＭＰ法の方が優れていますが、<font color=red>検索速度は一般的にＢＭ法の方が上です</font>。バシバシと読み飛ばせるので気分爽快です。</p>
+
+<hr>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Match5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;limits.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Match2.h"</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>static int</font> BMMatch(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                   <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat);
+
+<font color=blue>int</font> main()
+{
+    Match(<font color=darkcyan>"Match.txt"</font>, BMMatch);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=blue>static int</font> BMMatch(<font color=blue>const char</font>* src, <font color=blue>int</font> nBufSize,
+                   <font color=blue>int</font> nFirst, <font color=blue>const char</font>* pat)
+{
+    <font color=green>// エラーチェック</font>
+    <font color=blue>if</font>(pat[<font color=darkcyan>0</font>] == <font color=darkcyan>0</font>        ||
+       src[nBufSize] != <font color=darkcyan>0</font> ||
+       nFirst &gt; nBufSize)
+        <font color=blue>return</font> MATCH_NOTFOUND;
+
+    <font color=green>// UCHAR_MAX は limits.h 内で定義され、
+    // unsigned char の最大値 255 を表します</font>
+    <font color=blue>int</font> skip[UCHAR_MAX + <font color=darkcyan>1</font>];
+    <font color=blue>int</font> nPatSize;
+    <font color=blue>int</font> i;
+
+    <font color=green>// pat のサイズを測ります</font>
+    nPatSize = strlen(pat);
+
+    <font color=green>// 表を pat のサイズで初期化します
+    // 完全にスキップすることを表します</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; numof(skip); i++)
+        skip[i] = nPatSize;
+
+    <font color=green>// 表の作成を行います
+    // 左端から単純に skip を埋めていけば、
+    // 同じものが２度以上出てきても上書きされ、
+    // 最終的には一番右の位置が保存されます
+    // スキップする数は、i = 0 （最初）で nPatSize - 1 になるので
+    // 一般的には nPatSize - 1 - j だと分かります</font>
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nPatSize - <font color=darkcyan>1</font>; i++)
+        skip[pat[i]] = nPatSize - <font color=darkcyan>1</font> - i;
+
+    <font color=green>// 照合</font>
+    nPatSize--;  <font color=green>// 便利がいいので１つ減らしておきます</font>
+
+    <font color=green>// src の比較開始文字</font>
+    <font color=blue>char</font> letSkip;
+    <font color=green>// pat の最後の文字</font>
+    <font color=blue>char</font> letLast = pat[nPatSize];
+
+    <font color=blue>for</font>(i = nFirst + nPatSize; i &lt; nBufSize; i += skip[letSkip])
+    {
+        letSkip = src[i];
+
+        <font color=green>// pat の最後の文字と比較</font>
+        <font color=blue>if</font>(letSkip == letLast)
+        {
+            <font color=blue>int</font> j = i - <font color=darkcyan>1</font>;
+            <font color=blue>int</font> k = nPatSize - <font color=darkcyan>1</font>;
+            <font color=blue>for</font>(; src[j] == pat[k]; j--, k--)
+            {
+                <font color=green>// pat の最初まで等しければ検索終了です</font>
+                <font color=blue>if</font>(k == <font color=darkcyan>0</font>)
+                    <font color=blue>return</font> j;  <font color=green>// </font>
+            }
+        }
+    }
+    <font color=blue>return</font> MATCH_NOTFOUND;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　ＫＭＰ法と同じく、コメントを除けば意外とすっきりしていることが分かります。ちょっとした労力でずいぶんと検索速度が上がるということが分かりますね。</p>
+
+<p>　ただ、検索対象の文字列があまりに短いとＢＭ法やＫＭＰ法よりも strstr の方が速かったりします。表を作る時間のせいです。これら特殊なアルゴリズムは、少し大きめの検索対象に対して使うといいでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ＢＭ法では、後の方から照合していく。</li>
+<li>全ての文字について、検索文字列の右端以外のどこに現れるかを表にしておく。</li>
+<li>ＢＭ法は読み飛ばしが生じる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回でアルゴリズム編は終了です。次回はＫＭＰ法の途中で話したアレについて話そうと思います。では。</p>
+
+<hr>
+
+<p align=right><a href="cpp03038.html" target="main">第３８章　速読法２</a> | <a href="cpp03040.html" target="main">第４０章　二世帯住宅</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.4.17</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

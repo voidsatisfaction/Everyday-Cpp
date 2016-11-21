@@ -1,0 +1,225 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第９章 関数ポインタ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第９章　関数ポインタ</font>
+</center>
+<hr>
+
+<p>　関数もアドレスが取れると言いました。アドレスはただの数値です。となると関数のアドレスを入れることのできる変数があってもいいじゃないですか。今回はそういう変数についてのお話です。</p>
+
+<hr>
+
+<p>　今回の要点...はちょっと終わりのみにします。推測と試行錯誤によって文法を学んでいくという「独学スタイル」に触れ、分からないことがあったときに自分の力だけで解決するという力をつけてみましょう。</p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は関数のアドレスを入れられる変数、<font color=red>関数ポインタ</font>のお話です。</p>
+
+<p>　さて、ポインタ型は<font color=red>参照先の型に * をつけたもの</font>となります。しかし、今回の参照先は<font color=red>関数</font>なのです。「参照先の型」というのはどうなるのでしょうか？</p>
+
+<p>　...ちょっと違う観点から考えてみましょう。ポインタの宣言は、変数の宣言文で<font color=red>変数名の頭に * につける</font>というものでした。もしかしたら忘れている人もいるかもしれませんが、</p>
+
+<pre>char* p1, p2;</pre>
+
+<p>では p2 はポインタにはなりません。</p>
+
+<p>　これと同じように考えてみましょう。つまり、<font color=red>関数のプロトタイプで、関数名の頭に * をつけてみてはどうでしょうか？</font>　仮引数名はいらなそうなので、そこまでは書かないでよさそうです。プロトタイプでも書かなくて構いませんしね。</p>
+
+<pre>double *fpFunc(double, double);</pre>
+
+<p>　...よく考えたら、これだと<font color=red>戻り値の型が double* の関数 fpFunc のプロトタイプ</font>になってしまいますね。</p>
+
+<p>　* が戻り値の型の情報として利用されるからいけないのです。ということは、<font color=red>カッコ</font>でもつけてやって、<font color=red>int と * を分断してしまえば</font>どうなんでしょうか？</p>
+
+<pre>double (*fpFunc)(double, double);</pre>
+
+<p>　う〜ん、なんとも不気味な文ですね。こんなので本当にいいんでしょうか？</p>
+
+<p><br></p>
+
+<p>　これが本当にいいかはちょっと置いておいて、さらに<font color=red>配列関数ポインタ</font>にも挑戦してみましょう。大胆ですね...。</p>
+
+<p>　配列変数の宣言は、変数名の後ろに [ ] をつけるというものでした。なら、配列関数ポインタも同じようにすればできるのではないでしょうか？</p>
+
+<pre>double (*afpFunc[4])(double, double);</pre>
+
+<p>　う〜ん、さらに不気味な文になってしまいました。だんだん心配になってきました。</p>
+
+<p><br></p>
+
+<p>　そして、これも本当にいいかは置いておいて、今度は関数ポインタを使う方を考えてみましょう。</p>
+
+<p>　<a href="../html01/cpp01031.html" target="main">第１部第３１章</a>で関数のアドレスは関数名で取得できると言いました。なので fpFunc が正しい関数ポインタとすると、代入は</p>
+
+<pre>fpFunc = Func;</pre>
+
+<p>で良さそうです。では、このポインタを使って Func 関数を呼ぶにはどうすればいいのでしょうか？</p>
+
+<p>　配列で要素にアクセスするとき、実は &lt;配列名&gt;[インデックス] ではなく <font color=red>&lt;アドレス&gt;</font>[インデックス] であると言いました。</p>
+
+<p>　もしかしたら、関数でも同じことが言えるのかもしれません。つまり、関数の呼び出しは &lt;関数名&gt;(&lt;実引数リスト&gt;) ではなく、実はこれも <font color=red>&lt;アドレス&gt;</font>(&lt;実引数リスト&gt;) なのではないでしょうか？</p>
+
+<hr>
+
+<p>　では、これらの推測があっているのか、プログラムを組んで試してみましょう。</p>
+
+<p>　そうですね。演算子と２つの値を入力させて、計算結果を表示するプログラムなんかがいいでしょうね。普通は各演算を switch 文で分岐してやるのでしょうが、ここは<font color=red>配列関数ポインタ</font>なんかを使ってみましょう。これができたら、何かかっこいいですね。</p>
+
+<p>　もうこうなったら、何でもやってみましょう。エラーが出たらそのときはそのときですよ。この配列関数ポインタは一旦初期化した以降は全く変更しないので、変えられないように const をつけておきましょう。ポインタ自体の値を変更させないのですから、* の後に const をつけるのでしたね。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// FuncPtr1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>double</font> Add(<font color=blue>double</font> a, <font color=blue>double</font> b){ <font color=blue>return</font> a + b; }
+<font color=blue>double</font> Sub(<font color=blue>double</font> a, <font color=blue>double</font> b){ <font color=blue>return</font> a - b; }
+<font color=blue>double</font> Mul(<font color=blue>double</font> a, <font color=blue>double</font> b){ <font color=blue>return</font> a * b; }
+<font color=blue>double</font> Div(<font color=blue>double</font> a, <font color=blue>double</font> b){ <font color=blue>return</font> a / b; }
+
+<font color=blue>double</font> (* <font color=blue>const</font> afpOps[])(<font color=blue>double</font>, <font color=blue>double</font>) = {
+    Add, Sub, Mul, Div,
+};
+
+<font color=blue>enum</font> EOperator
+{
+    ADD, SUB, MUL, DIV,
+};
+
+<font color=blue>bool</font> InputOp(EOperator&amp; rfOp)
+{
+    <font color=blue>char</font> letter;
+
+    cout &lt;&lt; <font color=darkcyan>"演算子を指定して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; letter;
+
+    <font color=blue>switch</font>(letter)
+    {
+    <font color=blue>case</font> <font color=darkcyan>'+'</font>: rfOp = ADD; <font color=blue>break</font>;
+    <font color=blue>case</font> <font color=darkcyan>'-'</font>: rfOp = SUB; <font color=blue>break</font>;
+    <font color=blue>case</font> <font color=darkcyan>'*'</font>: rfOp = MUL; <font color=blue>break</font>;
+    <font color=blue>case</font> <font color=darkcyan>'/'</font>: rfOp = DIV; <font color=blue>break</font>;
+    <font color=blue>default</font> :      <font color=blue>return false</font>;
+    }
+
+    <font color=blue>return true</font>;
+}
+
+<font color=blue>void</font> InputVals(<font color=blue>double</font>&amp; ra, <font color=blue>double</font>&amp; rb)
+{
+    cout &lt;&lt; <font color=darkcyan>"２つの数値を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; ra &gt;&gt; rb;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>static const char</font>* s_apszOps[] = {
+        <font color=darkcyan>" + "</font>, <font color=darkcyan>" - "</font>, <font color=darkcyan>" * "</font>, <font color=darkcyan>" / "</font>,
+    };
+    EOperator fOp;
+    <font color=blue>double</font>     a, b;
+
+    <font color=blue>while</font>(InputOp(fOp))
+    {
+        InputVals(a, b);
+
+        cout &lt;&lt; a &lt;&lt; s_apszOps[fOp] &lt;&lt; b &lt;&lt; <font color=darkcyan>" = "</font>
+             &lt;&lt; afpOps[fOp](a, b) &lt;&lt; endl;
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"終了します。"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>演算子を指定して下さい > +
+２つの数値を入力して下さい > 1.2 2.4
+1.2 + 2.4 = 3.6
+演算子を指定して下さい > -
+２つの数値を入力して下さい > 3.45 2.34
+3.45 - 2.34 = 1.11
+演算子を指定して下さい > *
+２つの数値を入力して下さい > 1.23 2
+1.23 * 2 = 2.46
+演算子を指定して下さい > /
+２つの数値を入力して下さい > 6.28 2
+6.28 / 2 = 3.14
+演算子を指定して下さい > %
+終了します。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　何と、あんないい加減に考えた推測が当たっています。動作には何の問題もありません。</p>
+
+<p>　所詮は同じ人間の考えたこと。<font size=+2 color=red>訳の分からない超越言語ではなかったんですね。</font>怖がる必要など何もないのです。</p>
+
+<p>　いろいろな言語の機能がありますが、それらも人間にとって分かりやすいような形になってくれているはずです。こういう風に動作の意味、文法の意味を考えるクセをつけておけば、プログラミング言語も結構簡単に理解できるということです。</p>
+
+<hr>
+
+<p>　最後に、この関数ポインタの型についての話で終わりにします。</p>
+
+<p>　<font color=red>関数ポインタの「型」</font>はどうなるか、それはやはり簡単。変数の宣言の変数名をなくすと変数の型になるように、<font color=red>関数ポインタの宣言の変数名をなくす</font>と関数ポインタの型になります。</p>
+
+<p>　例えば、</p>
+
+<pre>double (*fpFunc)(double);</pre>
+
+<p>の型は double(*)(double) であり、</p>
+
+<pre>void (*fpFunc)(const char*, int);</pre>
+
+<p>の型は void (*)(const char*, int) なのです。</p>
+
+<p>　このように、関数のポインタ型には<font color=red>戻り値の型と引数の型、そしてその個数、順番の全てが必要なのです</font>。これらの異なる関数のアドレスを代入しようとしてもエラーが出てしまいます。</p>
+
+<p>　よくよく考えてみれば、戻り値や引数の型、個数、順番がなければ、関数を呼ぶときに困りますよね。それに、引数の異なる関数なんかを代入できるとしたら、その関数ポインタを使って関数を呼ぶとき危険ですね。これも、当たり前の話なのです。</p>
+
+<p><br></p>
+
+<p>　また、関数ポインタの型は<font color=red>はっきり言って鬱陶しいです</font>。なので、その型をよく使う時、その型に見た目の意味を持たせたい時などには、<font color=red>typedef してしまうといいでしょう</font>。</p>
+
+<pre>typedef double (*FPOP2)(double, double);  // ２項演算関数の型
+
+const FPOP2 afpOps[] = {
+    ADD, SUB, MUL, DIV,
+};</pre>
+
+<hr>
+
+<p>　今回はこれで終わりです。関数ポインタは好きなので、その思い入れが出た章になったかもしれません。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数ポインタは &lt;戻り値の型&gt; (*&lt;名前&gt;)(&lt;引数リスト&gt;); と宣言する。</li>
+<li>関数を呼ぶときは普通の関数と同じように呼べばよい。</li>
+<li>よく使う型は typedef しておくとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も似たようなことをしたいと思います。それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03008.html" target="main">第８章　アドレスを返す関数</a> | <a href="cpp03010.html" target="main">第１０章　続・ポインタ天国</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１章 シノニムの定義 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１章　シノニムの定義</font>
+</center>
+<hr>
+
+<p>　さぁ、とうとう第３部が始まります。ここでは第２部と平行して、第１，２部では語られないＣ／Ｃ＋＋言語のもっと深いところに触れていきます。</p>
+
+<p>　その第１回目として、今回は typedef について話します。typedef 自体は<a href="../html01/cpp01060.html" target="main">第１部第６０章</a>で出てきましたが、詳しい意味については第３部で話すと言っていました。その約束を、今、果たしましょう。</p>
+
+<p>　ちなみに、「シノニム」とは「同義語」という意味です。ヘルプでは「シノニム」と書かれていることがあるので、知っておいた方がいいでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数の宣言文の頭に typedef を付けると、その型の同義語が作れる。</li>
+<li>ポインタ型の同義語に const を付けると、ポインタが定数になる。</li>
+<li>typedef はマクロとは根本的に異なるものである。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、パス名を入れるバッファを作りたいと思います。パス名とはファイルの置いてある位置の名前のことで、バッファとはデータを置いておく容器（変数）のことです。</p>
+
+<p>　パス用のバッファの最大長は stdlib.h というヘッダファイルの中に、_MAX_PATH というマクロで定義されています。つまり、このバッファは、例えば</p>
+
+<pre>char szPath[_MAX_PATH];</pre>
+
+<p>のように宣言されるわけです。</p>
+
+<p>　しかし、このパス用のバッファを沢山使いたいときは、この宣言はちょっと面倒ですね。そして、もっとパス用のバッファということが分かりやすいように、こう見ただけでパス用のバッファだなぁ、というようにはできないものでしょうか？</p>
+
+<p>　つまりは、<font color=red>パス用のバッファ用の型</font>なんてのがあったら、便利なのではないでしょうか？</p>
+
+<p>　で、「ないなら作ってしまえ！」ということで、次のようにしてみました。</p>
+
+<pre>#define PATHBUF(name)  char name[_MAX_PATH]
+PATHBUF(szPath);</pre>
+
+<p>　マクロです。確かにできるにはできるのですが、ちょっと格好悪いですよね。こう、<font color=red>普通の型と同じ様な宣言文</font>にできないものでしょうか？</p>
+
+<p>　ということで、こういうときのために <font color=red>typedef</font> というものがあります。typedef を使えば、<font color=red>ある型の同義語を定義することができます</font>。「char 型の _MAX_PATH 個の要素を持った配列」という型の同義語を作れば、望みの動作になるわけです。</p>
+
+<p>　では、typedef はどのようにして使うのでしょうか？　それは簡単です。先ず、その型の変数の宣言文を書きます。変数の名前は作りたい同義語（ここでは PATHBUF にします）にして下さい。</p>
+
+<pre>char PATHBUF[_MAX_PATH];</pre>
+
+<p>　で、次にこの文の先頭に typedef と書きます。</p>
+
+<pre>typedef char PATHBUF[_MAX_PATH];</pre>
+
+<p>　これで<font color=red>「char 型の _MAX_PATH 個の要素を持った配列」という型の同義語 PATHBUF が定義されました</font>。ここで注意することは、<font color=red>変数の宣言は行っていない</font>ということです。型を作っただけなのです。</p>
+
+<p>　「その型の変数の宣言文を書きます」という表現が紛らわしかったかも知れませんが、ここでは変数の宣言は全く行われていません。「文法的に一緒」ということが言いたかっただけなのです。このように、<font color=red>変数の宣言文の頭に typedef を付けると、変数の宣言文ではなく、同義語の定義文になります</font>。</p>
+
+<p>　では、早速この型を使ってみましょう。</p>
+
+<pre>PATHBUF szPath;</pre>
+
+<p>　実にすっきりしましたね。これで、配列宣言でごちゃごちゃしたプログラムも、かなりすっきりとすることでしょう。この変数を使うときも、普通の配列と同じように</p>
+
+<pre>szPath[0] = 0;</pre>
+
+<p>のようにできます。このように、「同義語」というからには <font color=red>char szPath[_MAX_PATH]; の時と動作は同じ</font>なのです。</p>
+
+<hr>
+
+<p>　ただし、１つだけ注意することがあります。それは、ポインタ型の同義語についてです。</p>
+
+<p>　さて、文字列へのポインタ char* がありますね。これをもっと分かりやすく PSTR という同義語で扱うようにしたいと思います。</p>
+
+<pre>typedef char* PSTR</pre>
+
+<p>　さて、これを利用して、文字列の長さを取得する関数 strlen を作ってみたいと思います。引数の文字列をうっかり変更してしまってはいけないので、const を付けようと思います。</p>
+
+<pre>int strlen(const PSTR str)
+{
+    int i;
+    for(i = 0; *str; str++)
+        i++;
+    return i;
+}</pre>
+
+<p>　さて、コンパイルしましょう...と、何やらエラーが出てきましたね。</p>
+
+<pre>error C2166: 左辺値は const オブジェクトに指定されています。</pre>
+
+<p>　このエラーは、const 定数に指定されている変数などの値を変えようとしたときに出てきます。このエラーはこの行で出ているみたいです。</p>
+
+<pre>for(i = 0; *str; str++)</pre>
+
+<p>　i は絶対に const 定数ではないので、どうやら <font color=red>str++</font> をしたのがまずかったらしいです。</p>
+
+<p>　しかし、PSTR の部分を char* にしてみると、このエラーは出ません。どうやら、同義語にしたときだけ問題が起こるようです。</p>
+
+<p>　実は、<font color=red>const PSTR というのは char* const と同じ事になる</font>のです。しかし、<font size=+1 color=red>この char* const って何だ！？</font></p>
+
+<p>　忘れている人も多いでしょうが、<a href="../html01/cpp01042.html" target="main">第１部第４２章</a>で言った通り、これは<font color=red>ポインタ自身が定数になる</font>という型です。<font color=red>参照先は定数にならず、書き換えることが可能です。</font></p>
+
+<p>　const int n; で n が定数になるように、<font color=red>const PSTR str; では str が定数になる</font>のです。こう考えればそうなる理由もよく分かりますね。</p>
+
+<p>　では、const char* str と同じようにしたいときはどのようにすればいいのでしょうか？　これは面倒ですが、別にこの型を作るより他はありません。</p>
+
+<pre>typedef const char* PCSTR;</pre>
+
+<p>　この PCSTR を使えば、</p>
+
+<pre>int strlen(PCSTR str)
+{
+    int i;
+    for(i = 0; *str; str++)
+        i++;
+    return i;
+}</pre>
+
+<p>となります。これで、無事コンパイルできるようになります。</p>
+
+<p>　ここで *str = 0; という一文をどこかに加えてみて下さい。上のと同じエラーが出てくると思います。</p>
+
+<p>　このように、<font color=red>参照先を const とするポインタ型を使いたいときは、そういう型を作らなければならない</font>わけです。欠点といえば欠点なのかも知れませんが、文法上致し方がないという気もします。</p>
+
+<hr>
+
+<p>　最後に、マクロと typedef との違いです。</p>
+
+<p>　マクロは何度も言うように<font color=red>テキストの置き換え</font>です。しかし、typedef は<font color=red>純粋に言語の機能として働きます</font>。つまり、テキストの置き換えが起こるわけではありません。typedef は<font color=red>型の定義</font>なのです。</p>
+
+<p>　#define のように先頭に # の付いた命令を<font color=red>プリプロセッサディレクティブ</font>と言います。これは<a href="../html01/cpp01070.html" target="main">第１部第７０章</a>にも言ったことです。これらは「コンパイラがソースファイルを解析する前に」処理されると言いました。一方、typedef は「コンパイラがソースファイルを解析する時に」処理されます。</p>
+
+<p>　マクロと typedef とが全く違うものであるということは、上の２例（配列の例、ポインタの例）ではっきりとするでしょう。sizeof や型キャストの動作なども試してみると、もっとよく分かるでしょう。</p>
+
+<p>　マクロと typedef を同一視しているような参考書があれば、<font color=red>その参考書の他の部分も疑った方が良さそうです</font>。両者は根本的に異なるものなのです。</p>
+
+<hr>
+
+<p>　これで今回は終わりです。<a href="../html01/cpp01060.html" target="main">第１部第６０章</a>の構造体における typedef の働きについては、自分で考えてみて下さい。typedef は構造体の同義語も作れるわけで...と、ヒントはこの辺でやめておきますね。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数の宣言文の頭に typedef を付けると、その型の同義語が作れる。</li>
+<li>ポインタ型の同義語に const を付けると、ポインタが定数になる。</li>
+<li>typedef はマクロとは根本的に異なるものである。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="../html01/cpp01080.html" target="main">第１部第８０章　次のステップへ</a> | <a href="cpp03002.html" target="main">第２章　近道</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.2</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

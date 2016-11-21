@@ -1,0 +1,148 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４４章 テンポラリ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４４章　テンポラリ</font>
+</center>
+<hr>
+
+<p>　前回、クラスのオブジェクトを直接返すコードを書きました。今回は、こういう場合どういう動作になるのかなどについて話したいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>戻り値がオブジェクトの場合、一時的にコピーされたオブジェクトが返される。</li>
+<li>コンストラクタを直接呼ぶような式でもテンポラリオブジェクトを作れる。</li>
+<li>テンポラリオブジェクトの寿命はその文が終わるまで。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の operator- をもう一度見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=red>fraction</font> <font color=blue>operator</font>-(<font color=blue>int</font> nNum, fraction frcSub)
+{
+    fraction ret(frcSub.m_nDenom * nNum - frcSub.m_nNumer, frcSub.m_nDenom);
+    <font color=red>return ret;</font>
+}</pre></td></tr>
+
+</table></center>
+
+<p>　赤いところに注目して下さい。fraction クラスのオブジェクトを直接返しています。しかし、ret の寿命はこの関数内なのに、こんなことをしてもいいのでしょうか？</p>
+
+<p>　しかし、よく考えてみて下さい。戻り値の型は参照でもポインタでもないので、その心配はないはずです。int 型の内部変数を返すときも問題はありませんね。</p>
+
+<p>　これは実際にそうで、引数で値渡しを行ったときと同じように<font color=red>オブジェクトのコピーが返されます</font>。ret の寿命はこの関数内で終わりですが、コピーを返すのでその点は問題ないというわけです。値渡しならぬ値返しなわけです。</p>
+
+<p>　しかし、ここで疑問が生じます。このオブジェクトの<font color=red>コピーの寿命</font>はどうなるのでしょうか？</p>
+
+<p>　それを考えるには、実際にこの関数の使われる状況を考えてみるといいでしょう。これは例えば</p>
+
+<pre>fraction a(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+fraction b;
+
+b = <font color=darkcyan>3</font> - a;</pre>
+
+<p>という風に使われるわけです。3 - a で返された値（オブジェクト）は b に代入されます。代入作業は値のコピーになるので、もう 3 - a から返されたコピーは以後不要になるわけです。</p>
+
+<p>　つまり、b = 3 - a; という<font color=red>文が終わってしまえば、戻り値は捨ててしまっても構わない</font>ということです。これは実際にそうなっていて、<font color=red>戻り値がオブジェクトの場合、その寿命はその文が終わるまで</font>です。</p>
+
+<p>　このように、戻り値の寿命は非常に短いものです。このオブジェクトは、戻り値のために一時的に作られたオブジェクトということで、<font color=red>テンポラリオブジェクト</font>と呼ばれます（「テンポラリ」とは「一時的な」という意味です）。</p>
+
+<hr>
+
+<p>　テンポラリオブジェクトというのは、戻り値以外にも作ることができます。先ず、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// TempObj1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> fraction
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_nNumer;
+    <font color=blue>int</font> m_nDenom;
+
+<font color=blue>public</font>:
+    fraction(<font color=blue>int</font> nNumer = <font color=darkcyan>0</font>, <font color=blue>int</font> nDenom = <font color=darkcyan>1</font>)
+        { m_nNumer = nNumer; m_nDenom = nDenom; }
+    <font color=blue>void</font> Disp() <font color=blue>const</font>
+        { cout &lt;&lt; m_nNumer &lt;&lt; <font color=darkcyan>'/'</font> &lt;&lt; m_nDenom &lt;&lt; endl; }
+    <font color=blue>friend</font> fraction <font color=blue>operator</font>-(<font color=blue>int</font> num, <font color=blue>const</font> fraction&amp; frcSub);
+};
+
+fraction <font color=blue>operator</font>-(<font color=blue>int</font> num, <font color=blue>const</font> fraction&amp; frcSub)
+{
+    <font color=blue>return</font> <font color=red>fraction</font>(num * frcSub.m_nDenom - frcSub.m_nNumer, frcSub.m_nDenom);
+}
+
+<font color=blue>int</font> main()
+{
+    fraction a;
+
+    a = <font color=darkcyan>2</font> - <font color=red>fraction</font>(<font color=darkcyan>1</font>, <font color=darkcyan>2</font>);
+    a.Disp();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>3/2</pre></td></tr>
+
+</table></center>
+
+<p>　赤くなっているところを見て下さい。何と、<font color=red>fraction のコンストラクタを呼んでいます</font>。こうすると、テンポラリオブジェクトが作られます。</p>
+
+<p>　先ず、上の方です。fraction(num * frcSub.m_nDenom - frcSub.m_nNumer, frcSub.m_nDenom) を return しています。こうすると、この引数でコンストラクトされたオブジェクトを一時的に作って、それを return することになります。やっていることは fraction ret; を作っていたときと同じですが、もっとコンパクトに書くことができますね。</p>
+
+<p>　このテンポラリオブジェクトの寿命も前と同じで、return 文が終わると破棄されてしまいます。この時には既に戻り値のコピーは終わっているので、何の問題も起きることはありません。</p>
+
+<p>　次に、下の方です。2 - fraction(1, 2) を行っています。fraction(1, 2) は 1/2 に相当するオブジェクトを一時的に作ります。これを使ってoperator- を呼んで、2 - 1/2 を行います。答は 3/2 ですね。この関数内で 3/2 に値するテンポラリオブジェクトが作られ、戻り値でテンポラリオブジェクトが作られ、そして a に代入が行われます。これだけで合計３つのテンポラリオブジェクトが作られていることになりますね。</p>
+
+<p>　そして、1/2 のオブジェクトは a = 1 - fraction(1, 2); の文が終わると破棄されます。operator- の戻り値も同じタイミングで破棄されますね。この時の<font color=red>破棄の順番は、後に作られた方が先</font>です。つまり、戻り値の方が先に破棄されるというわけです。あまり意識することはないかもしれませんが、一応知っておくといいかもしれませんね。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>戻り値がオブジェクトの場合、一時的にコピーされたオブジェクトが返される。</li>
+<li>コンストラクタを直接呼ぶような式でもテンポラリオブジェクトを作れる。</li>
+<li>テンポラリオブジェクトの寿命はその文が終わるまで。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　最後に補足しておくと、ＶＣ＋＋だと、テンポラリオブジェクトを参照に代入すると、寿命が参照の寿命にまで引き延ばされるようです。しかし、参照に代入できること自体がＶＣ＋＋固有の機能のようなので、一般的に言えることではないと思われます。</p>
+
+<p>　しかし、この拡張機能を切っても operator- の const fraction&amp; にテンポラリオブジェクトを代入できます。この参照を返すことで死んだオブジェクトへの参照を持つことも可能です（この時に返されるのは参照なので、上のＶＣ＋＋固有云々の話とは状況が違います）。テンポラリオブジェクトの寿命には充分気を付けて下さい。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02043.html" target="main">第４３章　心の友よ！</a> | <a href="cpp02045.html" target="main">第４５章　えっ！？</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.21</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２２章 文字とは -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２２章　文字とは</font>
+</center>
+<hr>
+
+<p>　文字列を今まで使ってきましたが、コンピューターは文字をどのように扱っているのでしょうか。</p>
+
+<p>　今回はそういうことを話していきます。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>文字は通し番号で扱う</li>
+<li>通し番号は文字コードと呼ばれる</li>
+<li>半角文字は１バイト、全角文字は２バイト</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　この文章もそうですが、コンピューターは文字も扱います。では、どう扱っているのでしょうか。</p>
+
+<p>　コンピューターに記憶できるのは数値だけです。グラフィックもどの点がどの色かというのを記録していて、その色の情報も数値化されています。文字も何らかの形で数値化されているはずです。</p>
+
+<p>　このとき、文字の形などで扱おうものなら、データ量が多すぎて使いものになりません。</p>
+
+<p>　そこで、<font color=red>文字に通し番号を付けて、それで扱うようにしています。</font>これならデータ量も少なくて済みます。</p>
+
+<p>　では、文字にふられている番号を表示してみましょう。<font color=red>その番号は文字に ' ' を付けることで得られます。</font></p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Char1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"「0」にふられた番号は "</font>
+         &lt;&lt; (<font color=blue>int</font>)(<font color=blue>unsigned char</font>)<font color=darkcyan>'0'</font> &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"「あ」にふられた番号は "</font>
+         &lt;&lt; <font color=darkcyan>'あ'</font> &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>
+「0」にふられた番号は 48 です。
+「あ」にふられた番号は 33440 です。
+</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　どうやら「0」には 48 が、「あ」には 33440 がふられているようです。</p>
+
+<p>　プログラム中に (int)(unsigned char) というややこしい型キャストがありますね。'0' は char 型で、もしかしたら負の値になってしまうかも知れないので、unsigned char にします。で、unsigned char は文字と認識されるのでこのままでは 0 と表示されてしまいます。そこで、int にして数値と認識させます。</p>
+
+<p>　まぁ、とにかくこうすれば正しい値が表示できるのです。</p>
+
+<hr>
+
+<p>　文字にふられている番号のことを<font color=red>文字コード</font>と言います。</p>
+
+<p>　そのうち、半角文字にふられている番号は、<a href="../htmlword/words010.html" target="words">ASCII（アスキー）コード</a>と呼ばれます。</p>
+
+<p>　<font color=red>ASCII コードの大きさは１バイトです。</font>つまり、０〜２５５までの数値になります。</p>
+
+<p>　一方、全角文字にふられている番号ですが、これにはいろいろな種類があります。<a href="../htmlword/words011.html" target="words">JIS コード、シフト JIS コード、EUC コード</a>です。Windows ではシフト JIS コードが使われています。</p>
+
+<p>　<font color=red>全角文字の大きさは２バイトです。</font>また、JIS コードは少し特殊で、さらに全角文字の前後に３バイトずつ計６バイトの目印を要します。</p>
+
+<p>　半角カナはシフト JIS コードでは半角文字扱いですが、そのほかでは全角文字扱いになります。</p>
+
+<p>　また、半角、全角、両方をまとめ、さらに全世界の主要文字を網羅した国際文字コード UNICODE も存在します。</p>
+
+<p>　他にもまだあるかもしれませんが、とにかく、<font color=red>文字を通し番号で扱っているというのは全部に共通しています</font>。</p>
+
+<hr>
+
+<p>　次回は文字列について話します。文字列というのは、その名の通り文字の羅列のことです。この文なんかもそうですね。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>文字は通し番号で扱う</li>
+<li>通し番号は文字コードと呼ばれる</li>
+<li>半角文字は１バイト、全角文字は２バイト</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01021.html" target="main">第２１章　ビットとバイト</a> | <a href="cpp01023.html" target="main">第２３章　文字列の扱い方</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.6.14</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

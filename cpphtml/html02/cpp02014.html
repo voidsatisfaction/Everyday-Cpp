@@ -1,0 +1,205 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１４章 仮想関数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１４章　仮想関数</font>
+</center>
+<hr>
+
+<p>　前回のプログラムをよく見ると、ちょっと不経済なところがあります。今回はその点を何とかしたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想関数にすると、オブジェクトによって適切に呼び分けられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　実は、前回の CTextFile::Open 関数の中身は CFile::Open 関数と<font color=red>全く同じ</font>でした。これはさすがに不経済ですね。</p>
+
+<p>　では、Open は CFile::Open を使い、<font color=red>ModifyFlags だけを呼び分けるようにすればいい</font>でしょう。</p>
+
+<p>　ということでやってみました。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=green>// CTextFile::Open を消去して下さい</font>
+
+<font color=blue>void</font> Viss(<font color=blue>const int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : No."</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CFile     bin;
+    CTextFile txt;
+
+    Viss(<font color=darkcyan>1</font>);
+    bin.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    Viss(<font color=darkcyan>2</font>);
+    txt.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    Viss(<font color=darkcyan>3</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>Viss : No.1
+CFile::Open
+CFile::ModifyFlags
+Viss : No.2
+CFile::Open
+CFile::ModifyFlags
+Viss : No.3</pre></td>
+</tr>
+
+</table></center>
+
+<p>　...あれ？　両方とも CFile::ModifyFlags を呼んでいますね。</p>
+
+<p>　これは、こういうことなのです。<font color=red>ModifyFlags は CFile の Open から呼ばれたので、CFile の ModifyFlags が呼ばれてしまったのです。</font></p>
+
+<p>　よく考えたら、確かにそうでないと困ることもあるでしょう。いつもそうなると、うっかり後で動作を変えてしまわないか、ビクビクしながら継承しなければいけなくなります。</p>
+
+<p>　しかし、逆にそうだと困ることもあります。それが今ですね。何とか、<font color=red>後で動作を変える</font>ようにできればいいと思いませんか？</p>
+
+<hr>
+
+<p>　そういうときに使うのが<font size=+2 color=red>仮想関数</font>です。<font color=red>仮想関数にすると、派生元の関数からでも適切なオーバーライド関数を呼びだしてくれるようになります。</font></p>
+
+<p>　仮想関数にする方法は簡単です。関数プロトタイプの前に <font color=red>virtual</font> と書くだけでいいのです。一応、基底クラスに書いておくだけで構わないのですが、派生クラスにも書いておくと、その関数が仮想関数だということがよく分かっていいでしょう。</p>
+
+<p>　で、結局次のようになります。</p>
+
+<center><table border=1>
+
+<tr><th colspan=2>プログラム２</th></tr>
+
+<tr><td colspan=2><pre><font color=green>// File.h</font>
+<font color=blue>#ifndef</font> __FILE_H__INCLUDED__
+<font color=blue>#define</font> __FILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>class</font> CFile
+{
+<font color=blue>private</font>:
+    <font color=red>virtual</font> <font color=blue>bool</font> ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize);
+                   <font color=green>// フラグの調整</font>
+
+    <font color=green>// 他のメンバは省略</font>
+};
+
+<font color=green>// インライン関数の実装は省略</font>
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th colspan=2>プログラム３</th></tr>
+
+<tr><td colspan=2><pre><font color=green>// TextFile.h</font>
+<font color=blue>#ifndef</font> __TEXTFILE_H__INCLUDED__
+<font color=blue>#define</font> __TEXTFILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=blue>const int</font> TF_OVERFLOW = EOF - <font color=darkcyan>1</font>;  <font color=green>// オーバーフロー</font>
+
+<font color=blue>class</font> CTextFile : <font color=blue>public</font> CFile
+{
+<font color=blue>private</font>:
+    <font color=red>virtual</font> <font color=blue>bool</font> ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize);
+                   <font color=green>// フラグの調整</font>
+
+    <font color=green>// 他のメンバは省略</font>
+};
+
+<font color=green>// インライン関数の実装は省略</font>
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム４</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>const int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : No."</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CFile     bin;
+    CTextFile txt;
+
+    Viss(<font color=darkcyan>1</font>);
+    bin.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    Viss(<font color=darkcyan>2</font>);
+    txt.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    Viss(<font color=darkcyan>3</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>Viss : No.1
+CFile::Open
+CFile::ModifyFlags
+Viss : No.2
+CFile::Open
+CTextFile::ModifyFlags
+Viss : No.3</pre></td>
+</tr>
+
+</table></center>
+
+<p>　めでたく、CTextFile の ModifyFlags が呼ばれましたね。</p>
+
+<p>　このように、仮想関数にすると、基底クラスで呼ばれた関数を後からすげ替えることができるのです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>仮想関数にすると、オブジェクトによって適切に呼び分けられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02013.html" target="main">第１３章　関数のすげ替え</a> | <a href="cpp02015.html" target="main">第１５章　アップキャスト</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.20</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

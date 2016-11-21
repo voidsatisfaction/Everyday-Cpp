@@ -1,0 +1,438 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２１章 メンバの呼び分け -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２１章　メンバの呼び分け</font>
+</center>
+<hr>
+
+<p>　今回は新しいクラスを作ります。と言っても、CBinaryFile から派生するクラスです。その時ちょっと困ることが起こるので、それを解決してみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>オーバーライドされる前の関数を呼びたいときは &lt;クラス名&gt;:: を前につけて呼べばよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回作るクラスは<font color=red>暗号化</font>をサポートしたファイルクラスです。CEncodeFile という名前にしたいと思います。</p>
+
+<p>　暗号化と言ってもそんな大袈裟なものではないです。<font color=red>0xAA とのＸＯＲ</font>をとってデータの読み書きをするだけです。ＸＯＲを忘れたという人は<a href="../html01/cpp01047.html" target="main">第１部第４７章</a>を参照して下さい。</p>
+
+<p>　例えば、こんな感じです。</p>
+
+<center><table border=1 width=96%>
+
+<tr>
+  <th colspan=2>暗号化前</th>
+  <th colspan=2>暗号化後</th>
+</tr>
+
+<tr>
+  <th width=33%>１６進</th>
+  <th width=15%>文字</th>
+  <th width=33%>１６進</th>
+  <th width=15%>文字</th>
+</tr>
+
+<tr>
+  <td>83 7D 83 43 83 67 83 6C 83 8A 83 45 83 80</td><td>マイトネリウム</td>
+  <td>29 D7 29 E9 29 CD 29 C6 29 20 29 EF 29 2A</td><td>).).).).) ).)*</td>
+</tr>
+
+<tr>
+  <td>96 76 90 48 8E 71 8E 5F 83 47 83 60 83 8B</td><td>没食子酸エチル</td>
+  <td>3C DC 3A E2 24 DB 24 F5 29 ED 29 CA 29 21</td><td>&lt;.:.$.$.).).)!</td>
+</tr>
+
+<tr>
+  <td>93 E0 8C 97 8C 5E 93 64 8E 71 88 DA 93 AE 94 BD 89 9E</td><td>内圏型電子移動反応</td>
+  <td>39 4A 26 3D 26 F4 39 CE 24 DB 22 70 39 04 3E 17 23 34</td><td>9J&amp;=&amp;.9.$."p9.&gt;.#4</td>
+</tr>
+
+</table></center>
+
+<p>　ＸＯＲは指定したビットを反転させるというものでした。なので、２回同じ値でＸＯＲをとると元に戻ります。つまり、0xAA とＸＯＲをとって暗号化したデータは、<font color=red>もう１回 0xAA とＸＯＲをとれば元に戻せる</font>わけですね。</p>
+
+<p>　そして、暗号化してファイルを扱うので、テキストモードにするわけにはいきません。改行コードは別の文字に変わってしまい、代わりにその別の文字が改行コードに変わってしまいます。</p>
+
+<p>　ということで、このクラスは <font color=red>CBinaryFile から派生させる</font>ことにします。こんな感じですね。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CFile</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3>／　　　　　　＼</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CBinaryFile</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CTextFile</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th width=150></th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CEncodeFile</th>
+  <td width=10></td>
+  <th width=150></th>
+</tr>
+
+</table></center>
+
+<p>　では、早速作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// File.h</font>
+<font color=blue>class</font> CFile
+{
+    <font color=green>// ファイルの読み書き</font>
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> size_t Read(<font color=blue>void</font>* buffer, size_t nSize);
+    <font color=blue>virtual</font> size_t Write(<font color=blue>const void</font>* buffer, size_t nSize);
+};</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// EncFile.h</font>
+<font color=blue>#ifndef</font> __ENCFILE_H__INCLUDED__
+<font color=blue>#define</font> __ENCFILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>  <font color=green>// この中に size_t 型の定義があります</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+
+<font color=blue>const</font> size_t EF_OUTOFMEMORY = <font color=darkcyan>0xFFFFFFFF</font>;  <font color=green>// メモリ不足</font>
+
+<font color=blue>class</font> CEncodeFile : <font color=blue>public</font> CBinaryFile
+{
+    <font color=green>// コンストラクタ・デストラクタ</font>
+<font color=blue>public</font>:
+    CEncodeFile();
+    CEncodeFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags);
+    CEncodeFile(<font color=blue>const</font> CEncodeFile&amp; rother);
+
+    <font color=blue>virtual</font> ~CEncodeFile();
+
+    <font color=green>// ファイルの読み書き</font>
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> size_t Read(<font color=blue>void</font>* buffer, <font size_t nSize);         <font color=green>// 読み出し</font>
+    <font color=blue>virtual</font> size_t Write(<font color=blue>const void</font>* buffer, size_t nSize);  <font color=green>// 書き込み</font>
+
+    <font color=green>// 暗号化・復号化</font>
+<font color=blue>private</font>:
+    <font color=blue>virtual void</font> Encode(<font color=blue>void</font>* bufDest, <font color=blue>const void</font>* bufSrc, size_t nSize);  <font color=green>// 暗号化</font>
+    <font color=blue>virtual void</font> Decode(<font color=blue>void</font>* buffer, size_t nSize);                       <font color=green>// 復号化</font>
+};
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// EncFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"EncFile.h"</font>
+
+<font color=blue>const unsigned char</font> XOR_FACTOR = 0xAA;  <font color=green>// 暗号化に使う数</font>
+
+<font color=green>// デフォルトコンストラクタ</font>
+CEncodeFile::CEncodeFile()
+{
+    cout &lt;&lt; <font color=darkcyan>"CEncodeFile::CEncodeFile 1"</font> &lt;&lt; endl;
+}
+
+<font color=green>// 構築と同時にファイルを開く</font>
+CEncodeFile::CEncodeFile(<font color=blue>const char</font>* pszPath, <font color=blue>const char</font>* pszFlags)
+{
+    cout &lt;&lt; <font color=darkcyan>"CEncodeFile::CEncodeFile 2"</font> &lt;&lt; endl;
+    Open(pszPath, pszFlags);
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CEncodeFile::CEncodeFile(<font color=blue>const</font> CEncodeFile&amp; rother) : CBinaryFile(rother)
+{
+    cout &lt;&lt; <font color=darkcyan>"CEncodeFile::CEncodeFile 3"</font> &lt;&lt; endl;
+}
+
+<font color=green>// デストラクタ</font>
+CEncodeFile::~CEncodeFile()
+{
+    cout &lt;&lt; <font color=darkcyan>"CEncodeFile::~CEncodeFile"</font> &lt;&lt; endl;
+}
+
+<font color=green>// ファイルの読み出し</font>
+size_t CEncodeFile::Read(<font color=blue>void</font>* buffer, size_t nSize)
+{
+    size_t nRead;  <font color=green>// 読み出したバイト数</font>
+
+    nRead = Read(buffer, nSize);
+    Decode(buffer, nRead);
+
+    <font color=blue>return</font> nRead;
+}
+
+<font color=green>// ファイルの書き込み</font>
+size_t CEncodeFile::Write(<font color=blue>const void</font>* buffer, size_t nSize)
+{
+    <font color=blue>unsigned char</font>* bufEncode;  <font color=green>// 暗号化バッファ</font>
+    size_t nWrite;  <font color=green>// 読み出した書き込んだバイト数</font>
+
+    <font color=blue>if</font>(nSize == EF_OUTOFMEMORY)
+        <font color=blue>return</font> EF_OUTOFMEMORY;
+
+    bufEncode = <font color=blue>new unsigned char</font>[nSize];
+    <font color=blue>if</font>(bufEncode == NULL)
+        <font color=blue>return</font> EF_OUTOFMEMORY;
+
+    Encode(bufEncode, buffer, nSize);
+    nWrite = Write(bufEncode, nSize);
+
+    <font color=blue>delete</font> [] bufEncode;
+    <font color=blue>return</font> nWrite;
+}
+
+<font color=green>// 暗号化
+// bufDest, bufSrc の型は void*, const void* なので、
+// unsigned char*, const unsigned char* でキャストしてから参照します</font>
+<font color=blue>void</font> CEncodeFile::Encode(<font color=blue>void</font>* bufDest, <font color=blue>const void</font>* bufSrc, size_t nSize)
+{
+    size_t i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nSize; i++)
+        ((<font color=blue>unsigned char</font>*)bufDest)[i] =
+            ((<font color=blue>const unsigned char</font>*)bufSrc)[i] ^ XOR_FACTOR;
+}
+
+<font color=green>// 復号化（暗号化されたものを元に戻すこと）</font>
+<font color=blue>void</font> CEncodeFile::Decode(<font color=blue>void</font>* buffer, size_t nSize)
+{
+    size_t i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nSize; i++)
+        ((<font color=blue>unsigned char</font>*)buffer)[i] ^= XOR_FACTOR;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　Read と Write は仮想関数にしました。アップキャストしたときに困りますからね。</p>
+
+<p>　で、さらに CBinaryFile にあった ReadAndDump も、<font color=red>CEncodeFile では暗号化がサポートされます</font>。ReadAndDump ではファイルからの読み込みに Read 関数を使っていました。なので、CEncodeFile ではこの部分が CEncodeFile の Read になるわけです。</p>
+
+<p>　ということで、このクラスを使ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// TestFile.h</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"BinFile.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"EncFile.h"</font>
+
+<font color=green>// ファイル名</font>
+<font color=blue>static const char</font> szPath[] = <font color=darkcyan>"Test.dat"</font>;
+
+<font color=green>// データを書き込む</font>
+<font color=blue>bool</font> Write(CFile&amp; rfile)
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>512</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"ファイルに書き込むデータを入力して下さい。"</font> &lt;&lt; endl;
+    cin &gt;&gt; buffer;
+
+    <font color=blue>if</font>(rfile.Open(szPath, <font color=darkcyan>"w"</font>) == <font color=blue>false</font>)
+        <font color=blue>return false</font>;
+    <font color=blue>if</font>(rfile.Write(buffer, strlen(buffer)) == EF_OUTOFMEMORY)
+        <font color=blue>return false</font>;
+    rfile.Close();
+
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// データを読み込んで、ダンプする</font>
+<font color=blue>bool</font> Read(CBinaryFile&amp; rbin)
+{
+    <font color=blue>const int</font> PER_LINE = <font color=darkcyan>16</font>;  <font color=green>// 取得文字数</font>
+    <font color=blue>char</font>      bufHex[PER_LINE * <font color=darkcyan>3</font> + <font color=darkcyan>1</font>];
+    <font color=blue>char</font>      bufASCII[PER_LINE + <font color=darkcyan>1</font>];
+    <font color=blue>int</font>       nRead;
+
+    <font color=blue>if</font>(rbin.Open(szPath, <font color=darkcyan>"r"</font>) == <font color=blue>false</font>)
+        <font color=blue>return false</font>;
+
+    <font color=blue>do</font>
+    {
+        nRead = rbin.ReadAndDump(bufHex, bufASCII, PER_LINE);
+        cout &lt;&lt; bufHex &lt;&lt; bufASCII &lt;&lt; endl;
+    }
+    <font color=blue>while</font>(nRead == PER_LINE);
+    rbin.Close();
+
+    <font color=blue>return true</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    CBinaryFile bin;
+    CEncodeFile enc;
+
+    <font color=green>// 暗号化して書き込み</font>
+    <font color=blue>if</font>(Write(enc) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    <font color=green>// 暗号化されたままで読み出し</font>
+    <font color=blue>if</font>(Read(bin) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    <font color=green>// 復号化して読み出し</font>
+    <font color=blue>if</font>(Read(enc) == <font color=blue>false</font>)
+        <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>CBinaryFile::CBinaryFile 1
+CBinaryFile::CBinaryFile 1
+CEncodeFile::CEncodeFile 1
+ファイルに書き込むデータを入力して下さい。
+マイトネリウム・没食子酸エチル・内圏型電子移動反応
+<font color=red>（ここでエラーが発生！）</font></pre></td></tr>
+
+</table></center>
+
+<p>　ありゃ、エラーが出てしまいました。何のエラーかというと<font size=+2 color=red>スタックオーバーフロー</font>です（<a href="../html01/cpp01061.html" target="main">第１部第６１章</a>参照）。大きな自動変数を作った覚えはないのに、何でスタックオーバーフローなんかになったんでしょうね？</p>
+
+<p>　その原因は、実はここにあります。</p>
+
+<pre>// ファイルの書き込み
+size_t CEncodeFile::Write(const void* buffer, size_t nSize)
+{
+    // 省略
+
+    nWrite = <font color=red>Write</font>(bufEncode, nSize);
+
+    // 省略
+}</pre>
+
+<p>　さて、この Write は<font color=red>どのクラスの Write</font> なのでしょうか？</p>
+
+<p>　Write は仮想関数でした。そしてこれは CEncodeFile の Write から呼ばれています。CEncodeFile の Write が呼ばれているので、普通オブジェクトの<font color=red>本来の型は CEncodeFile</font> であるはずです。つまり、<font color=red>この中で呼ばれた Write も CEncodeFile の Write なのです</font>。</p>
+
+<p>　となると、これは<font color=red>再帰呼び出し</font>になります（<a href="../html03/cpp03021.html" target="main">第３部第２１章</a>参照）。終了条件のない再帰呼び出しは無限ループになって、スタックオーバーフローになってしまいます。</p>
+
+<p>　<font color=red>基底クラスの Write を呼ぶようにできれば解決する</font>のですが、これはどうしたらいいんでしょうね？</p>
+
+<hr>
+
+<p>　これには、<a href="../html01/cpp01068.html" target="main">第１部第６８章</a>で出てきた<font color=red>スコープ解決演算子 ::</font> を使います。どう使えばいいかは、何となく分かるとは思いますが、</p>
+
+<pre>nWrite = <font color=red>CBinaryFile::</font>Write(bufEncode, nSize);</pre>
+
+<p>のようにします。</p>
+
+<p>　Write は仮想関数ですが、こうすれば<font color=red>常に CBinaryFile の Write が呼べる</font>ようになります。もちろん、仮想関数にしていないオーバーライド関数でも同じように使えます。</p>
+
+<p>　そして、Read でも同じく</p>
+
+<pre>nRead = <font color=red>CBinaryFile::</font>Read(buffer, nSize);</pre>
+
+<p>とする必要がありますね。</p>
+
+<p>　では、もう１回プログラムを実行してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>CBinaryFile::CBinaryFile 1
+CBinaryFile::CBinaryFile 1
+CEncodeFile::CEncodeFile 1
+ファイルに書き込むデータを入力して下さい。
+マイトネリウム・没食子酸エチル・内圏型電子移動反応
+CFile::Open
+CBinaryFile::ModifyFlags
+CFile::Open
+CBinaryFile::ModifyFlags
+29 D7 29 E9 29 CD 29 C6 29 20 29 EF 29 2A 2B EF ).).).).) ).)*+.
+3C DC 3A E2 24 DB 24 F5 29 ED 29 CA 29 21 2B EF &lt;.:.$.$.).).)!+.
+39 4A 26 3D 26 F4 39 CE 24 DB 22 70 39 04 3E 17 9J&amp;=&amp;.9.$."p9.&gt;.
+23 34                                           #4
+CFile::Open
+CBinaryFile::ModifyFlags
+83 7D 83 43 83 67 83 6C 83 8A 83 45 83 80 81 45 .}.C.g.l...E...E
+96 76 90 48 8E 71 8E 5F 83 47 83 60 83 8B 81 45 .v.H.q._.G.`...E
+93 E0 8C 97 8C 5E 93 64 8E 71 88 DA 93 AE 94 BD .....^.d.q......
+89 9E                                           ..
+CEncodeFile::~CEncodeFile
+CBinaryFile::~CBinaryFile
+CBinaryFile::~CBinaryFile</pre></td></tr>
+
+</table></center>
+
+<p>　先ず暗号化されたままのデータが表示され、次に復号化されたデータが表示されています。入力した文字は初めに話した例と同じなので、きちんと変換されているか比べてみて下さい。</p>
+
+<p>　このように、</p>
+
+<pre><font color=red>&lt;クラス名&gt;::&lt;メンバ関数&gt;(&lt;実引数リスト&gt;)</font></pre>
+
+<p>とすると、<font color=red>どのオーバーライド関数を呼ぶかを決めることができる</font>のです。</p>
+
+<p>　また、このため CEncodeFile::Write で呼ばれた生の（CBinaryFile:: のついていない）Write は CEncodeFile::Write でないこともあります。CEncodeFile から派生したクラスで Write をオーバーライドし、そのクラスから CEncodeFile::Write を呼ぶと、そのクラスの Write になりますね。実際にはないことだとは思いますが、一応注意しておきます。</p>
+
+<hr>
+
+<p>　最後に余談です。</p>
+
+<p>　今回の CEncodeFile クラスの Encode, Decode 関数は仮想関数にしてあります。これは、CEncodeFile から<font color=red>別の暗号化ファイルクラスを派生できるように</font>ということでこうしています。</p>
+
+<p>　この Encode, Decode をオーバーライドすれば、簡単に別の暗号化方法を使うクラスを作ることができますね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>オーバーライドされる前の関数を呼びたいときは &lt;クラス名&gt;:: を前につけて呼べばよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　長かったですが、要点はこれだけです。もうちょっと短くできればとは思ったのですが、力が及ばなかったです。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02020.html" target="main">第２０章　デストラクタ（仮）</a> | <a href="cpp02022.html" target="main">第２２章　メンバ定数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.27</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

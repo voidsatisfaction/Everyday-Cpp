@@ -1,0 +1,126 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３２章 冶金工場２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３２章　冶金工場２</font>
+</center>
+<hr>
+
+<p>　前回は何となく関数テンプレートを作りましたが、あまり文法的なことには触れませんでした。ということで、今回は文法的な話をしたいと思います。果たして、あなたの推察はあっているでしょうか？</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>template に続く &lt; &gt; の中に書いてあるものをテンプレート引数と呼ぶ。</li>
+<li>テンプレート引数は自由な型の名前を宣言するもの。</li>
+<li>template は戻り値の型よりも前に書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ず関数テンプレートのことを話す前に、関数テンプレートでないときの関数を見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 大きい方の値を返す関数（int 用）</font>
+<font color=blue>int</font> Max(<font color=blue>int</font> a, <font color=blue>int</font> b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+
+<font color=green>// 大きい方の値を返す関数（unsigned int 用）</font>
+<font color=blue>unsigned int</font> Max(<font color=blue>unsigned int</font> a, <font color=blue>unsigned int</font> b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+
+<font color=green>// 大きい方の値を返す関数（void* 用）</font>
+<font color=blue>void</font>* Max(<font color=blue>void</font>* a, <font color=blue>void</font>* b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　見ると分かると思いますが、<font color=red>関数の中身はどれも全く一緒</font>です。ただ単に戻り値、引数の型が異なるだけです。</p>
+
+<p>　これらの関数定義を１つにまとめてしまおう、というのが関数テンプレートでした。</p>
+
+<p>　先ず変えたい型の所を<font color=red>別の名前でおく</font>ことにします。この名前は何でも構いませんが、ここでは TYPE としておきます。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=red>TYPE</font> Max(<font color=red>TYPE</font> a, <font color=red>TYPE</font> b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　次に、<font color=red>TYPE は状況に応じて自由に変わる型だ</font>ということを指定する必要があります。それが <font color=red>template &lt;typename TYPE&gt;</font> になります。これは<font color=red>戻り値の型の前</font>であればどのように書いても構いません。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=red>template &lt;typename TYPE&gt;</font> TYPE Max(TYPE a, TYPE b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　これで関数テンプレート Max の完成です。</p>
+
+<p>　template に続く &lt; &gt; の中、typename で指定したものが<font color=red>自由に変わる型</font>になります。その自由に変わる型を使って関数を定義すれば、自由に変わる型を持った関数、関数テンプレートを定義することができるわけです。</p>
+
+<p>　自由に変わる型を２つ以上持ちたいときは、typename の部分を増やせばいいだけです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE<font color=red>, typename TYPE2</font>&gt;
+<font color=blue>void</font> Disp2(TYPE a, <font color=red>TYPE2</font> b)
+{
+    cout &lt;&lt; <font color=darkcyan>"1 : "</font> &lt;&lt; a &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"2 : "</font> &lt;&lt; b &lt;&lt; endl;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　このように、template に続く &lt; &gt; の中は<font color=red>自由に変わる部分</font>を指定するところです。これをテンプレート用の引数ということで<font color=red>テンプレート引数</font>と呼びます。</p>
+
+<hr>
+
+<p>　短いですが、今回はこれで終わりです。ゆっくりまったりいきませう。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>template に続く &lt; &gt; の中に書いてあるものをテンプレート引数と呼ぶ。</li>
+<li>テンプレート引数は自由な型の名前を宣言するもの。</li>
+<li>template は戻り値の型よりも前に書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02031.html" target="main">第３１章　冶金工場</a> | <a href="cpp02033.html" target="main">第３３章　冶金工場３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

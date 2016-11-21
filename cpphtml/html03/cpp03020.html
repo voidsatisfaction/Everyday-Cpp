@@ -1,0 +1,139 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２０章 トークンを結合せよ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２０章　トークンを結合せよ</font>
+</center>
+<hr>
+
+<p>　普通こんなものを講座で教えるものかと思いはしますが、第３部ではそんなことも平気で教えます。知っておくと思わぬところで使えることもあるので、知っておくに越したことはないでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>マクロ定義に ## を含めると、展開時に ## は消去される。</li>
+<li>引数の展開は ## が消される前に行われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は、<font color=red>関数のプロトタイプと、その関数への関数ポインタの型定義を同時に行うマクロ</font>を作ってみたいと思います。</p>
+
+<p>　言葉で説明するのも分かりにくいので、実際にさっさと作ってみましょう。</p>
+
+<pre>#define PT_FP(ret, name, fpname, params)  ret name params; \
+                                          typedef ret (*fpname)params</pre>
+
+<p>　行の最後に \ がつけるのは、<font color=red>マクロ定義を複数行に書くときの約束</font>でしたね。</p>
+
+<p>　戻り値の型、関数名、ポインタの型名、そして引数を<font color=red>カッコ付きで</font>書きます。実際に使ってみると、こんな感じになります。</p>
+
+<pre>PT_FP(int, Add, FP_Add, (int a, int b));
+FP_Add fpAdd = Add;</pre>
+
+<p>　この PT_FP は次のように展開されます。</p>
+
+<pre>int Add (int a, int b); typedef int (*FP_Add)(int a, int b);</pre>
+
+<p>　引数リストをカッコ付きで渡しているので、<font color=red>展開されてもカッコがついています</font>。それがちょうど関数のカッコになってくれるわけです。これで、引数が何個あっても１つのマクロを使うだけで大丈夫ですね。</p>
+
+<p>　なお、\ を付けていても、<font color=red>マクロは１行に展開される</font>ことにも注意して下さい。（実際には typedef の前に空白が沢山書いてあるので typedef の前がもっと空くのですが、見づらくなってしまうので空けません。）</p>
+
+<hr>
+
+<p>　しかし、関数名とポインタの型名には普通は<font color=red>ほとんど同じ名前を付ける</font>でしょう。上のも、ポインタの型名は関数名の頭に FP_ を付けただけです。これだと、わざわざ別のマクロ引数を使うのも２度手間な感じですね。</p>
+
+<p>　そこで、Add を渡しただけで FP_ を勝手に付けてくれるようにできればいいですね。ということで、次のようにしてみるとどうなるでしょうか？</p>
+
+<pre>#define PT_FP(ret, name, params)  ret name params; \
+                                  typedef ret (*<font color=red>FP_name</font>)params</pre>
+
+<p>　では、PT_FP(int, Add, (int a, int b)); を展開してみましょう。</p>
+
+<pre>int Add (int a, int b); typedef int (*<font color=red>FP_name</font>)(int a, int b);</pre>
+
+<p>　...FP_name が FP_name のままですね。そういえば、これで大丈夫だったら</p>
+
+<pre>#define PRINT(r)   printf(r)</pre>
+
+<p>で</p>
+
+<pre>PRINT("Hello!");</pre>
+
+<p>としたとき、</p>
+
+<pre>p<font color=red>"Hello!"</font>intf(<font color=red>"Hello!"</font>);</pre>
+
+<p>になってしまいますね。</p>
+
+<p>　ということで、こういうときは<font color=red>トークン結合子 ##</font> というものを使います。例えば、次のようになります。</p>
+
+<pre>#define PT_FP(ret, name, params)  ret name params; \
+                                  typedef ret (*FP_<font color=red>##</font>name)params</pre>
+
+<p>　FP_ と name の間に ## が入ってますね。こうすると、マクロが展開されるときには FP_ と 引数 name が<font color=red>くっついて展開されます</font>。つまり、</p>
+
+<pre>int Add (int a, int b); typedef int (*<font color=red>FP_Add</font>)(int a, int b);</pre>
+
+<p>のように展開されるわけです。</p>
+
+<p>　これでやっと望み通りの動作になってくれました。</p>
+
+<hr>
+
+<p>　トークン結合子の機能をもうちょっと一般的に言うと、<font color=red>マクロ展開後に ## は消えてしまう</font>となります。例えば、</p>
+
+<pre>#define PRINTF(a)   a##printf</pre>
+
+<p>で、PRINTF(f) は先ず f##printf と展開され、その後に ## が消えて fprintf となります。また、</p>
+
+<pre>#define ABC a##b##c</pre>
+
+<p>で、ABC は a##b##c と展開され、そして ## が消えて abc となります。そして</p>
+
+<pre>#ifdef _DEBUG
+#define ONLYDEBUG
+#else
+#define ONLYDEBUG  /##/
+#endif</pre>
+
+<p>は、リリース時には ONLYDEBUG は /##/ と展開され、そして ## が消えて // 、つまりコメントになります。</p>
+
+<p>　トークン結合子の実際使われている例には、Windowsx.h の HANDLE_MSG マクロ、Winnt.h の DECLARE_HANDLE マクロ、Richedit.h の _WPAD マクロなどがあります。</p>
+
+<p>　トークン結合子はそうそう使う機会はありませんが、たまに「おっ！　つこたらきれいになるやん」ということがあります。知っておいて損はないと思いますよ。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>マクロ定義に ## を含めると、展開時に ## は消去される。</li>
+<li>引数の展開は ## が消される前に行われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回からはアルゴリズムのお話に入っていきたいと思います。ほぼ独学の自分がどこまで話せるかは分かりませんが、何とか形にしたいと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03019.html" target="main">第１９章　組み込みマクロ</a> | <a href="cpp03021.html" target="main">第２１章　call itself</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.20</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

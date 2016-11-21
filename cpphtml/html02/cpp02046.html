@@ -1,0 +1,222 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４６章 えっ！？　２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４６章　えっ！？　２</font>
+</center>
+<hr>
+
+<p>　今回は、前回のプログラムをもっと洗練させます。かなりすっきりしますよ。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>その関数内で捕捉されなかった例外は、関数外へ投げられる。</li>
+<li>例外を捕捉できなければエラー終了する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　goto を使うよりも綺麗になるといっておきながら、前回のプログラムは大して変わっていませんでした。今回は、そのあたりを考えてみたいと思います。</p>
+
+<p>　では、もういちど前回のプログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>int</font> Func()
+{
+    FILE *pf1 = NULL;
+    FILE *pf2 = NULL;
+    FILE *pf3 = NULL;
+    <font color=blue>int</font> fRet = <font color=darkcyan>0</font>;
+
+    <font color=blue>try</font>
+    {
+        pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+        <font color=blue>if</font>(pf1 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>1</font>;
+
+        pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+        <font color=blue>if</font>(pf2 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>2</font>;
+
+        pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+        <font color=blue>if</font>(pf3 == NULL)
+            <font color=blue>throw</font> <font color=darkcyan>3</font>;
+
+        Func2(pf1, pf2, pf3);
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        fRet = fError;
+    }
+
+    <font color=blue>if</font>(pf1 != NULL)
+        fclose(pf1);
+    <font color=blue>if</font>(pf2 != NULL)
+        fclose(pf2);
+    <font color=blue>if</font>(pf3 != NULL)
+        fclose(pf3);
+
+    <font color=blue>return</font> fRet;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　何が鬱陶しいかといえば、if 文です。goto の時もそうですが、これは一応マクロで簡単にすることができます。</p>
+
+<p>　しかし、例外はそんなものを使わなくてもいいのです。次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><pre>FILE* Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszMode, <font color=blue>int</font> fError)
+{
+    FILE *pf = fopen(pszFile, pszMode);
+    <font color=blue>if</font>(pf == NULL)
+        <font color=red>throw fError;</font>
+    <font color=blue>return</font> pf;
+}
+
+<font color=blue>int</font> Func()
+{
+    FILE *pf1 = NULL;
+    FILE *pf2 = NULL;
+    FILE *pf3 = NULL;
+    <font color=blue>int</font> fRet = <font color=darkcyan>0</font>;
+
+    <font color=blue>try</font>
+    {
+        pf1 = Open(szFile1, <font color=darkcyan>"r"</font>, <font color=darkcyan>1</font>);
+        pf2 = Open(szFile2, <font color=darkcyan>"r"</font>, <font color=darkcyan>2</font>);
+        pf3 = Open(szFile3, <font color=darkcyan>"w"</font>, <font color=darkcyan>3</font>);
+
+        Func2(pf1, pf2, pf3);
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        fRet = fError;
+    }
+
+    <font color=blue>if</font>(pf1 != NULL)
+        fclose(pf1);
+    <font color=blue>if</font>(pf2 != NULL)
+        fclose(pf2);
+    <font color=blue>if</font>(pf3 != NULL)
+        fclose(pf3);
+
+    <font color=blue>return</font> fRet;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　何か Open という関数を作っていますね。で、<font color=red>例外はこの Open の中で投げています</font>。一方、<font color=red>try ブロック内には throw は見あたりません</font>。しかし、try ブロック内から Open を呼んでいます。</p>
+
+<p>　もう分かりましたね。<font color=red>try ブロック内の関数の中で例外が投げられても catch できる</font>のです。Open 内で投げられた例外が、関数外にまで届いているとも言えますね。</p>
+
+<p>　このように、例外は関数外にまで届きます。これが例外処理の強力たる所以です。これでだいぶすっきりしました。</p>
+
+<hr>
+
+<p>　では、try ブロックがないのに例外が投げられたらどうなるのでしょうか？　早速やってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Except1.cpp</font>
+<font color=blue>int</font> main()
+{
+    <font color=blue>throw</font> <font color=darkcyan>1</font>;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>abnormal program termination</pre></td></tr>
+
+</table></center>
+
+<p>　問答無用なプログラムですね（笑）。</p>
+
+<p>　結果はいろいろありますが、とにかく<font color=red>エラー終了します</font>。環境によってはそこからデバッグを開始できたりします。</p>
+
+<hr>
+
+<p>　最後に。ファイルを開くのに関数を作り、ファイルを読み込むのに関数を作り、というのは一見面倒に見えます。ですが、実は CFile クラスを作るときにそれは済ませていますね。CFile クラスの関数を、エラー時に例外を投げるように改造してしまえばいいのです。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// ファイルを開く</font>
+<font color=blue>void</font> CFile::Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags)
+{
+    Close();
+
+    <font color=blue>char</font> bufFlags[<font color=darkcyan>8</font>];
+    <font color=blue>if</font>(ModifyFlags(pszFlags, bufFlags, numof(bufFlags)) == <font color=blue>false</font>)
+        <font color=blue>return false</font>;
+
+    m_pfile = fopen(pszFile, bufFlags);
+    <font color=blue>if</font>(m_pfile == NULL)
+        <font color=blue>throw</font> <font color=darkcyan>1</font>;
+}
+
+<font color=blue>bool</font> Func()
+{
+    CFile file1, file2, file3;
+
+    <font color=blue>try</font>
+    {
+        file1.Open(szFile1, <font color=darkcyan>"r"</font>);
+        file2.Open(szFile2, <font color=darkcyan>"r"</font>);
+        file3.Open(szFile3, <font color=darkcyan>"w"</font>);
+
+        Func2(file1, file2, file3);
+    }
+    <font color=blue>catch</font>(<font color=blue>int</font> fError)
+    {
+        <font color=blue>return false</font>;
+    }
+
+    <font color=blue>return true</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　これでずいぶんとすっきりしましたね。ファイルのクローズがデストラクタで行われるので、そこら辺せこい気もしますが。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>その関数内で捕捉されなかった例外は、関数外へ投げられる。</li>
+<li>例外を捕捉できなければエラー終了する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　例外処理の機能はまだまだあります。ぼちぼちとやっていきましょう。</p>
+
+<p>　それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02045.html" target="main">第４５章　えっ！？</a> | <a href="cpp02047.html" target="main">第４７章　えっ！？　３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.27</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

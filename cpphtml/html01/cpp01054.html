@@ -1,0 +1,203 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５４章 ファイルのススメ３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５４章　ファイルのススメ３</font>
+</center>
+<hr>
+
+<p>　ファイルに書き込むときには主に２通りの方法が使われます。１つは文字列を書き込み、書き込んだあとのファイルを読めるようにする方法、そしてもう１つはメモリ上のデータをそのまま書き込む方法です。今回はそのうち文字列を書き込む方法について話したいと思います。</p>
+
+<p>　今回はファイル操作の重要な関数 fprintf について話します。printf と同じ感覚でファイルにデータを書き込んでいくことが出来ます。書き込んだあとのファイルがテキストとして読めるようにしたいときには、この fprintf を使うことになります。よく使いますので、使い方をマスターしましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>fprintf でファイルに書式付き文字列を書き込むことが出来る。</li>
+<li>第１引数に FILE* がくること以外は、使い方は printf と同じ。</li>
+<li>読み込むときは主に fgets か fscanf を使用する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ず、ある処理を行いたいと思います。そうですね。入力された文字列を１６進数にしてファイルに書き込むものにしましょう。</p>
+
+<p>　今回ファイルの<font color=red>書き込み</font>に使う関数は <font color=red>fprintf</font> です。fprintf の使い方はほとんど sprintf や printf と同じです。第１引数に FILE* を追加で渡す以外は printf と同じです。</p>
+
+<p>　数値を１６進数で表示するときは、printf 系関数では <font color=red>%x</font> という記号を使います（printf 系関数の簡単な書式については<a href="cpp01024.html" target="main">第２４章</a>を参照）。今回は、もう少し記号を複雑にしてみましょう。</p>
+
+<p>　これを <font color=red>%02X</font> とします。<font color=red>「２」</font>は、<font color=red>最低２文字</font>を出力するという意味です。このとき、２文字以下の時に<font color=red>空白を０で埋める</font>というのが<font color=red>「０」</font>になります。<font color=red>x が大文字</font>になっているのは、ａ〜ｆを<font color=red>大文字で出力する</font>という意味です。こうすると、見た目がきれいになります。</p>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+<tr>
+<td><pre><font color=green>// File3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+    <font color=blue>char</font>  buffer[<font color=darkcyan>512</font>];
+    <font color=blue>int</font>   i;
+
+    printf(<font color=darkcyan>"何か文字列を入力して下さい &gt; "</font>);
+    gets(buffer);
+
+    pFile = fopen(<font color=darkcyan>"fprintf.txt"</font>, <font color=darkcyan>"w"</font>);
+    fprintf(pFile, <font color=darkcyan>"%d\n"</font>, strlen(buffer));
+    for(i = <font color=darkcyan>0</font>; buffer[i]; i++)
+        fprintf(pFile, <font color=darkcyan>"%02X "</font>, (<font color=blue>unsigned char</font>)buffer[i]);
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+<tr><td><pre>何か文字列を入力して下さい > 1234567890</pre></td></tr>
+
+<tr><th>fprintf.txt の中身</th></tr>
+<tr><td><pre>10
+31 32 33 34 35 36 37 38 39 30</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　テキストモードでやってみました。となると改行も入れたいので、文字列の長さも書き込むことにしました。では、プログラムを順を追って見ていきましょう。</p>
+
+<p>　先ず、文字列の入力です。gets を使いました。<font color=red>gets は一行入力するときに使う関数</font>です。改行は含まれません。バッファ（<a href="cpp01052.html" target="main">第５２章</a>参照）のサイズは考慮してくれませんので、バッファのサイズは大きめにとっておきました。これで先ず文字列を入力しました。</p>
+
+<p>　次に、ファイルを開きます。書き込みモード＆テキストモードにしました。つまり、アクセスフラグは "w" になります。ここまでは別に問題ありませんね。</p>
+
+<p>　では、次はいよいよ書き込みです。</p>
+
+<pre>fprintf(pFile, "%d\n", strlen(buffer));</pre>
+
+<p>　strlen は文字列の長さを取得する関数です（<a href="cpp01024.html" target="main">第２４章</a>参照）。先ずは、これを１０進数で書き込みます（<font color=red>１０進数の記号は %d</font> ですね）。この時、ついでに改行（\n）も行っておきました。まさに <font color=red>printf の時と同じ感覚</font>でファイルに書き込むことが出来ました。</p>
+
+<pre>for(i = 0; buffer[i]; i++)
+    fprintf(pFile, "%02X ", (unsigned char)buffer[i]);</pre>
+
+<p>　次でいよいよ１６進数の書き込みです。unsigned char でキャスト（<a href="cpp01021.html" target="main">第２１章</a>参照）しているのは、char のままだと負の値が出てくるので、FFFFFFD4 などのような値が表示されることがあるからです。</p>
+
+<p>　このキャストの注意点以外では、あまり特筆すべき所はありませんね。非常に簡単にファイルに書き込むことが出来ました。</p>
+
+<p>　で、最後には<font color=red>開けたら閉める</font>の原則通り、fclose でファイルを閉じて、終了です。どうでしょうか？　大体感じはつかめましたでしょうか。</p>
+
+<hr>
+
+<p>　では、このファイルを読み込んでみたいと思います。読み込む方法もいろいろありますが、一応 fscanf を使ってみたいと思います。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// File4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+    <font color=blue>int</font>   nLength;
+    <font color=blue>int</font>   temp;
+    <font color=blue>int</font>   i;
+
+    pFile = fopen(<font color=darkcyan>"fprintf.txt"</font>, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pFile == NULL)
+      <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    fscanf(pFile, <font color=darkcyan>"%d"</font>, &amp;nLength);
+    printf(<font color=darkcyan>"文字列の長さは %d バイトです。\n"</font>, nLength);
+
+    for(i = <font color=darkcyan>0</font>; i &lt; nLength; i++)
+    {
+        fscanf(pFile, <font color=darkcyan>"%x"</font>, &amp;temp);
+        putchar(temp);
+    }
+
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>文字列の長さは 10 バイトです。
+1234567890</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　先ずは、読み出しモード＆テキストモードでファイルを開きます。</p>
+
+<p>　で、その次に、ここでは<a href="cpp01051.html" target="main">第５１章</a>で言っていたエラー処理を行っています。ファイルが開けなかった場合には pFile は <font color=red>NULL</font> になると言いました。なので、pFile が NULL の時はプログラムを終了するようにしました。</p>
+
+<p>　その次が、いよいよファイルからの読み出しです。</p>
+
+<pre>fscanf(pFile, "%d", &amp;length);</pre>
+
+<p>　書式が fprintf に似ていますね。これは scanf 系の関数の１つです。scanf 系の関数はいまいちエラーチェックが難しいので使い勝手が悪いのですが、ここでは使わせてもらいます。</p>
+
+<p>　fscanf はファイルから<font color=red>数字</font>を読み出し、それを<font color=red>数値</font>にして変数に代入します。<font color=red>数字</font>とは、<font color=red>数字の文字コードからなる文字列</font>を表します。一方<font color=red>数値</font>とは、char とか int とかそういうものの値を表します。ファイルから数字を読み出すときに、その数字を数値に変換してくれるのです。</p>
+
+<p>　もちろん、数字を数値に変えて読み出すというのは、<font color=red>記号が %d だから</font>です。これを %s にすれば文字列を、%x にすれば１６進数を、%c にすれば１文字を読み出すことが出来ます。</p>
+
+<p>　そして、fprintf と違う点が１つあります。それは、変数 length を渡すのではなく、その<font color=red>アドレスを渡している</font>ところです。length の中に値を代入するのですから、アドレスを渡すのは当然といえます（<a href="cpp01034.html" target="main">第３４章</a>参照）。<font color=red>間違って値を渡してもコンパイルエラーが起きるわけではありませんので、注意して使って下さい。</font></p>
+
+<p>　続いて、文字コードの値を保存していたものを読み出します。</p>
+
+<pre>for(i = 0; i &lt; length; i++)
+{
+    fscanf(pFile, "%x", &amp;temp);
+    putchar(temp);
+}</pre>
+
+<p>　fscanf では空白、タブ、改行は無視されます。なので、次の数字 31 が読み出されます。31 は 31 でも、これを<font color=red>１６進数での 31</font> として読み出します。この点以外では上と何ら変わりがないので、特に問題はないでしょう。</p>
+
+<p>　次に putchar で文字を出力しています。<font color=red>putchar は文字コードを入れると、その文字を表示する関数</font>です。さっき 31 という数字が 31 という１６進数の数値に直され、temp に代入されました。なので、<font color=red>文字コード 0x31 の文字、'1' が表示される</font>わけです。</p>
+
+<p>　で、最後にファイルを閉じて終了です。</p>
+
+<hr>
+
+<p>　最後に一言。fscanf を教えたあとでこんな事言うのも何ですが、scanf 系の関数は癖があり、あまり好んで使われません。<a href="cpp01052.html" target="main">第５２章</a>で話した<font color=red>fgets（１行単位で読み出す関数）を使い、自前で解析していくのが安全</font>です。ファイルは別プログラムで書き換えられる危険性がありますから、期待通りの書式になっていない可能性があります。そのとき、fscanf を使っていると思わぬ動作をしてしまう可能性があるのです。エラーチェックに脆弱な fscanf を使うことは、あまりないかもしれません。</p>
+
+<hr>
+
+<p>　では、今回のおさらいです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>fprintf でファイルに書式付き文字列を書き込むことが出来る。</li>
+<li>第１引数に FILE* がくること以外は、使い方は printf と同じ。</li>
+<li>読み込むときは主に fgets か fscanf を使用する。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はバイナリモードでの読み書きをやってみたいと思います。それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01053.html" target="main">第５３章　バイナリとテキスト</a> | <a href="cpp01055.html" target="main">第５５章　ファイルのススメ４</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.6.24</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

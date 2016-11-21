@@ -1,0 +1,195 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１８章 もうひとつのループ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１８章　もうひとつのループ</font>
+</center>
+<hr>
+
+<p>　よく考えてみると、for はいろいろやることが多すぎます。実は、もうちょっと簡単なループの方法が存在するのです。</p>
+
+<p>　ということで、今回は for とは違うループの方法について話していきたいと思います。</p>
+
+<hr>
+
+<p>　これが今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>while(&lt;条件式&gt;)&lt;実行文&gt; でループになる。</li>
+<li>while は for(; &lt;条件式&gt;;) と同じ。</li>
+<li>条件の判定はループの初めに判定される。</li>
+<li>do-while を使えば、条件はループの終わりに判定される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回 for について話しました。その際、パラメータが省略できるとも話しました。</p>
+
+<p>　で、その省略した形が下のようになっていました。</p>
+
+<pre>for(; a < 10;)</pre>
+
+<p>　何か変な格好ですね。</p>
+
+<p>　では、このループの意味はどうなるでしょうか。「a が 10 より小さかったらループする」ですね。何か、こんなとき用の命令が別にあっても不思議ではないような感じがしますね。</p>
+
+<p>　それが今回お話しする <font color=red>while</font> です。</p>
+
+<p>　<font color=red>while は for の初期化式、ループ式を省略したものと全く同じになります。</font></p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// While1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a = <font color=darkcyan>0</font>;
+    <font color=blue>while</font>(a &lt; <font color=darkcyan>10</font>)
+    {
+        cout &lt;&lt; a &lt;&lt; endl;
+        a += <font color=darkcyan>2</font>;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0
+2
+4
+6
+8</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　前回の For3d.cpp の for(; a &lt; 10;) を while(a &lt; 10) にしただけです。結果も同じになっていますね。</p>
+
+<p>　while の書式は</p>
+
+<pre><font color=red>while(&lt;条件式&gt;)&lt;実行文&gt;</font></pre>
+
+<p>で、<font color=red>条件式を満たす限り実行文を実行し続ける</font>というものです。</p>
+
+<p>　while(1) は無限ループになります。</p>
+
+<hr>
+
+<p>　では、条件式の判定されるタイミングはいつなのでしょうか？　while は for(; &lt;条件式&gt;;) と全く同じといいました。だから、ループの先頭で判定されるはずです。</p>
+
+<p>　では、For3b.cpp と同じ事をやってみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// While1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i = <font color=darkcyan>0</font>;
+    <font color=blue>while</font>(i != <font color=darkcyan>0</font>)
+        cout &lt;&lt; <font color=darkcyan>"この文が表示されるかな？"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre></pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　はい、何も表示されませんでした。やはり、<font color=red>ループの先頭で判定している</font>ようです。</p>
+
+<hr>
+
+<p>　しかし、これとは逆にループの最後で判定するものはないのでしょうか？　つまり、<font color=red>中身が最低でも１回は実行される</font>ようにはできないのでしょうか？</p>
+
+<p>　そのために、<font color=red>do-while</font> という、while の別バージョンが存在します。</p>
+
+<p>　では、下のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// While1c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i = <font color=darkcyan>0</font>;
+    <font color=blue>do</font>
+    {
+        cout &lt;&lt; <font color=darkcyan>"この文が表示されるかな？"</font> &lt;&lt; endl;
+    }
+    <font color=blue>while</font>(i != <font color=darkcyan>0</font>);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>この文が表示されるかな？</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　はい、表示されました。</p>
+
+<p>　do-while 文の書式は</p>
+
+<pre>do &lt;実行文&gt; while(&lt;条件式&gt;);</pre>
+
+<p>で、<font color=red>とにかく一度実行文を実行し</font>、そのあとは while と同じになります。</p>
+
+<p>　<font color=red>最後のセミコロンを忘れやすい</font>ので気を付けて下さい。</p>
+
+<hr>
+
+<p>　では、条件の評価されるタイミングをまとめてみましょう。</p>
+
+<p>　先頭にループの条件を書くもの（for, while）は先頭で条件を評価しました。そして、末尾にループの条件を書くもの（do-while）は末尾で条件を評価しました。</p>
+
+<p>　とても覚えやすいですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>while(&lt;条件式&gt;)&lt;実行文&gt; でループになる。</li>
+<li>while は for(;&lt;条件式&gt;;) と同じ。</li>
+<li>条件の判定はループの初めに判定される。</li>
+<li>do-while を使えば、条件はループの終わりに判定される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01017.html" target="main">第１７章　for と配列変数</a> | <a href="cpp01019.html" target="main">第１９章　ループの強制終了</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

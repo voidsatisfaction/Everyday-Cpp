@@ -1,0 +1,140 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２章 アル・コワリズミ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２章　アル・コワリズミ</font>
+</center>
+<hr>
+
+<p>　今回からＳＴＬについて話していきたいと思います。先ず初めの今回は「アルゴリズム」についてです。</p>
+
+<hr>
+
+<p>　以下が今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ＳＴＬはテンプレートを駆使したライブラリ</li>
+<li>ループ処理を関数テンプレートにしたものをＳＴＬでは「アルゴリズム」と呼ぶ</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回からずずずっとＳＴＬについて話していくわけですが、ＳＴＬがどういうものなのかを話す前にちょっとＳＴＬを使ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Algo1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>#include</font> <font color=red>&lt;algorithm&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> data[] = { <font color=darkcyan>4</font>, <font color=darkcyan>2</font>, <font color=darkcyan>9</font>, <font color=darkcyan>7</font>, <font color=darkcyan>1</font>, };
+
+    cout &lt;&lt; *<font color=red>min_element</font>(data, data + numof(data)) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>1</pre></td></tr>
+
+</table></center>
+
+<p>　この <font color=red>min_element</font> というのはＳＴＬの関数テンプレートの１つで、<font color=red>配列の中で一番小さい要素のアドレスを返す関数テンプレート</font>です。引数には<font color=red>先頭位置と先頭位置＋要素数</font> を渡しています。何ということもない処理ですね。ヘッダファイルは <font color=red>algorithm</font> です。</p>
+
+<p>　この処理がなぜ関数でなく関数テンプレートとして作られているかというのは、どんな型の配列にでも使えるようにするためです。</p>
+
+<p>　このくらいならちょっと作ってみることもできそうですね。では、作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Algo2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+
+<font color=blue>using namespace</font> std;
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE min_element(TYPE pBegin, TYPE pEnd)
+{
+    TYPE pMin;
+    <font color=blue>for</font>(TYPE p = pMin = pBegin; p != pEnd; ++p)
+        <font color=blue>if</font>(*p &lt; *pMin)
+            pMin = p;
+    <font color=blue>return</font> pMin;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> data[] = { <font color=darkcyan>4</font>, <font color=darkcyan>2</font>, <font color=darkcyan>9</font>, <font color=darkcyan>7</font>, <font color=darkcyan>1</font>, };
+
+    cout &lt;&lt; *min_element(data, data + numof(data)) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>1</pre></td></tr>
+
+</table></center>
+
+<p>　はい。同じ動作をしますね。</p>
+
+<p>　ＳＴＬというのは、こんな風に<font size=+2 color=red>テンプレートを駆使しまくったライブラリ</font>なわけです。型を気にせず使えるという点が非常に魅力的なわけです。</p>
+
+<hr>
+
+<p>　ＳＴＬは「アルゴリズム」「関数オブジェクト」「コンテナ・イテレータ」「スマートポインタ」など、いろいろなものから成り立っています。それぞれがどういうものかは今は話しませんが、今回使った「アルゴリズム」に関してはちょっと話したいと思います。</p>
+
+<p>　今回使った min_element という関数テンプレートは<font color=red>「アルゴリズム」</font>と呼ばれるものの１つです。アルゴリズムというと、普通は「ある目的を果たすための処理の方法」といった意味ですが、ＳＴＬの言う「アルゴリズム」はちょっと違います。ＳＴＬの言うアルゴリズムとは<font color=red>「配列のようなものに対するループ処理を行う関数テンプレート」</font>のことなのです。</p>
+
+<p>　大仰な名前が付いていますが、中身は上のようにたいしたものではありません（ものにもよりますが）。とにかく、<font size=+2 color=red>for ループでぐるぐるーっとやったのがアルゴリズム</font>なわけです。</p>
+
+<hr>
+
+<p>　いろいろまだいいたいこともありますが、長くなるので次回に回したいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ＳＴＬはテンプレートを駆使したライブラリ</li>
+<li>ループ処理を関数テンプレートにしたものをＳＴＬでは「アルゴリズム」と呼ぶ</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　タイトルの「アル・コワリズミ」というのは、アルゴリズムの語源となった９世紀のアラビアの数学者の名前です。雑学知識としてどうぞ。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp04001.html" target="main">第１章　業界のスタンダード</a> | <a href="cpp04003.html" target="main">第３章　アル・コワリズミ２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.7.8</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

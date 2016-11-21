@@ -1,0 +1,229 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１０章 続・ポインタ天国 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１０章　続・ポインタ天国</font>
+</center>
+<hr>
+
+<p>　多次元配列もメモリ上にあります。アドレスがあります。アドレスはただの数値です。なら、多次元配列のアドレスを入れておく変数があったっていいじゃないですか。今回はそういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>２次元配列のアドレスを入れるポインタの宣言は<br>&lt;型&gt; (*&lt;変数名&gt;)[&lt;２番目の要素数&gt;]; である。</li>
+<li>ｎ次元配列の要素はｎ次元配列のアドレスを入れるポインタでも同じように扱える。</li>
+<li>ｎ次元配列のアドレスを入れるポインタは、実は（ｎ−１）次元配列へのポインタである。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　というわけで、今回は多次元配列のアドレスを入れるポインタのお話です。先ずは２次元配列から考えていきます。</p>
+
+<p>　先ず、int array[5][5]; があるとします。この２次元配列のアドレスをポインタに保存したいと思います。そこで、先ずは１次元配列の時と同じようにしてみましょう。</p>
+
+<pre>int* parray = array;
+'initializing' : 'int [5][5]' から 'int *' に変換することはできません。</pre>
+
+<p>　...どうやらエラーが出るようです。このように、多次元配列のアドレスは、普通のポインタには入れることはできません。それ用のポインタが必要になるのです。</p>
+
+<p><br></p>
+
+<p>　さて、ここで２次元配列の初期化（<a href="../html01/cpp01062.html" target="main">第１部第６２章</a>参照）を思い出してみましょう。</p>
+
+<pre>int array[][5] = {
+    {  1,  2,  3,  4,  5, },
+    {  2,  4,  6,  8, 10, },
+    {  3,  6,  9, 12, 15, },
+    {  4,  8, 12, 16, 20, },
+};</pre>
+
+<p>　最初の要素数を省略しましたね。</p>
+
+<p>　１次元配列へのポインタ（普通のポインタ）は「この要素数の省略できるカッコをのけて、変数名の先頭に * をつけたものだ」と解釈することができます。ということで、２次元配列のアドレスを入れるポインタもこれと同じように考えてみましょう。</p>
+
+<pre>int* parray[5];</pre>
+
+<p>　...これでは int* 型の配列になってしまいますね。</p>
+
+<p>　では、前回の関数ポインタの時と同じようにカッコで分断してしまいましょう。</p>
+
+<pre>int (*parray[5]);
+int (*parray)[5];</pre>
+
+<p>　...２通り考えられますね。</p>
+
+<p>　では、こう考えてみましょうか。<font color=red>２次元配列のアドレスを入れるポインタの配列</font>はどうなるのでしょうか？　配列変数を作るときは、変数名の後ろに [ ] をつけるのでしたね。では、上の変数名の後ろにそれぞれ [4] をつけてみましょう。</p>
+
+<pre>int (*parray[4][5]);
+int (*parray[4])[5];</pre>
+
+<p>　前者では<font color=red>２次元配列のアドレスを入れるポインタの配列</font>なのか、<font color=red>ポインタの２次元配列</font>なのか、はたまた<font color=red>３次元配列のアドレスを入れるポインタ</font>なのか<font color=red>全く区別がつきませんね</font>。ということで、後者が正しいのです。</p>
+
+<p>　つまり、２次元配列のアドレスを入れるポインタは</p>
+
+<pre><font color=red>int (*parray)[5];</font></pre>
+
+<p>のようになるわけです。[5] というのがついていますが、これは<font color=red>１変数</font>です。配列変数では<font color=red>ありません</font>。</p>
+
+<p>　このようにしておくと、先ずはアドレスの初期化は</p>
+
+<pre>parray = array;</pre>
+
+<p>のようにでき、そしてこのポインタを使うときは</p>
+
+<pre>parray[0][0] = 0;</pre>
+
+<p>のように、普通に使うことができます。</p>
+
+<hr>
+
+<p>　関数の仮引数の場合はもっと簡単になります。</p>
+
+<p>　<a href="../html01/cpp01035.html" target="main">第１部第３５章</a>で、１次元配列を受け取る仮引数の場合は、</p>
+
+<pre>void Func(int* parray)</pre>
+
+<p>と</p>
+
+<pre>void Func(int parray[])</pre>
+
+<p>の<font color=red>どちらもポインタになる</font>と言いました。</p>
+
+<p>　これは２次元配列でも同じようにできます。</p>
+
+<pre>void Func(int (*parray)[5])</pre>
+
+<p>を</p>
+
+<pre><font color=red>void Func(int parray[][5])</font></pre>
+
+<p>と書いても同じことになるのです。</p>
+
+<p>　これは３次元配列以降でも同じようにできます。３次元配列では</p>
+
+<pre>void Func(int (*parray)[5][10])
+または
+<font color=red>void Func(int parray[][5][10])</font></pre>
+
+<p>４次元配列では</p>
+
+<pre>void Func(int (*parray)[5][5][5])
+または
+<font color=red>void Func(int parray[][5][5][5])</font></pre>
+
+<p>となりますね。</p>
+
+<hr>
+
+<p>　さて、この多次元配列のアドレスを入れるポインタですが、いちいち２番目以降の要素数を指定しないといけないのはなぜなのでしょうか？</p>
+
+<p>　そもそも、１次元配列を普通のポインタで扱えていたのは、<font color=red>「先頭のアドレスと変数の型さえわかっていれば a[1] や a[2] 、果ては a[999] のアドレスまでわかってしまう」</font>からでした（<a href="../html01/cpp01035.html" target="main">第１部第３５章</a>参照）。</p>
+
+<p>　しかし、２次元配列はそれだけでは不十分なのです。簡単な例で考えてみましょう。</p>
+
+<pre>int array[2][3];</pre>
+
+<p>　...無茶苦茶簡単ですね。これはメモリ上で array[0][0], array[0][1], array[0][2], array[1][0], array[1][1], array[1][2] の順番で並んでいます。</p>
+
+<center><table border=1>
+<tr>
+  <th>要素</th>
+  <td align=center>array[0][0]</td>
+  <td align=center>array[0][1]</td>
+  <td align=center>array[0][2]</td>
+  <td align=center>array[1][0]</td>
+  <td align=center>array[1][1]</td>
+  <td align=center>array[1][2]</td>
+</tr>
+
+<tr>
+  <th>アドレス（実例）</th>
+  <td align=center>0x0065FDE8</td>
+  <td align=center>0x0065FDEC</td>
+  <td align=center>0x0065FDF0</td>
+  <td align=center>0x0065FDF4</td>
+  <td align=center>0x0065FDF8</td>
+  <td align=center>0x0065FDFC</td>
+</tr>
+</table></center>
+
+<p>　そうです。こういう感じです。</p>
+
+<p>　さぁ、例えばこの array[1][2] のアドレス 0x0065FDFC を、先頭アドレス 0x0065FDE8 と、変数の型 (int) のサイズ４、そしてインデックス１、２とからだけで求めてみましょう。あなたならどうしますか？</p>
+
+<pre>0x0065FDE8 + sizeof (int) * (1 * 3 + 2) = 0x0065FDFC</pre>
+
+<p>　おや？　「３」なんて数がありますね。これはルール違反ですよ？　とは言っても、こうしなければアドレスの計算は<font color=red>不可能</font>です。1 * 3 を 1 + 1 + 1 にしたとしても、この「３回足す」という根拠がどこから来たのか分かりません。結局は同じことです。</p>
+
+<p>　多次元配列のアドレスを入れるポインタでいちいち２番目以降のサイズが必要なのは、このせいです。この「３」はまさに２番目の要素数ですね。</p>
+
+<p><br></p>
+
+<p>　このことは、別の観点から考えることもできます。</p>
+
+<p>　<a href="../html01/cpp01062.html" target="main">第１部第６２章</a>で「２次元配列は<font color=red>配列の配列</font>だ」と言いました。よって、<font color=red>２次元配列の要素は「配列」だ</font>と考えられます。</p>
+
+<p>　すると、int array[2][3]; の要素は「int 型３要素の配列」になります。つまり、array のアドレスを格納するポインタは<font color=red>「int 型３要素の配列へのポインタ」</font>になります。それが</p>
+
+<pre>int (*parray)[3];</pre>
+
+<p>なわけですね。</p>
+
+<p>　typedef を交えて考えてみましょう。</p>
+
+<p>　「int 型３要素の配列」に対する型を作ってみましょう。</p>
+
+<pre>typedef int ARRAY3[3];</pre>
+
+<p>　すると、int array[2][3]; は</p>
+
+<pre>ARRAY3 array[2];</pre>
+
+<p>　だと考えられます。あとは普通の配列の時と同じように、</p>
+
+<pre>ARRAY3* parray = array;</pre>
+
+<p>　とできるわけです。sizeof *parray 、つまり sizeof (ARRAY3) は１２になるので、これで先頭アドレスと型のサイズとインデックスだけから各要素の位置を知ることができますね。</p>
+
+<p>　int (*parray)[3]; のときも、sizeof *parray は１２になります。このことから分かるように、２次元配列のアドレスを入れるポインタは、実は<font color=red>「１次元配列へのポインタ」</font>だったのです。</p>
+
+<p><br></p>
+
+<p>　いろいろ考え方はありますが、このように<font color=red>多次元配列のアドレスを入れるポインタには２番目以降の要素数が必須</font>なのです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>２次元配列のアドレスを入れるポインタの宣言は<br>&lt;型&gt; (*&lt;変数名&gt;)[&lt;２番目の要素数&gt;]; である。</li>
+<li>ｎ次元配列の要素はｎ次元配列のアドレスを入れるポインタでも同じように扱える。</li>
+<li>ｎ次元配列のアドレスを入れるポインタは、実は（ｎ−１）次元配列へのポインタである。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回からは話を変え、構造体関係の話をしてみようと思います。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03009.html" target="main">第９章　関数ポインタ</a> | <a href="cpp03011.html" target="main">第１１章　一心同体</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

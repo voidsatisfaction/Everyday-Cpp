@@ -1,0 +1,198 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７６章 列挙子 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７６章　列挙子</font>
+</center>
+<hr>
+
+<p>　<a href="cpp01074.html" target="main">第７４章</a>でやった bool 型は、true と false の２種類の値しかとることができませんでした。こういった数種類の値しかとることのできない型というのが作れると、いろいろ便利なことがあります。今回はそういった話です。</p>
+
+<hr>
+
+<p>　それでは今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>enum &lt;型名&gt;{ &lt;名前&gt;[ = &lt;値&gt;], &lt;名前&gt;[ = &lt;値&gt;], ... }; で列挙型が作れる。</li>
+<li>列挙型変数へは列挙型変数か列挙子しか代入できない</li>
+<li>列挙子は int 値として利用できる。</li>
+<li>列挙子の値は初期化しなければ（前の値＋１）になる。</li>
+<li>一番はじめの列挙子の値は初期化しなければ０になる。</li>
+<li>列挙型の値の保証は自分で責任を持つこと。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="cpp01058.html" target="main">第５８章</a>で構造体について話しました。構造体とは、ある変数をまとめて宣言できるような型のことでした。</p>
+
+<p>　今回も「型を作る」ということをやります。今回の型はちょっと変わっていて、<font color=red>「ある一定の値しかとることのできない型」</font>というものです。名前は<font color=red>列挙型</font>です。</p>
+
+<p>　では、早速次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Enum1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>enum</font> ECompare
+{
+    LESSTHAN    = <font color=darkcyan>0</font>,
+    EQUALTO     = <font color=darkcyan>1</font>,
+    GREATERTHAN = <font color=darkcyan>2</font>,
+};
+
+ECompare Compare(<font color=blue>int</font> a, <font color=blue>int</font> b)
+{
+    <font color=blue>return</font> (a &lt; b) ? LESSTHAN :
+           (a &gt; b) ? GREATERTHAN : EQUALTO;
+}
+
+<font color=blue>bool</font> Compare()
+{
+    <font color=blue>int</font> a, b;
+
+    cout &lt;&lt; <font color=darkcyan>"数字を２つ入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; a &gt;&gt; b;
+
+    <font color=blue>if</font>(a == <font color=darkcyan>-1</font>)
+        <font color=blue>return false</font>;
+
+    <font color=blue>switch</font>(Compare(a, b))
+    {
+    <font color=blue>case</font> LESSTHAN:
+        cout &lt;&lt; <font color=darkcyan>"前者は後者より小さいです。"</font> &lt;&lt; endl;
+        <font color=blue>break</font>;
+
+    <font color=blue>case</font> EQUALTO:
+        cout &lt;&lt; <font color=darkcyan>"両者は等しいです。"</font> &lt;&lt; endl;
+        <font color=blue>break</font>;
+
+    <font color=blue>case</font> GREATERTHAN:
+        cout &lt;&lt; <font color=darkcyan>"前者は後者より大きいです。"</font> &lt;&lt; endl;
+        <font color=blue>break</font>;
+    }
+
+    <font color=blue>return true</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>while</font>(Compare());
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td><pre>数字を２つ入力して下さい &gt; 0 1
+前者は後者より小さいです。
+数字を２つ入力して下さい &gt; 1 1
+両者は等しいです。
+数字を２つ入力して下さい &gt; 1 0
+前者は後者より大きいです。
+数字を２つ入力して下さい &gt; -1 0</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　２つ値を入力させ、大きいか、小さいか、等しいかを表示するプログラムです。なんというか、まぁ、意味のないプログラムで、実行結果例もいいかげんですが、勘弁して下さい。</p>
+
+<p>　列挙型の宣言は</p>
+
+<pre>enum ECompare
+{
+    LESSTHAN    = 0,
+    EQUALTO     = 1,
+    GREATERTHAN = 2,
+};</pre>
+
+<p>の部分です。こうすると、<font color=red>ECompare 型の変数は LESSTHAN, EQUALTO, GREATERTHAN の３つの値しかとれない変数になります</font>。値はこのように<font color=red>列挙子</font>と呼ばれるテキストで表します。列挙子の値は = で代入するようにすれば設定できます。</p>
+
+<p>　構造体の時と同じように、これは ECompare という<font color=red>型を作っただけ</font>で、<font color=red>まだ ECompare 型の変数というのはどこにもありません</font>。そして今回は変数は作らず、関数の戻り値にしました。</p>
+
+<pre>Ｃ言語：enum ECompare Compare(int a, int b);
+Ｃ＋＋：ECompare Compare(int a, int b);</pre>
+
+<p>　これも構造体の時と同じく、Ｃ言語の時は enum ECompare と書かなければならず、Ｃ＋＋の時はこのように ECompare だけで構いません。Ｃ＋＋でも enum を書いても構いません。typedef を使えばＣ言語でも無精することができます（<a href="cpp01060.html" target="main">第６０章</a>参照）。</p>
+
+<p>　Compare 関数は、a と b とを比較して結果を LESSTHAN, EQUALTO, GREATERTHAN の３値で返す関数です。もしこの時<font color=red>別の値を return しようとしてもエラーが出ます</font>（return 3; でも、実際にやってみて下さい）。このように、列挙型を使っていれば変な値を返そうとするとエラーが出るので、多少のミスは防ぐことができます。</p>
+
+<p>　で、結果を switch 文で評価しています。ここでも LESSTHAN などと比較しています。が、実は switch 文を通すと列挙型の値はただの int 値と見なされ、それを LESSTHAN などの列挙子の値と比べているだけです。ここで case 3: や default: などがあっても問題はありません。もちろん、これは switch 文のみの問題であって、if 文ではこのようなことはありません。</p>
+
+<p>　そして、このことから分かるとおり、<font color=red>列挙型の値は int 型、unsigned int 型の変数に代入することができます</font>。また、列挙子の値は int 値であり、列挙型のサイズは int 型と同じになります。</p>
+
+<p>　このように、列挙型を使えば特定の値のみを扱うことができるようになるのです。</p>
+
+<hr>
+
+<p>　この列挙型 ECompare は列挙子が３つと少なかったのですが、これが１０個２０個となると値の設定が面倒です。そのため、<font color=red>連続する値で設定するときは省略できる</font>ようになっています。さらに、<font color=red>一番初めの値を省略すると０になります</font>。</p>
+
+<p>　このことを踏まえると、例えば上の ECompare は単純に</p>
+
+<pre>ECompare
+{
+    LESSTHAN, EQUALTO, GREATERTHAN,
+};</pre>
+
+<p>だけですむことが分かります。便利ですね。</p>
+
+<p>　またこのようにすればいちいち列挙子の値を考えずにすみ、値をもっと抽象的に扱うことができるようになりますね。</p>
+
+<p>　ついでに言えば、同じ値を持つ列挙子は何個あっても構いません。これも値を抽象的に扱うのに一役買っています。</p>
+
+<hr>
+
+<p>　しかし、この列挙型、致命的な「穴」があります。</p>
+
+<p>　列挙型でキャスト（<a href="cpp01021.html" target="main">第２１章</a>参照）すると、どんな値でも扱えるようになるのです。これは大きな穴です。何と、</p>
+
+<pre>ECompare comp;
+comp = (ECompare)3;</pre>
+
+<p>はエラーにならないのです。</p>
+
+<p>　実際には ECompare の扱う値以外をこのように入れることは<font size=+2 color=red>タブー</font>であり、キャストするにしても ECompare の扱う値のみしか代入しないように<font color=red>自分で気を付ける必要があります</font>。これは厳守する必要があります。</p>
+
+<p>　列挙型は、実際には<a href="cpp01049.html" target="main">第４９章</a>のフラグを宣言するのによく使います。単なる、ある関連のある値の定義にも使います。つまりは、const int や #define の代わりとして使うことが多いのです。</p>
+
+<p>　列挙型の値は上の「穴」のために保証されるものではありませんが、気を付けていさえすれば保証できます。折角列挙型という機能があるのですから、単なる定数代わりなだけではなく、きちんとした型として利用したいものですね。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>enum &lt;型名&gt;{ &lt;名前&gt;[ = &lt;値&gt;], &lt;名前&gt;[ = &lt;値&gt;], ... }; で列挙型が作れる。</li>
+<li>列挙型変数へは列挙型変数か列挙子しか代入できない</li>
+<li>列挙子は int 値として利用できる。</li>
+<li>列挙子の値は初期化しなければ（前の値＋１）になる。</li>
+<li>一番はじめの列挙子の値は初期化しなければ０になる。</li>
+<li>列挙型の値の保証は自分で責任を持つこと。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も型関係の話題です。文字列の配列を扱いたいときにどうするか、というものです。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp01075.html" target="main">第７５章　乱数</a> | <a href="cpp01077.html" target="main">第７７章　リテラル文字列</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.29</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

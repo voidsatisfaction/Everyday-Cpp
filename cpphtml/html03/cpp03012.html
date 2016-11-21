@@ -1,0 +1,141 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１２章 名無し -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１２章　名無し</font>
+</center>
+<hr>
+
+<p>　構造体は型を作るものだといいました。しかし、型を作らずにオブジェクトだけを作ることもできます。正しくは、型を作ったが、あとから使えないと言えばいいでしょうか？　どうも、２つとも正確ではないような気がしますが、まぁ、今回はそんな感じの構造体についてのお話です。</p>
+
+<hr>
+
+<p>　それでは今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>無名の構造体・共用体・列挙型が作れる。</li>
+<li>無名構造体は普通ネストするときにしか使わない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　構造体は、実は次のようにすれば「構造体型の宣言」と「オブジェクトの宣言」を同時に行うことができます。</p>
+
+<pre>struct SStudent
+{
+    char szName[16];
+    int  nJapanese;
+    int  nMath;
+    int  nEnglish;
+} <font color=red>student</font>;</pre>
+
+<p>　{ } の部分をのけて考えてみれば</p>
+
+<pre>struct SStudent student;</pre>
+
+<p>となり、できるのもうなずける話です。</p>
+
+<p>　では、この時 SStudent をのけてしまうとどうなるでしょうか？</p>
+
+<pre>struct
+{
+    char szName[16];
+    int  nJapanese;
+    int  nMath;
+    int  nEnglish;
+} <font color=red>student</font>;</pre>
+
+<p>　オブジェクトはあるわけであり、student.szName も問題なく使えそうです。ただ、型名がなくなってしまうのでオブジェクト全体を関数に渡すことはできなさそうです。唯一の不安は、「文法的に許されているか」です。</p>
+
+<p>　これは、<font color=red>文法的に許されています</font>。名前のない構造体なので、これを<font color=red>無名構造体</font>と呼びます。</p>
+
+<hr>
+
+<p>　しかし、無名構造体が作れるのはいいですが、こんなもの使うんでしょうかね？　型名がないので、型名の必要なあらゆることができなくなってしまいます。それでは構造体にする意味はあるのでしょうか？　普通の変数を作ったのでいいと思います。</p>
+
+<p>　なので、普通この無名構造体はある決まった時にしか使わないと思います。それは、<font color=red>構造体を共用体内に<a href="../htmlword/words009.html" target="words">ネスト</a>するとき</font>です。</p>
+
+<p>　例えば、次の共用体を見て下さい。</p>
+
+<pre>union UDWord
+{
+    unsigned long l;       // x.l   １ダブルワード（１ダブルワード＝４バイト）
+    <font color=red>struct</font>
+    {
+        unsigned short l;  // x.s.l 下位ワード
+        unsigned short h;  // x.s.h 上位ワード
+    } s;                   //       ２ワード（１ワード＝２バイト）
+};</pre>
+
+<p>　前回の共用体は４バイトを１バイト単位で扱うものでしたが、今回の共用体は<font color=red>４バイトを２バイト単位で扱う</font>というものです。</p>
+
+<p>　前回の共用体で分かったように、配列を使うと結果がエンディアンネスによって変わってしまいます（改めて<a href="../html01/cpp01055.html" target="main">第１部第５５章</a>参照）。ということで、きちんとした名前を付けて扱うことにしました。こうすれば、エンディアンネスが変わったときもこの共用体の宣言の名前を交換するだけですむからです。</p>
+
+<p>　しかし、共用体の各メンバは全部先頭アドレスが同じになってしまいます。上位２バイト、下位２バイトと名前を変えるにはどうすればいいでしょうか？　って、上でもうやってますね。構造体を使えばいいのです。こうすれば、<font color=red>unsigned long l と構造体の先頭アドレスが同じになります</font>。構造体のメンバ l と h のアドレスはこれで<font color=red>異なる</font>ようになります。（実はこの構造体のサイズが４になるとは限らないのですが、ここではなるものと考えておいて下さい。）</p>
+
+<p>　ここで、こんな構造体に果たして型名が必要か考えてみて下さい。え？　必要ですって？　そう思う人は型を作っても構いませんけどね...。まぁ、必ずしも必要でないとは思います。こういうときに無名構造体を使えばいいということです。</p>
+
+<hr>
+
+<p>　また、<font color=red>無名共用体</font>も可能です。例えば次のようなものです。</p>
+
+<pre>union UDWord
+{
+    unsigned long l;                // x.l
+    struct
+    {
+        <font color=red>union</font>
+        {
+            unsigned short s;      // s.l.s / s.h.s
+            struct
+            {
+                unsigned short l;  // s.l.b.l / s.h.b.l
+                unsigned short h;  // s.l.b.h / s.h.b.h
+            } b;
+        } l, h;
+    } s;
+};</pre>
+
+<p>　ちょっと分かりにくいですが、確かに無名共用体ですね。</p>
+
+<p>　さらに、無名列挙型もできます。</p>
+
+<pre>enum
+{
+    ENUM1, ENUM2, ENUM3
+};</pre>
+
+<p>　変数がなくても列挙子自体は使えるので、これだけでも利用できます。しかし、名前を付けておくと後々便利なこともあるので、名前はつけておいた方がいいかもしれません。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>無名の構造体・共用体・列挙型が作れる。</li>
+<li>無名構造体は普通ネストするときにしか使わない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はもっと精密に操作してみたいと思います。そう１バイト単位よりも小さい単位でです。では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03011.html" target="main">第１１章　一心同体</a> | <a href="cpp03013.html" target="main">第１３章　精密作業</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

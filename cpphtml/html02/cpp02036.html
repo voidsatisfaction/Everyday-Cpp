@@ -1,0 +1,127 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３６章 特注の鋳型 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３６章　特注の鋳型</font>
+</center>
+<hr>
+
+<p>　関数テンプレートは丁度オーバーロード関数を大量生産するようなものです。では、関数テンプレートをオーバーロードすることはできるのでしょうか？</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートは「オーバーライド」できる。</li>
+<li>書式は template &lt; &gt; &lt;戻り値の型&gt; &lt;関数名&gt;&lt; &lt;テンプレート引数&gt; &gt;(&lt;仮引数リスト&gt;) 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　Max に文字列を入れたとします。すると、TYPE は char* か const char* になるでしょう。そして、a &gt; b はアドレスの比較になり、返ってくるのは <font color=red>a と b の保持しているアドレスのうち大きな方</font>になります。</p>
+
+<p>　この結果は当たり前のことではあるのですが、文字列を入れたときは文字列の内容を比較して欲しいものです。</p>
+
+<p>　このように、何でもかんでも同じ鋳型から作っているだけでは困ることもあります。こういうときのために、<font color=red>特定のテンプレート引数に対して、特別な実装を使用する</font>ことができます。</p>
+
+<p>　ここでは TYPE が char* か const char* の時に strcmp で比較するようにすればいいのですね。そういうときは、</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=green>// 文字列用の Max （char* 用）</font>
+<font color=red>template &lt; &gt;</font>
+<font color=blue>inline char*</font> Max<font color=red>&lt;char*&gt;</font>(<font color=blue>char</font>* a, <font color=blue>char</font>* b)
+{
+    <font color=blue>return</font> (strcmp(a, b) &gt; <font color=darkcyan>0</font>) ? a : b;
+}
+
+<font color=green>// 文字列用の Max （const char* 用）</font>
+<font color=red>template &lt; &gt;</font>
+<font color=blue>inline const char*</font> Max<font color=red>&lt;const char*&gt;</font>(<font color=blue>const char</font>* a, <font color=blue>const char</font>* b)
+{
+    <font color=blue>return</font> (strcmp(a, b) &gt; <font color=darkcyan>0</font>) ? a : b;
+}</pre></td></tr>
+
+</table></center>
+
+<p>のようにします。</p>
+
+<p>　先ず<font color=red>先頭に template &lt; &gt; を付けます</font>。そして、途中に明示的呼び出し（<a href="cpp02034.html" target="main">第３４章</a>参照）のように<font color=red>テンプレート引数を指定します</font>。それ以外は普通の実装と同じです。（注：古いコンパイラでは普通の定義と同じにしないといけないことがあります。）</p>
+
+<p>　このようにすれば、Max で文字列の比較ができるようになります。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Temp5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=green>// Max の定義は省略</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=green>// str[1] は str[0] よりもアドレスは大きい</font>
+    <font color=blue>char</font> str[][<font color=darkcyan>32</font>] = {
+        <font color=darkcyan>"This is a pen."</font>, <font color=darkcyan>"This is a book."</font>
+    };
+
+    <font color=green>// Max&lt;char*&gt; が呼ばれます</font>
+    cout &lt;&lt; Max(str[<font color=darkcyan>0</font>], str[<font color=darkcyan>1</font>]) &lt;&lt; endl;
+
+    <font color=green>// Max&lt;const char*&gt; で呼びます</font>
+    cout &lt;&lt; Max&lt;<font color=blue>const char</font>*&gt;(str[<font color=darkcyan>0</font>], <font color=darkcyan>"This is a zoo."</font>) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>This is a pen.
+This is a zoo.</pre></td></tr>
+
+</table></center>
+
+<p>　はい。きちんと文字列で比較できました。</p>
+
+<p>　このように、テンプレートで特定の型に対して特別な実装を定義することを<font color=red>オーバーライド（特殊化）</font>と呼びます。既にある Max&lt;char*&gt; や Max&lt;const char*&gt; の定義を別の定義で置き換えるので、これはオーバーライドになります。</p>
+
+<p>　<br></p>
+
+<p>　最後に１つ注意することは、オーバーライドした Max&lt;char*&gt; や Max&lt;const char*&gt; は<font color=red>もはやテンプレートではない</font>ということです。インライン関数ならヘッダファイルに書きますが、普通の関数ならヘッダファイルに書いてはいけません。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートは「オーバーライド」できる。</li>
+<li>書式は template &lt; &gt; &lt;戻り値の型&gt; &lt;関数名&gt;&lt; &lt;テンプレート引数&gt; &gt;(&lt;仮引数リスト&gt;) 。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回もテンプレートですが、ちょっと違うことをします。それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp02035.html" target="main">第３５章　冶金工場５</a> | <a href="cpp02037.html" target="main">第３７章　テンプレートクラス</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

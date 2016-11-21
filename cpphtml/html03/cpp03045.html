@@ -1,0 +1,135 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４５章 マクロの落ち穂拾い -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４５章　マクロの落ち穂拾い</font>
+</center>
+<hr>
+
+<p>　今回はマクロについての補足をつらつらとします。トークン結合子以上にマニアックな話かもしれませんね（汗）。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>#undef でマクロ定義を解除できる。</li>
+<li>マクロ引数に # をつけると、文字列として展開される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　例えば、ある範囲でしか有効にならないマクロを作りたいとします。マクロは定義したところ以下ずっと使えるので、これをどうにかしたいわけです。</p>
+
+<p>　そういうときは、<font color=red>マクロの定義を解除すればいい</font>のです。そのための命令が <font color=red>#undef</font> です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Undef1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>struct</font> SStudent
+{
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nAge;
+};
+
+<font color=blue>void</font> Func(SStudent&amp; student)
+{
+<font color=blue>#define</font> NAME(i)  (student.szName[i])
+
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; NAME(i) != <font color=darkcyan>0</font>; i++)
+        cout &lt;&lt; NAME(i);
+    cout &lt;&lt; endl;
+
+<font color=red>#undef NAME</font>
+}
+
+<font color=blue>int</font> main()
+{
+    SStudent student = { <font color=darkcyan>"赤井 孝"</font>, <font color=darkcyan>17</font> };
+    Func(student);
+    cout &lt;&lt; NAME(<font color=darkcyan>0</font>) &lt;&lt; endl;  <font color=red>// エラー</font>
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　このように、<font color=red>#undef 以降は NAME マクロを使うことは出来なくなります</font>。</p>
+
+<p>　また、#undef 以降で NAME マクロを定義しても、二重定義エラーは出ません。つまり、<font color=red>前の定義を別の定義で置き換えたいとき</font>にも #undef は使えるわけです。</p>
+
+<hr>
+
+<p>　そしてもう１つ。前回の assert マクロに関連してですが、デバッグ文のエラーメッセージにマクロの引数を表示したいと思います。例えば、ある値がある範囲から外れていたら abort するような文を作りたいと思い、次のようなマクロを定義するとします。</p>
+
+<pre><font color=blue>#define</font> assert_minmax(val, min, max) \
+    <font color=blue>if</font>((min) &lt; = (val) &amp;&amp; (val) &lt;= (max)) ; \
+    <font color=blue>else</font> _assert_minmax(<font color=red>？？？</font>, <font color=red>？？？</font>, <font color=red>？？？</font>, __FILE__, __LINE__)</pre>
+
+<p>？？？のところにはエラーメッセージに使う文字列を入れたいとします。１つ目が val を、２つ目が min を、３つ目が max を文字列化したものとします。</p>
+
+<p>　しかし、</p>
+
+<pre><font color=blue>#define</font> assert_minmax(val, min, max) \
+    <font color=blue>if</font>((min) &lt;= (val) &amp;&amp; (val) &lt;= (max)) ; \
+    <font color=blue>else</font> _assert_minmax(<font color=red>"val"</font>, <font color=red>"min"</font>, <font color=red>"max"</font>, __FILE__, __LINE__)</pre>
+
+<p>としたところで、マクロの引数は文字列の中まで展開しないので無駄です（注：コンパイラの中には展開する仕様にしてあるものもあるかもしれません）。</p>
+
+<p>　そこで、こういうときは次のようにします。</p>
+
+<pre><font color=blue>#define</font> assert_minmax(val, min, max) \
+    <font color=blue>if</font>((min) &lt; = (val) &amp;&amp; (val) &lt;= (max)) ; \
+    <font color=blue>else</font> _assert_minmax(<font color=red>#val</font>, <font color=red>#min</font>, <font color=red>#max</font>, __FILE__, __LINE__)</pre>
+
+<p>　このように、<font color=red>マクロ引数の前に # をつければ文字列として展開されます</font>（注：古いコンパイラではサポートしていない可能性もあります）。すなわち、</p>
+
+<pre>assert_minmax(index, <font color=darkcyan>0</font>, m_nSize - <font color=darkcyan>1</font>);</pre>
+
+<p>は</p>
+
+<pre><font color=blue>if</font>((<font color=darkcyan>0</font>) &lt;= (index) &amp;&amp; (index) &lt;= (m_nSize - 1)) ;
+<font color=blue>else</font> _assert_minmax(<font color=red>"index"</font>, <font color=red>"0"</font>, <font color=red>"m_nSize - 1"</font>, &lt;ファイル名&gt;, &lt;行番号&gt;);</pre>
+
+<p>と展開されます（注：見やすいように途中で改行しましたが、実際には１行に展開されます）。" や \ のようにエスケープシーケンス（<a href="../html01/cpp01078.html" target="main">第１部第７８章</a>参照）が必要なものも、勝手に \ をつけてくれるので心配要りません。</p>
+
+<p>　あとは _assert_minmax 内でこれを表示してやればいいわけですね。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>#undef でマクロ定義を解除できる。</li>
+<li>マクロ引数に # をつけると、文字列として展開される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03044.html" target="main">第４４章　デバッグ文</a> | <a href="cpp03046.html" target="main">第４６章　ハンドルされない例外</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

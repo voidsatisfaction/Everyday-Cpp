@@ -1,0 +1,304 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３１章 出鱈目？　規則的？ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３１章　出鱈目？　規則的？</font>
+</center>
+<hr>
+
+<p>　今回はちょっと趣向を変え、疑似乱数の作り方について話します。乱数については<a href="../html01/cpp01075.html" target="main">第１部第７５章</a>でやりました。この時、<font color=red>「疑似乱数はある初期値を元に計算を行って生成されます」</font>といいました。今回はその方法の１つ<font color=red>「線形合同法」</font>について話します。</p>
+
+<p>　疑似乱数生成ルーチンを自作すると、いろいろ面白いこともできるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ｘ<sub> ｉ＋１</sub>＝（ａｘ<sub> ｉ</sub>＋ｃ） ＭＯＤ Ｍという数列は乱数っぽく見える。</li>
+<li>合同法乱数は周期性を持っている。</li>
+<li>合同法乱数は１個ずつ使えばランダムだが、組にして使うとランダム性が低い。</li>
+<li>合同法乱数は上位ビットを取り出してから使うとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　一見でたらめな数を計算で出すにはどうすればいいでしょうか？</p>
+
+<p>　普通の四則演算などを行っていると、何か規則性の見える結果がでてきます。かといって、ややこしい計算をしてでたらめな数がでてきても、速度が欲しいときには実用的とは言えません。</p>
+
+<p>　しかし、簡単で、しかも規則性の見えにくい計算というのがあります。それは<font color=red>「割り算」</font>です。といっても、求めるのは商ではなく<font color=red>「余り」</font>の方です。線形合同法は、この<font color=red>余りを含めた数列</font>を使うことによって、一見乱雑な数列を作ろうというものなのです。</p>
+
+<p>　しかし、余りを求めるという計算は必ず元の数以下になってしまう計算です。そこで、<font color=red>一次式を中に含める</font>ことにします。</p>
+
+<pre><font color=red>x = (a * x + c) % M;</font></pre>
+
+<p>　あとはｘに初期値を入れて上の計算を行うと、一見乱雑な値が得られます。これが線形合同法の基本です。</p>
+
+<p>　そして、同じ初期値からは同じ値がでてくるので、最大でもＭ回で元に戻ってしまいます。つまり、<font color=red>合同法乱数は周期性を持っている</font>わけです。</p>
+
+<hr>
+
+<p>　では、ａやｃやＭには何を選んでもいいのでしょうか？　答はＮＯです。</p>
+
+<p>　例えば、Ｍが１だと必ず０にしかなりませんし、Ｍが大きくてもａ＝１，ｃ＝０だと同じ値しかでてきません。</p>
+
+<p>　それは極端な例としても、ある程度の選び方というものがあります。今度はそのことについて話しましょう。</p>
+
+<hr>
+
+<p>　先ずは除数Ｍについてです。</p>
+
+<p>　なるべく面倒な計算はしたくありません。そして、掛け算でオーバーフロー（計算結果が大きすぎて表現できなくなること）がおこる可能性を考えると、一見線形合同法は実現しにくいような気がします。</p>
+
+<p>　しかしこのオーバーフローというコンピュータの特性を逆に利用してしまうことができます。</p>
+
+<p>　例えば３２ビット機の int 型で計算すると、計算結果が３２ビットで表現できないときは下位３２ビットのみを残して上位ビットを切り捨ててしまいます。</p>
+
+<p>　これは<font color=red>２<sup>３２</sup>の余りを求めることと同じ</font>になります。つまり、Ｍ＝２<sup>３２</sup>にすれば、いちいち割り算をしなくても勝手に余りを求めてくれるというわけです。</p>
+
+<p>　また、Ｍが大きい方が周期を長くすることができるので、<font color=red>Ｍは２<sup>３２</sup>にするといいでしょう</font>。</p>
+
+<hr>
+
+<p>　次は乗数ａと定数ｃについてです。</p>
+
+<p>　ａ＝１，ｃ＝０のときは必ず毎回同じ値がでてくるというように、ａやｃの数が悪いと極端に周期が短くなります。乱数の周期性が長い方が隠れた規則性が目立たないので、周期が最大の２<sup>３２</sup>になるように選びたいものです。</p>
+
+<p>　先ず、Ｍは偶数なのでｃも偶数だと困ります。ａ×ｘが奇数の時はａ×ｘ＋ｃも奇数になり、Ｍで割った余りも奇数になります。そして、ａ×ｘが偶数の時はａ×ｘ＋ｃも偶数になり、Ｍで割った余りも偶数になります。</p>
+
+<p>　ということで、ｃが偶数だと周期は必ずＭになりません。ということで、<font color=red>ｃは奇数</font>にするといいでしょう。</p>
+
+<p>　ただ、速度を求めるときはｃを０にしたいと思います。０も偶数なので、ｃを０にすると周期は短くなります。そのときは、周期が短くなるのだということを覚悟して使って下さい。</p>
+
+<p>　そしてａですが、詳しいことは抜きにしますが、これは<font color=red>ａ ＭＯＤ ８が５になるようにする</font>と周期が長くなります（ＭＯＤ は余りを求める一般的な演算子です）。ｃが奇数の時はその周期はＭになります。</p>
+
+<p>　ということで、<font color=red>ａを８ｎ＋５、ｃを奇数</font>（ｎは整数）にするといいでしょう。</p>
+
+<p>　ちなみに、ｃを０にしたいときは、ａを上のようにしてｘの初期値を奇数にすれば周期が２<sup>３０</sup>になります（ただし、常に奇数になります）。速度が要求されるときはこういう設定にしましょう。</p>
+
+<hr>
+
+<p>　そして、周期２<sup>３２</sup>の０〜２<sup>３２</sup>−１の数を２つ組み合わせていくと、当然周期は２<sup>３１</sup>になります。０〜２<sup>３２</sup>−１の数を２つ組み合わせるには２<sup>６４</sup>の組み合わせがあるので、ほとんどの組み合わせはでてこないことになります。/p>
+
+<p>　ａの取り方によってはさらにここでの質が悪くなるときがあります。つまり、２<sup>６４</sup>通りの組み合わせのうち、偏った分布になるということがあるわけです。</p>
+
+<p>　これは３つ、４つと組み合わせていったときにも起こる問題で、<font color=red>合同法乱数は１個ずつ使えばランダムだが、組にして使うとランダム性が低い</font>ということになります。</p>
+
+<p>　こういった質をあまり気にならないようにするには、ａを<font color=red>特によい</font>数にする必要があります。その数には</p>
+
+<pre><font color=red>69069 1664525 39894229 48828125 1566083941 1812433253 2100005341</font></pre>
+
+<p>などが知られています。</p>
+
+<p>　<font color=red>ａにはこれらのうちの１つを使う</font>ようにしましょう。</p>
+
+<p>　ちなみに、よく使われるが<font color=red>悪い</font>数に６５５３９があります。これを奨めているところがあっても、それは信用しないようにしましょう。</p>
+
+<hr>
+
+<p>　以上のことをまとめると、</p>
+
+<font color=red>
+<ul>
+<li>ａは 69069 1664525 39894229 48828125 1566083941 1812433253 2100005341 のどれかにする。</li>
+<li>ｃは奇数にする。</li>
+<li>Ｍはオーバーフローに任せれば気にしなくて良い。</li>
+</ul>
+</font>
+
+<p>ということになります。</p>
+
+<hr>
+
+<p>　これで一応は周期２<sup>３２</sup>の０〜２<sup>３２</sup>−１の疑似乱数ができるわけですが、使うときにちょっと気を付けることがあります。</p>
+
+<p>　実は上のａを８ｎ＋５にすると周期がＭになるというのは、Ｍが２の累乗であるとき全てに共通することなのです。つまり、こうやって得た乱数を使って０〜２<sup>ｋ</sup>−１の乱数が欲しいときに「ｘ ＭＯＤ ２<sup>ｋ</sup>」としてしまうと、<font color=red>周期が２<sup>ｋ</sup>になってしまいます</font>。</p>
+
+<p>　これは下位ビットをとるとこうなるのであって、上位ビットを使えばこんなことにはなりません。０〜２<sup>ｋ</sup>−１の乱数が欲しいときは、必ず「ｘ ＞＞ （３２−ｋ）」とビットシフトを使うことになります。</p>
+
+<p>　つまり、<font color=red>合同法乱数は上位の桁はランダム性が高いが、下位の桁はランダム性が低い</font>ということです。</p>
+
+<p>　合同法乱数を生のまま使うとこういう問題が起きるので、<font color=red>合同法乱数を使うときは上位ビットを取り出してから使うとよいでしょう</font>。</p>
+
+<hr>
+
+<p>　以上のことを踏まえて乱数生成関数を作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Rand2.h</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>  <font color=green>// NULL 用</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;time.h&gt;</font>    <font color=green>// time 用</font>
+
+<font color=green>// 使用する上位ビットの数</font>
+<font color=blue>const int</font>          LCRAND_BITS = <font color=darkcyan>15</font>;
+<font color=green>// 乱数の上限</font>
+<font color=blue>const unsigned int</font> LCRAND_MAX  = (<font color=darkcyan>1</font> &lt;&lt; LCRAND_BITS) - <font color=darkcyan>1</font>;
+
+<font color=green>// 初期化</font>
+<font color=blue>void</font> LCInitSeed(<font color=blue>unsigned int</font> nSeed);
+<font color=green>// 疑似乱数生成</font>
+<font color=blue>int</font> LCRand();
+
+<font color=green>// 現在の時間で初期化</font>
+<font color=blue>inline void</font> LCInitWithTime()
+{
+    LCInitSeed((<font color=blue>unsigned int</font>)time(NULL));
+}
+
+<font color=green>// ある数未満の乱数を生成</font>
+<font color=blue>inline int</font> LCRand(<font color=blue>int</font> nLimit)
+{
+    <font color=green>// % nLimit よりも上質の分布になります
+    // ただし、１６ビット機では long でやらないといけません</font>
+    <font color=blue>return</font> LCRand() * nLimit / (LCRAND_MAX + <font color=darkcyan>1</font>);
+}</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Rand2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"Rand2.h"</font>
+
+<font color=blue>static unsigned int</font> gs_nSeed;  <font color=green>// 乱数種</font>
+
+<font color=green>// 初期化</font>
+<font color=blue>void</font> LCInitSeed(<font color=blue>unsigned int</font> nSeed)
+{
+    gs_nSeed = nSeed;
+}
+
+<font color=green>// 疑似乱数生成</font>
+<font color=blue>int</font> LCRand()
+{
+    <font color=green>// ａには 48828125 を、ｃには 1 を使用しました</font>
+    gs_nSeed = gs_nSeed * <font color=red>48828125</font> + <font color=red>1</font>;
+    <font color=green>// 上位ビットを返します</font>
+    <font color=blue>return</font> gs_nSeed &gt;&gt; (<font color=darkcyan>32</font> - LCRAND_BITS);
+}</pre></td></tr>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Rand3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Rand.h"</font>
+
+<font color=blue>#define</font> numof(array)  (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=green>// サイコロを何度も振ったときの分布を調べます</font>
+<font color=blue>void</font> CheckDist(<font color=blue>int</font> nTimes)
+{
+    <font color=blue>const int</font> DICE_LIMIT = <font color=darkcyan>6</font>;  <font color=green>// サイコロの目の上限</font>
+
+    <font color=blue>int</font> nDist[DICE_LIMIT * <font color=darkcyan>2</font> - <font color=darkcyan>1</font>];  <font color=green>// 結果の分布</font>
+    <font color=blue>int</font> i;
+
+    memset(nDist, <font color=darkcyan>0</font>, <font color=blue>sizeof</font> nDist);
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nTimes; i++)
+        nDist[LCRand(DICE_LIMIT) + LCRand(DICE_LIMIT)]++;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; numof(nDist); i++)
+        printf(<font color=darkcyan>"%2d : %6.2lf%%        "</font>,
+               i + <font color=darkcyan>2</font>, (<font color=blue>double</font>)nDist[i] * <font color=darkcyan>100</font> / nTimes);
+    putchar(<font color=darkcyan>'\n'</font>);
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> nTimes;  <font color=green>// 試行回数</font>
+
+    LCInitWithTime();  <font color=green>// 乱数の初期化</font>
+
+    <font color=blue>while</font>(<font color=blue>true</font>)
+    {
+        cout &lt;&lt; <font color=darkcyan>"何回サイコロを振りますか &gt; "</font> &lt;&lt; flush;
+        cin &gt;&gt; nTimes;
+        <font color=blue>if</font>(nTimes &lt;= <font color=darkcyan>0</font>)
+            <font color=blue>break</font>;
+
+        CheckDist(nTimes);
+    }
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>何回サイコロを振りますか &gt; 20
+ 2 :   0.00%         3 :  10.00%         4 :   5.00%         5 :   5.00%
+ 6 :  20.00%         7 :  15.00%         8 :  15.00%         9 :  15.00%
+10 :   5.00%        11 :   0.00%        12 :  10.00%
+何回サイコロを振りますか &gt; 100
+ 2 :   1.00%         3 :   4.00%         4 :   7.00%         5 :   9.00%
+ 6 :  22.00%         7 :  22.00%         8 :  12.00%         9 :   9.00%
+10 :   7.00%        11 :   6.00%        12 :   1.00%
+何回サイコロを振りますか &gt; 10000
+ 2 :   2.72%         3 :   5.75%         4 :   8.62%         5 :  10.87%
+ 6 :  13.56%         7 :  16.51%         8 :  14.01%         9 :  11.19%
+10 :   8.47%        11 :   5.54%        12 :   2.76%
+何回サイコロを振りますか &gt; 10000000
+ 2 :   2.78%         3 :   5.56%         4 :   8.34%         5 :  11.11%
+ 6 :  13.89%         7 :  16.68%         8 :  13.88%         9 :  11.11%
+10 :   8.33%        11 :   5.55%        12 :   2.78%
+何回サイコロを振りますか &gt; 0</pre></td></tr>
+
+</table></center>
+
+<p>　サイコロを２回振ったとき、各合計のでる確率は</p>
+
+<pre> 2 :   2.78%         3 :   5.56%         4 :   8.33%         5 :  11.11%
+ 6 :  13.89%         7 :  16.67%         8 :  13.89%         9 :  11.11%
+10 :   8.33%        11 :   5.56%        12 :   2.78%</pre>
+
+<p>です。試行回数を増やす毎に極限値に近づいていくということを見事に再現できていますね。</p>
+
+<p>　乱数の作成に使用する変数のことを<font color=red>乱数種</font>と呼びます。実際には乱数種をそのまま返すわけではないのですが、これを返す関数を作っておくと便利なことができます。</p>
+
+<p>　それは、ゲームなどで<font color=red>リセットしても同じ乱数を生成することができる</font>ということです。某シミュレーションＲＰＧや某競走馬育成ゲームなどにみられるアレです。こういったゲームを作るときには、乱数種を保存するようにしてみてはどうでしょうか？</p>
+
+<hr>
+
+<p>　では、今回の要点です。長いです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ｘ<sub> ｉ＋１</sub>＝（ａｘ<sub> ｉ</sub>＋ｃ） ＭＯＤ Ｍという数列は乱数っぽく見える。</li>
+<font size=+1>
+<ul>
+<li>ａは 69069 1664525 39894229 48828125 1566083941 1812433253 2100005341 のどれかにする。</li>
+<li>ｃは奇数にする。</li>
+<li>Ｍはオーバーフローに任せれば気にしなくて良い。</li>
+</ul>
+</font>
+<li>合同法乱数は周期性を持っている。</li>
+<li>合同法乱数は１個ずつ使えばランダムだが、組にして使うとランダム性が低くなる。</li>
+<li>合同法乱数は上位ビットを取り出してから使うとよい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回をお楽しみに。</p>
+
+<hr>
+
+<p align=right><a href="cpp03030.html" target="main">第３０章　高速探索</a> | <a href="cpp03032.html" target="main">第３２章　数珠繋ぎ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.11.3</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

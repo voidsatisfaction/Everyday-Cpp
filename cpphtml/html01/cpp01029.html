@@ -1,0 +1,179 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２９章 マクロの活用法 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２９章　マクロの活用法</font>
+</center>
+<hr>
+
+<p>　前回話したマクロ。今回はその使い時というものをいろいろ紹介していきたいと思います。便利なのでみなさん十分活用して下さい。</p>
+
+<hr>
+
+<p>　以下が今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>頻出するものをマクロで１つにまとめ、さらに改造を容易にできる。</li>
+<li>マクロで数値を意味のある文字に置き換えられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今までは数値をそのまま書いてきました。例えば次のプログラムがそうです。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Macro2a.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nFibo[<font color=red>16</font>] = { <font color=darkcyan>1</font>, <font color=darkcyan>1</font> };
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=red>16</font> - <font color=darkcyan>2</font>; i++)
+        nFibo[i + <font color=darkcyan>2</font>] = nFibo[i] + nFibo[i + <font color=darkcyan>1</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"フィボナッチ数列の最初の <font color=red>16</font> 桁は、"</font> &lt;&lt; endl;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=red>16</font> - <font color=darkcyan>1</font>; i++)
+        cout &lt;&lt; nFibo[i] &lt;&lt; <font color=darkcyan>", "</font>;
+
+    cout &lt;&lt; nFibo[i] &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>フィボナッチ数列の最初の 16 桁は、
+1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987 です。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　16 というのが４箇所も出てきていますね。このプログラムの欠点は、16 でなくて 100 にしたいなどというときに<font color=red>４箇所も変更を加えなくてはならない</font>というところです。これはまだ近いところに固まっているのでまだましですが、大きなプログラムになると変更漏れが出てくるおそれが非常にあります。</p>
+
+<p>　こんなときにマクロが役に立ちます。では、上のプログラムを変更したものを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Macro2b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>#define NUMBER_FIBO     16</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nFibo[<font color=red>NUMBER_FIBO</font>] = { <font color=darkcyan>1</font>, <font color=darkcyan>1</font> };
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=red>NUMBER_FIBO</font> - <font color=darkcyan>2</font>; i++)
+        nFibo[i + <font color=darkcyan>2</font>] = nFibo[i] + nFibo[i + <font color=darkcyan>1</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"フィボナッチ数列の最初の "</font> &lt;&lt; <font color=red>NUMBER_FIBO</font> &lt;&lt; <font color=darkcyan>" 桁は、"</font> &lt;&lt; endl;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=red>NUMBER_FIBO</font> - <font color=darkcyan>1</font>; i++)
+        cout &lt;&lt; nFibo[i] &lt;&lt; <font color=darkcyan>", "</font>;
+
+    cout &lt;&lt; nFibo[i] &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　16 の部分が全て <font color=red>NUMBER_FIBO</font> になりました。そして、それを 16 に置き換えるようにしています。ただ、<font color=red>マクロは文字列の中では置き換わらない</font>ので、文字列の部分だけは少し変更を加えています。</p>
+
+<p>　このようにすれば、先ず<font color=red>数値の変更が楽になります</font>。#define の部分の 16 を 100 に変えるだけでいいのです。</p>
+
+<p>　そして、ただの数値でなく、<font color=red>意味を持った言葉に置き換えたので、読みやすいプログラムになりました</font>。</p>
+
+<hr>
+
+<p>　ほかに、<font color=red>マクロは反復して使う処理を短い、わかりやすい形に書き換える</font>ときに使います。</p>
+
+<p>　「何だ、それじゃ関数と同じじゃないか」と思うかもしれません。ですが、両者には少し違いがあります。</p>
+
+<p>　関数はその処理がどこか別のところにできて、使用する際は処理がそこに移ります。しかし、マクロはテキストの置き換えですから、そのようなことは起こりません。関数は処理が移る分、少しだけですが時間をロスしてしまうのです。</p>
+
+<p>　そのかわり処理が大きくなると、マクロはそれを随所に埋め込むわけですから、実行ファイルのサイズが肥大してしまいます。大きな処理は関数に任せた方がいいでしょう。</p>
+
+<p>　また、マクロにしかできない書き換えというのもあります。例えば、こんな感じでしょうか。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Macro2c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>#define</font> NUMBER_FIBO        <font color=darkcyan>16</font>
+<font color=blue>#define</font> LOOP(val, times)   <font color=blue>for</font>(val = <font color=darkcyan>0</font>; val &lt; (times); val++)
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nFibo[NUMBER_FIBO] = { <font color=darkcyan>1</font>, <font color=darkcyan>1</font> };
+
+    LOOP(i, NUMBER_FIBO - <font color=darkcyan>2</font>)
+        nFibo[i + <font color=darkcyan>2</font>] = nFibo[i] + nFibo[i + <font color=darkcyan>1</font>];
+
+    cout &lt;&lt; <font color=darkcyan>"フィボナッチ数列の最初の "</font> &lt;&lt; NUMBER_FIBO &lt;&lt; <font color=darkcyan>" 桁は、"</font> &lt;&lt; endl;
+    LOOP(i, NUMBER_FIBO - <font color=darkcyan>1</font>)
+        cout &lt;&lt; nFibo[i] &lt;&lt; <font color=darkcyan>", "</font>;
+
+    cout &lt;&lt; nFibo[i] &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　for の部分を LOOP というマクロにしました。これと同じことは関数ではできません。</p>
+
+<p>　このようにマクロには、短い処理に名前を付けて扱いやすくするという使い方があるのです。</p>
+
+<hr>
+
+<p>　マクロというのは便利なものですが、いろいろと問題点もあります。まぁそこは、マクロは変数や関数と違って、用意したテキストと置き換わって、そしてコンパイルされるものだということを常に意識していれば、あまり気になるものではありません。</p>
+
+<p>　とはいえ、初めは注意すべき点をある程度心得ておく必要があるでしょう。ということで、次回はマクロの書式や注意点について話したいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>頻出するものをマクロで１つにまとめ、さらに改造を容易にできる。</li>
+<li>マクロで数値を意味のある文字に置き換えられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　また次回まで、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01028.html" target="main">第２８章　マクロの手始め</a> | <a href="cpp01030.html" target="main">第３０章　マクロの書式</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.17</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

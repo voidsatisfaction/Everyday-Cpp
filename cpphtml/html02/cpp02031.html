@@ -1,0 +1,117 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３１章 冶金工場 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３１章　冶金工場</font>
+</center>
+<hr>
+
+<p>　今回から数回にわたって<font color=red>テンプレート</font>というものについて話します。テンプレートを日本語にすると「鋳型」です。さて、どんな機能なのでしょうか。</p>
+
+<hr>
+
+<p>　今回の要点は次のようになっています。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートとは、型だけが違う沢山の関数を１つの実装にまとめるための機能。</li>
+<li>関数テンプレートは template &lt; &lt;テンプレート仮引数&gt; &gt; が定義の頭につく。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　早速ですが次のマクロを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 大きい方の値を返すマクロ</font>
+<font color=blue>#define</font> MAX(a, b)   ((a) &gt; (b) ? (a) : (b))</pre></td></tr>
+
+</table></center>
+
+<p>　このマクロに特におかしな所はありません。しかし、これがマクロであるがための欠点というものがあります。</p>
+
+<p>　それは<font color=red>関数の感覚で MAX(i++, j) としてしまったときにおかしくなる</font> ことです。これは ((i++) &gt; (j) ? (i++) : (j)) と展開され、もし i が j よりも大きかった場合 i が２回インクリメントされてしまいます。しかも返される値は当初の i の値＋１です。もし MAX が関数なら、このようにしても返されるのは i の値だし、i のインクリメントは１回だけです（<a href="../html03/cpp03007.html" target="main">第３部第７章</a>参照）。</p>
+
+<p>　ここではインクリメントを例にしましたが、ここに関数を入れたのでも構いません。その際、関数は２回も呼ばれてしまいます。このマクロ特有のバグは見つけにくく、<a href="../html01/cpp01030.html" target="main">第１部第３０章</a>の最後に話した「もう１つの重要なバグ」です。</p>
+
+<p>　かといって安全のため MAX を関数にすると、<font color=red>いろいろな型に対する Max を作らなければならなくなります</font>。それは不便です。</p>
+
+<p>　あと、もう１つマクロには<font color=red>引数の型をチェックしない</font>という欠点があります。次のマクロを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 指定した型で比較し、大きい方の値を返すマクロ</font>
+<font color=blue>#define</font> TMAX(type, a, b)   ((type)(a) &gt; (type)(b) ? (type)(a) : (type)(b))</pre></td></tr>
+
+</table></center>
+
+<p>　確かにこれで比較は行えます。しかし、<font color=red>a や b が本当に指定した型でキャストしていい型なのかはチェックされず、強引にキャストされてしまいます</font>。例えばアドレスの比較をしたいと思って</p>
+
+<pre>p = TMAX(void*, str, num);</pre>
+
+<p>としたとします。p の型は void* 、str の型は char* 、num の型は int とします。</p>
+
+<p>　見ると分かると思いますが、アドレスを比較するというのに num に &amp; を付け忘れています。しかし、<font color=red>int から void* へのキャストは可能</font>なので、エラーは出ません。これが void* の引数をとる関数ならエラーになりますが、その場合はやはり型毎に別々の関数を作らなければなりません。</p>
+
+<p><br></p>
+
+<p>　結局、<font color=red>MAX は関数で作るべきだが、いろいろ型の違う関数をいちいち作らなくてはならないので面倒だ</font>、ということになります。</p>
+
+<hr>
+
+<p>　そこで、Ｃ＋＋には<font color=red>１つの定義を書いただけで型の違う関数を適宜自動的に作ってくれる</font>ような機能があります。それを<font size=+1 color=red>関数テンプレート</font>と呼びます。</p>
+
+<p>　テンプレートは「<a href="../htmlword/words029.html" target="words">鋳型</a>」という意味で、関数テンプレートはいろいろな型の関数を作るための鋳型のようなものです。例えば、次の関数を見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><pre><font color=green>// 大きい方の値を返す関数テンプレート</font>
+<font color=red>template &lt;typename TYPE&gt;</font>
+<font color=red>TYPE</font> Max(<font color=red>TYPE</font> a, <font color=red>TYPE</font> b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+</pre></td></tr>
+
+</table></center>
+
+<p>　先ず、<font color=red>関数定義の直前</font>に <font color=red>template &lt;typename TYPE&gt;</font> というものが付いています。そして、戻り値、引数の<font color=red>型</font>がさっき書いたものの中にあった <font color=red>TYPE</font> になっています。</p>
+
+<p>　これが関数テンプレートです。ここで int 型変数 a, b を使って Max(a, b) とすると <font color=red>TYPE の部分が int になった関数が作られ</font>、そして<font color=red>呼ばれます</font>。そして char 型変数 c, d を使って Max(c, d) とすると TYPE の部分が char になった関数が作られ、呼ばれます。</p>
+
+<p>　つまり、<font color=red>状況を自動的に判断し、それに合った型の関数を自動的に作ってくれる</font>のです！　TYPE で書かれたところには全て同じ型が割り当てられるというわけです。</p>
+
+<hr>
+
+<p>　今回は何となく使い方を話すだけにして、これで終わりにします。細かい文法的なことは次回に回します。次回を読む前にいろいろと推察してみるのもいいでしょう。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートとは、型だけが違う沢山の関数を１つの実装にまとめるための機能。</li>
+<li>関数テンプレートは template &lt; &lt;テンプレート仮引数&gt; &gt; が定義の頭につく。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02030.html" target="main">第３０章　静かなるメンバ３</a> | <a href="cpp02032.html" target="main">第３２章　冶金工場２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

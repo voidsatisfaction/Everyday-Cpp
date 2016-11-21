@@ -1,0 +1,201 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３５章 配列再考 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３５章　配列再考</font>
+</center>
+<hr>
+
+<p>　配列変数を引数に取りたい。そんなときはどうすればよいのでしょうか？　今回はそんなことをやってみます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列変数は、メモリ上に連続して存在している。</li>
+<li>配列変数を引数にとるときは、配列変数のアドレスを渡し、ポインタで受ける。</li>
+<li>ポインタも配列変数と同じく [ ] で各要素を参照できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　配列を引数にとるにはどうすればよいのでしょうか。</p>
+
+<p>　実はこれは一回やっています。<a href="cpp01024.html">第２４章（文字列をいじろう）</a>でです。配列（文字列）を引数にとるときは、<font color=red>配列変数の名前を渡す</font>と言いました。</p>
+
+<p>　問題なのは関数の定義の方です。こちらの方はまだ触れていません。</p>
+
+<p>　文字列に使っていた配列は大きさがまちまちでした。よって、大きさを指定する必要はないと思われます。そう考えると、</p>
+
+<pre>void func(int array[]);
+    .
+    .
+    .
+int array[5];
+func(array);</pre>
+
+<p>のようになるはずなのですが...。</p>
+
+<p>　では、試してみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Array2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Display(<font color=blue>int</font> array[])
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>5</font>; i++)
+        cout &lt;&lt; array[i] &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> n[<font color=darkcyan>5</font>];
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>5</font>; i++)
+        n[i] = i * <font color=darkcyan>5</font>;
+    Display(n);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>0
+5
+10
+15
+20</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　どうやらこれでいいみたいですね。</p>
+
+<p>　では、まとめてみましょう。</p>
+
+<p>　配列変数を引数にとる場合は、関数の定義の方は</p>
+
+<pre>void func(int array[]);</pre>
+
+<p>のように、<font color=red>大きさの未定な配列変数の形</font>にし、使用する方は</p>
+
+<pre>func(n);</pre>
+
+<p>のように、<font color=red>配列変数の名前を渡す</font>ようにすればよいのです。</p>
+
+<hr>
+
+<p>　さて、前に<font color=red>「引数用の変数が作られて、引数はそこに入れられる」</font>と話しました。しかし、配列変数も本当にそうなっているのでしょうか？</p>
+
+<p>　仮に</p>
+
+<pre>float a[1000];</pre>
+
+<p>という配列があったとします。float の大きさは４バイトです。なので、これは４０００バイトになります。</p>
+
+<p>　４０００バイトものデータをコピーするのははっきり言って<font size=+2 color=red>無駄</font>です。それよりは配列の位置を渡して大元の配列を利用するほうがはるかに実用的でしょう。<font color=red>そして、実際にそうなっています。</font></p>
+
+<p>　実は、上のプログラムの引数 array は配列変数の形をしていますが<font color=red>ポインタ</font>なのです。そして、配列変数の名前は<font color=red>配列変数の先頭のアドレス</font>を示すのです。</p>
+
+<p>　こうして、ポインタお得意の<font color=red>参照</font>、つまりアドレスを介して変数を操作する機能を使って配列変数を操作しているのです。</p>
+
+<hr>
+
+<p>　では、さらに詳しく説明しましょう。</p>
+
+<p>　配列変数は、メモリ上に連続して存在しています。例えば、上の float a[1000]; では、</p>
+
+<center><table border=1>
+<colgroup><col valign=center align=center><col valign=center align=center><col valign=center align=center><col valign=center align=center><col valign=center align=center><col valign=center align=center></colgroup>
+<tbody>
+
+<tr>
+<th>変数</th>
+<td>a[0]</td>
+<td>a[1]</td>
+<td>a[2]</td>
+<td>...</td>
+<td>a[999]</td>
+</tr>
+
+<tr>
+<th>アドレス<br>（例）</th>
+<td>6618592<br>〜<br>6618595</td>
+<td>6618596<br>〜<br>6618599</td>
+<td>6618600<br>〜<br>6618603</td>
+<td>...</td>
+<td>6622588<br>〜<br>6622591</td>
+</tr>
+
+</tbody></table></center>
+
+<p>のようになっています。</p>
+
+<p>　先頭は a[0] です。そして、それを基準に a[1] はその４バイト先に、a[2] はそのさらに４バイト先、つまり a[0] から８バイト先にあります。４バイトずつなのは、float の大きさが４バイトだからです。</p>
+
+<p>　つまり、<font color=red>先頭のアドレスと変数の型さえわかっていれば a[1] や a[2] 、果ては a[999] のアドレスまでわかってしまう</font>のです。ですから、型を指定し、先頭のアドレスを渡すだけで配列変数を参照することができるのです。</p>
+
+<p>　そして、<font color=red>配列変数の先頭のアドレスは</font>、いちいち &a[0] のようにしなくても、a 、つまり<font color=red>配列変数名だけで取得できる</font>ようになっています。</p>
+
+<p>　では、そのアドレスをどう扱えばいいのでしょうか？</p>
+
+<p>　それは、配列変数と同じように [ ] を使えばいいのです。（* を使う方法もありますが、今はまだ話しません。）</p>
+
+<p>　実は、この [ ] という演算子（[ ] も「演算子」になります）は、<font color=red>&lt;アドレス&gt;[&lt;番号&gt;] としたときに、指定した &lt;アドレス&gt; から &lt;番号&gt; × &lt;型の大きさ&gt; だけ進めたところにある変数を使用する</font>ときに使うものなのでした。</p>
+
+<p>　このことによりポインタを配列変数であるかのように扱うことができるのです。</p>
+
+<p>　以上が配列変数を引数にとる際のメカニズムです。</p>
+
+<p>　また、もちろん</p>
+
+<pre>void func(int array[]);</pre>
+
+<p>を</p>
+
+<pre>void func(<font color=red>int*</font> array);</pre>
+
+<p>と書いても構いません。この２つは<font color=red>全く同じ</font>です。</p>
+
+<hr>
+
+<p>　次回は、今回話したことを実際に確かめてみようと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列変数は、メモリ上に連続して存在している。</li>
+<li>配列変数を引数にとるときは、配列変数のアドレスを渡し、ポインタで受ける。</li>
+<li>ポインタも配列変数と同じく [ ] で各要素を参照できる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01034.html" target="main">第３４章　ポインタ天国３</a> | <a href="cpp01036.html" target="main">第３６章　配列再々考</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.4.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

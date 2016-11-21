@@ -1,0 +1,215 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４０章 さらなる計算 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４０章　さらなる計算</font>
+</center>
+<hr>
+
+<p>　前回使ったアドレスの演算を、今回は実用してみます。<a href="cpp01035.html" target="main">第３５章</a>で言っていた * と [ ] との関係についても、もう少し迫ってみたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>* と [ ] は同じ演算効果を持つ演算子である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は、文字列を扱う関数を作って、ポインタ、アドレスの演算をしてみます。今回作る関数は <font color=red>strlen</font> です。文字列の長さを取得する関数でしたね。string.h をインクルードせず、自分でこの関数を作ってみたいと思います。</p>
+
+<p>　先ずは、普通に関数を作ってみます。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Strlen1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> strlen(<font color=blue>char</font>* str)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; str[i]; i++);
+    <font color=blue>return</font> i;
+}
+
+<font color=blue>void</font> DispLength(<font color=blue>char</font>* str)
+{
+    printf(<font color=darkcyan>"文字列「%s」の長さは %d バイトです。\n"</font>, str, strlen(str));
+}
+
+<font color=blue>int</font> main()
+{
+    DispLength(<font color=darkcyan>"ホメホメール"</font>);
+    DispLength(<font color=darkcyan>"嘘つきゃばれるぜドルバッキー"</font>);
+    DispLength(<font color=darkcyan>""</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+<tr><td><pre>文字列「ホメホメール」の長さは 12 バイトです。
+文字列「嘘つきゃばれるぜドルバッキー」の長さは 28 バイトです。
+文字列「」の長さは 0 バイトです。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　for 文で、str[i] が０かどうかを確認します。この確認は for 文の中で済ませてしまいます。で、str[i] が０になったときに i の値を返します。この時の i の値が<font color=red>丁度文字列の長さになっています</font>。<font color=red>０，１文字程度の</font>文字列を考えてみて、確認してみて下さい。<font color=red>理屈で考えるより、ごく簡単な例で確認した方が早いです。</font>暇なら理屈も考えて下さい。</p>
+
+<p>　この for 文に実行文は必要ないので、<font color=red>空文</font>を書いておきました。空文は<font color=red>セミコロンだけの文</font>です。</p>
+
+<p>　for 文の条件判定は、初期化文（上の例では i = 0 がそう）を行った直後にも判定されるので、空の文字列（ヌルターミネータはついています）を渡してもきちんと判定できます。</p>
+
+<p>　以上が普通の方法です。</p>
+
+<hr>
+
+<p>　次に、ポインタの演算を使ってみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Strlen2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> strlen(<font color=blue>char</font>* str)
+{
+    <font color=blue>char</font>* p;
+    <font color=blue>for</font>(p = str; *p; p++);
+    <font color=blue>return</font> p - str;
+}
+
+<font color=blue>void</font> DispLength(<font color=blue>char</font>* str)
+{
+    printf(<font color=darkcyan>"文字列「%s」の長さは %d バイトです。\n"</font>, str, strlen(str));
+}
+
+<font color=blue>int</font> main()
+{
+    DispLength(<font color=darkcyan>"ほめ殺し"</font>);
+    DispLength(<font color=darkcyan>"嘘つきは泥棒のはじまり"</font>);
+    DispLength(<font color=darkcyan>""</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+<tr><td><pre>文字列「ほめ殺し」の長さは 8 バイトです。
+文字列「嘘つきは泥棒のはじまり」の長さは 22 バイトです。
+文字列「」の長さは 0 バイトです。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　ポインタの演算として、<font color=red>インクリメント</font>と<font color=red>引き算</font>を使っています。</p>
+
+<p>　先ず、p に str を入れます。そして p を１つずつ進ませていって、*p が０になったところで for 文を終わります。そして文字列の長さは、<font color=red>その時の位置と初めの位置との差</font>になります。これも０，１文字の文字列を考えてみて、確認してみて下さい。</p>
+
+<p>　これを見て分かりますが、ポインタの演算をこういう風に使うと<font color=red>見にくい</font>です。何やってるのか分かりにくいです。ポインタの演算の例としては不適当かもしれませんね。まぁ、今回は見逃して下さい。</p>
+
+<p>　昔は「配列でインデックスを指定するよりも、ポインタの演算をした方が早い」だとか言われていましたが、<font color=red>今はコンパイラが優秀なので差は出ないと思います</font>。</p>
+
+<hr>
+
+<p>　では、最後はちょっと変わった形にします。<font color=red>* 演算子を使います。</font>上のも使っていましたが、ちょっと違います。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Strlen3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> strlen(<font color=blue>char</font>* str)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; <font color=red>*(str + i)</font>; i++);
+    <font color=blue>return</font> i;
+}
+
+<font color=blue>void</font> DispLength(<font color=blue>char</font>* str)
+{
+    printf(<font color=darkcyan>"文字列「%s」の長さは %d バイトです。\n"</font>, str, strlen(str));
+}
+
+<font color=blue>int</font> main()
+{
+    DispLength(<font color=darkcyan>"ベタぼめ"</font>);
+    DispLength(<font color=darkcyan>"ウソ エイト・オー・オー"</font>);
+    DispLength(<font color=darkcyan>""</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+<tr><td><pre>文字列「ベタぼめ」の長さは 8 バイトです。
+文字列「ウソ エイト・オー・オー」の長さは 23 バイトです。
+文字列「」の長さは 0 バイトです。</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　上の赤くなっているところが問題の部分です。</p>
+
+<pre>*(str + i)</pre>
+
+<p>　これはどういう結果になるでしょうか？　順を追って考えてみたいと思います。</p>
+
+<p>　先ず、str + i がカッコでくくられているので、この計算が行われます。アドレスの演算では i に<font color=red>参照先の型のサイズを掛けた</font>値を str に足すのでしたね。str の参照先の型は <font color=red>char</font> です。char のサイズは１バイトなので、ただ単に i と同じ値と str とを足すことになります。</p>
+
+<p>　では、次です。今度はその計算結果に <font color=red>*</font> がついています。つまり、str に i を足したアドレスにある値を取り出しますね。<font color=red>str に i を足したアドレスにある値</font>とは何でしょうか？　そうです。<font color=red>ズバリ str[i] です。</font></p>
+
+<p>　つまりは、<font color=red>*(str + i) というのは str[i] の事</font>なのです。</p>
+
+<p>　このことから分かるとおり、<font size=+2 color=red>*(&lt;アドレス&gt; + &lt;インデックス&gt;) と &lt;アドレス&gt;[&lt;インデックス&gt;] という２つの表現は全く同じ</font>なのです。どっちで書こうが、結果は全く同じです。つまり、<font color=red>* と [ ] は等価な演算子</font>だということです。便利な方を使ってね、ということです。</p>
+
+<p>　ただし、当然ですが<font color=red>変数の宣言においては</font>これらの演算子は意味が違います。ポインタと配列の違いがありますね。ただ、<a href="cpp01035.html" target="main">第３５章</a>で書いたとおり、引数の宣言に使うときはやっぱり同じになります。</p>
+
+<p>　あと、極端なことを言えば、別に (str + i)[0] や (str + i - 5)[5] も str[i] や *(str + i) と同じです。落ち着いて考えれば何の不思議もないことですね。ただ、こういう書き方はまずしないでしょうが。(^ ^;</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。</p>
+
+<p>　では、今回の要点をもう一度見てみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>* と [ ] は同じ演算効果を持つ演算子である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はバグを減らす強い味方 const について話します。ポインタを扱う上で無くてはならないものです。しっかり身につけましょう。</p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01039.html" target="main">第３９章　１＋１＝５？？</a> | <a href="cpp01041.html" target="main">第４１章　変えてくれるな</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

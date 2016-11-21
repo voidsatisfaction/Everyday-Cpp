@@ -1,0 +1,175 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２章 Hello プログラム -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２章　Hello プログラム</font>
+</center>
+<hr>
+
+<p>　プログラムで重要なことは、処理の結果を表示することです。ということで今回は文字や数値を表示する方法を見ていきます。</p>
+
+<p>　何をするにもとにかく表示することは非常に重要です。なので初めに言うだけであって、あまり詳しく説明する気はありません。細かく言っていると数章消費してしまうので...。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>プログラムは main の初めから実行される。</li>
+<li>命令文の終わりはセミコロン。</li>
+<li>文字列は " " で囲む。</li>
+<li>表示するには cout &lt;&lt; [何か]; とする。</li>
+<li>改行するときは cout &lt;&lt; endl; とする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回のプログラムは「やぁ、こんちは。」と表示するだけのプログラムでした。この手のプログラムは「Hello プログラム」と言われ、一番初めに教えるプログラムの定番です。</p>
+
+<p>　では、そのプログラムをもう一度見てみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"やぁ、こんちは。"</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　このうち、文章を表示する部分は</p>
+
+<pre>cout &lt;&lt; "やぁ、こんちは。" &lt;&lt; endl;</pre>
+
+<p>です。他の部分は<a href="../htmlword/words005.html" target="words">「そう書く決まりになっている」</a>と考えて結構です。<font color=red>プログラムは main の初めから実行されます。</font></p>
+
+<hr>
+
+<p>　どうやら<font color=red>文字の表示には cout というものを使う</font>ようです。<a href="../htmlword/words006.html" target="words">著者は「シーアウト」と読んでいます。</a>out は出力を意味します。となると、入力を表す「cin（シーイン）」も当然存在します。ですが、今は cin については触れません。</p>
+
+<p>　これに &lt;&lt; を組み合わせて使って文字を表示します。そして、<font color=red>文字列は " " で囲みます。</font></p>
+
+<p>　では、endl は何なのでしょうか？　これは<font color=red>「改行」</font>を表します。改行とは、呼んで字の如く行を改めることです。つまり次の行に移ることです。end line の略です。</p>
+
+<p>　本当はもう一つ役割があります。これを書いていないと文字が出力されないことがあります。「何だ？　表示するには改行しないといけないのか？」と思った人もいるでしょう。そういうときは <font color=red>flush</font> を使います。</p>
+
+<hr>
+
+<p>　では、いろいろ表示してみましょう。プログラムは Hello プログラムを改造したのでいいでしょう。では前のプログラムをもう一度開きましょう。</p>
+
+<table align=right border=1><tr><td><img src="images/0100201.gif"></td></tr></table>
+
+<p>　先ずは、右図のように、メニューの「ファイル」の中の「ワークスペースを開く」を選びます。</p>
+
+<p><br clear=right><br></p>
+
+<p>　すると、ファイル選択ダイアログが開くので、前に作ったワークスペースの名前をしたフォルダを選択し、同じ名前で拡張子が dsw のファイルを開きます。</p>
+
+<center><p><img src="images/0100202.gif"></p></center>
+<p><br></p>
+
+<p>　すると、ワークスペースが開かれます。当たり前ですね（笑）。</p>
+
+<p>　この時、前にプログラムのファイル Hello.cpp を閉じていなければ、Hello.cpp が表示されますが、そうでない場合は、自分で開かなければなりません。</p>
+
+<p>　メニューの「ファイル」の中の「開く」を選んでもいいのですが、ここではワークスペースウィンドウから開いてみましょう。</p>
+
+<table align=right border=1><tr><td><img src="images/0100203.gif"></td></tr></table>
+
+<p>　ワークスペースウィンドウというのは、右図のようなものです。ここで、FileView <a href="../htmlword/words004.html" target="words">タブ</a>を選択し、Test ファイルの下の Hello.cpp をダブルクリックします。すると、ファイルが開かれます。ワークスペース名やファイル名が違う場合も、要領は同じです。</p>
+
+<p><br clear=right><br></p>
+
+<hr>
+
+<p>　さて、無事開かれたこのファイルを早速改造してみましょう。では、以下のように改造して、ビルドして、そして実行してみて下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr>
+<th>プログラム</th>
+<th>実行結果</th>
+</tr>
+
+<tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>2</font> &lt;&lt; <font color=darkcyan>'+'</font> &lt;&lt; <font color=darkcyan>3</font> &lt;&lt; <font color=darkcyan>'='</font> &lt;&lt; <font color=darkcyan>2</font> + <font color=darkcyan>3</font> &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"π="</font> &lt;&lt; <font color=darkcyan>3.14159</font> &lt;&lt; <font color=darkcyan>"..."</font> &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>2+3=5
+π=3.14159...</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　以上のように、「文字列」の他に「整数」「小数」「文字（文字列でない）」「式の答え」が表示できます。（「文字」と「文字列」の違いは ' ' で囲むか、" " で囲むかで分けます。細かい違いは今は気にしなくていいです。）</p>
+
+<hr>
+
+<p>　これまでのプログラムを見てきて何か気付いたことはありませんか？　そうです。<font color=red>文の終わりが大抵セミコロン（;）で終わっていますね。</font></p>
+
+<p>　日本語では文は大抵マル（。）で、英語等はピリオド（．）で終わります。それと同じように、Ｃ／Ｃ＋＋言語ではセミコロンで文を終えるのです。行をいくら変えようが、セミコロンが来るまでは１つの文です。（ただし、文字列の " " 内で改行しないで下さい。）</p>
+
+<p>　でも、そうなっていないところもあります。#include ... の部分です。それは<a href="../htmlword/words005.html" target="words">「そう書く決まりになっている」</a>からです。</p>
+
+<hr>
+
+<h4>補足</h4>
+
+<p>　C++ の新しい仕様では、#include &lt;iostream&gt; の部分を</p>
+
+<pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream&gt;</font>
+<font color=blue>using namespace</font> std;</pre>
+
+<p>とするようになっています。&lt; &gt; で囲まれた部分の <font color=red>".h" をのけて、using namespace std; を加えます</font>。新しいコンパイラを使ってる人は、これからもそのようにして下さい。</p>
+
+<p>　using namespace std; についての詳しい話は<a href="../html02/cpp02050.html" target="main">第２部第５０章</a>や<a href="../html04/cpp04001.html" target="main">第４部第１章</a>で行うことにします。とりあえず今は「そう書く決まりになっている」と思っておいてください。</p>
+
+<hr>
+
+<p>　はい、今回はこれで終わりです。では、もう一度要点をおさらいしましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>プログラムは main の初めから実行される。</li>
+<li>命令文の終わりはセミコロン。</li>
+<li>文字列は " " で囲む。</li>
+<li>表示するには cout &lt;&lt; [何か]; とする。</li>
+<li>改行するときは cout &lt;&lt; endl; とする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01001.html" target="main">第１章　先ずは使い方</a> | <a href="cpp01003.html" target="main">第３章　計算してみよう</a></p>
+<p align=right><font size=-1><i>Last update was done on 2004.1.22</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

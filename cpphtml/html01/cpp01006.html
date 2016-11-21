@@ -1,0 +1,130 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第６章 中身を変えよう -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第６章　中身を変えよう</font>
+</center>
+<hr>
+
+<p>　変数は外から値を入れてやるだけでなくて、何かを足したり引いたりということで値を変更することもできます。今回はそんなところに焦点をあててみます。</p>
+
+<hr>
+
+<p>　今回の要点はこれです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>コメントは // に続けるか、/* */ で囲む。</li>
+<li>変数には宣言時に値を入れることができる。</li>
+<li>変数の値を変えるには、+=, ++ などの演算子を使う。</li>
+<li>a = a * 5 + 2; なども、方程式ではなく、代入である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　変数の値を増やしたり減したりするのは、非常に重要な作業です。では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Val2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    int a = <font color=darkcyan>0</font>;
+
+    a += <font color=darkcyan>2</font>;
+    cout &lt;&lt; "a += 2        -> a = " &lt;&lt; a &lt;&lt; endl;
+
+    a++;
+    cout &lt;&lt; "a++           -> a = " &lt;&lt; a &lt;&lt; endl;
+
+    a = a * <font color=darkcyan>5</font> + a;
+    cout &lt;&lt; "a = a * 5 + a -> a = " &lt;&lt; a &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a += 2        -> a = 2
+a++           -> a = 3
+a = a * 5 + a -> a = 18</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　一番初めの行は<font color=red>「コメント」</font>です。ここはコンパイル時に無視されます。む？　コンパイル？　今はまだ気にしないで下さい。とにかく、ここは実行ファイルに変換する際に無視されます。</p>
+
+<p>　<font color=red>// の後は全てコメントです。/* */ で囲むという方法もあります。</font></p>
+
+<p>　初めに変数 a を使うことを宣言します。この時に値を入れておくことができます。これを<font color=red>初期化</font>といいます。</p>
+
+<p>　では、早速 a に 2 を足してみましょう。</p>
+
+<pre>a += 2;</pre>
+
+<p>　この <font color=red>+= が、変数に右辺の値を足す演算子</font>です。a に 2 を足したものを再び a に代入するという風に見えますかね。</p>
+
+<p>　前にも言ったとおり、= がなければ変数の値は変えられません。なので、</p>
+
+<pre>a + 2;</pre>
+
+<p>としただけでは a に 2 を足すことはできません。</p>
+
+<p>　また、<font color=red>1 を足すだけなら、++ という演算子を使うことができます</font>。もちろん <font color=red>1 を引くときは -- を使います</font>。= がないのに値が変わりますが、これは例外です。</p>
+
+<p>　この演算子は変数の前に付けることも、後に付けることもできます。その違いについては今は触れません。</p>
+
+<pre>a++;
+a--;</pre>
+
+<hr>
+
+<p>　では、今度は少し複雑なことをしてみます。</p>
+
+<pre>a = a * 5 + 2;</pre>
+
+<p>　数学をやっててこういう式が出てくると方程式になってしまい、「a = -0.5 だ！」ということになってしまいます。ですが、プログラムにおいてはこれは方程式にはなりません。</p>
+
+<p>　これは、「今までの a に 5 を掛けて、それに 2 を足したものを a に代入せよ」、つまり、<font color=red>「a を５倍して、2 を足せ」</font>ということになります。</p>
+
+<p>　この表記を使えば、a += 2; は、a = a + 2; となります。でも、前者の方を使うようにして下さい。</p>
+
+<hr>
+
+<p>　今回はこれでお終いですが、今回のことを踏まえて、いろいろと自分でもやってみて下さい。プログラムの上達は試行錯誤に尽きます。とにかく回数を重ねて遊んでみて下さい。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>コメントは // に続けるか、/* */ で囲む。</li>
+<li>変数には宣言時に値を入れることができる。</li>
+<li>変数の値を変えるには、+=, ++ などの演算子を使う。</li>
+<li>a = a * 5 + 2; なども、方程式ではなく、代入である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01005.html" target="main">第５章　変数</a> | <a href="cpp01007.html" target="main">第７章　関数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.11</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

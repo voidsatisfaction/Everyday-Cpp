@@ -1,0 +1,253 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４７章 Ｃ±± -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４７章　Ｃ±±</font>
+</center>
+<hr>
+
+<p>　Ｃ言語で書いたプログラムをＣ＋＋で使おうとしても使えない、ということが起こります。今回はその秘密に迫ってみます。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>Ｃ言語とＣ＋＋言語では、関数名の内部表現が異なる。</li>
+<li>Ｃ＋＋からＣの関数を使うときは、プロトタイプの前に extern "C" をつける。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回はちょっと趣を変えてＣ言語で関数を作ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Count1.c</font>
+<font color=green>// 文字列の中に特定の文字が何個現れるかを数える関数</font>
+<font color=blue>int</font> strcount(<font color=blue>const char</font>* str, <font color=blue>int</font> letter)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nCount = <font color=darkcyan>0</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; str[i] != <font color=darkcyan>0</font>; i++)
+    {
+        <font color=blue>if</font>(str[i] == letter)
+            nCount++;
+    }
+    <font color=blue>return</font> nCount;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　...Ｃ＋＋と何も変わりませんね。ま、そりゃそうですね。</p>
+
+<p>　では、この関数をＣ＋＋から使ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// Extern3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> strcount(<font color=blue>const char</font>* str, <font color=blue>int</font> letter);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>1024</font>];
+    <font color=blue>char</font> letter;
+
+    cout &lt;&lt; <font color=darkcyan>"文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+    cout &lt;&lt; <font color=darkcyan>"どの文字を数えますか &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; letter;
+
+    cout &lt;&lt; <font color=darkcyan>'\''</font>&lt;&lt; letter &lt;&lt; <font color=darkcyan>"\' は "</font>
+         &lt;&lt; strcount(buffer, (<font color=blue>unsigned char</font>)letter)
+         &lt;&lt; <font color=darkcyan>" 個あります。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　これでいいはずとビルドしてみるも...コンパイルは通りますが、<font color=red>リンクが通りません</font>。エラーメッセージを見てみましょう。</p>
+
+<pre>Extern3.obj : error LNK2001: 外部シンボル
+""int __cdecl strcount(char const *,int)" (?strcount@@YAHPBDH@Z)" は未解決です</pre>
+
+<p>　何と、<font color=red>strcount が見つからない</font>というエラーです。</p>
+
+<p>　しかし、よく見てみると何か変な文字列が書かれています。</p>
+
+<pre><font color=red>?strcount@@YAHPBDH@Z</font></pre>
+
+<p>　そうです。これです。何故見つからないのかのヒントはここにあります。</p>
+
+<p>　今度はＣとＣ＋＋を逆にしてやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// Count2.cpp</font>
+<font color=green>// 文字列の中に特定の文字が何個現れるかを数える関数</font>
+<font color=blue>int</font> strcount(<font color=blue>const char</font>* str, <font color=blue>int</font> letter)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nCount = <font color=darkcyan>0</font>;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; str[i] != <font color=darkcyan>0</font>; i++)
+    {
+        <font color=blue>if</font>(str[i] == letter)
+            nCount++;
+    }
+    <font color=blue>return</font> nCount;
+}</pre></td></tr>
+
+<tr><th>プログラム４</th></tr>
+
+<tr><td><pre><font color=green>// Extern4.c</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> strcount(<font color=blue>const char</font>* str, <font color=blue>int</font> letter);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>1024</font>];
+    <font color=blue>char</font> letter;
+
+    printf(<font color=darkcyan>"文字列を入力して下さい &gt; "</font>);
+    scanf(<font color=darkcyan>"%s"</font>, buffer);
+    printf(<font color=darkcyan>"どの文字を数えますか &gt; "</font>);
+    scanf(<font color=darkcyan>"%c"</font>, &amp;letter);
+
+    printf(<font color=darkcyan>"\'%c\' は %d 個あります。\n"</font>, letter,
+           strcount(buffer, (<font color=blue>unsigned char</font>)letter));
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>　今度は次のようなエラーが出ました。</p>
+
+<pre>Extern4.obj : error LNK2001: 外部シンボル "_strcount" は未解決です</pre>
+
+<p>　このことから言えることは、<font color=red>コンパイルしたあとは関数名が変わってしまっている</font>ということです。<font color=red>Ｃ言語では "_strcount" に、Ｃ＋＋言語では "?strcount@@YAHPBDH@Z" に変わっているのです。</font></p>
+
+<p>　Ｃだけ、もしくはＣ＋＋だけで使うのであれば、どんなに関数名が変わろうと構いません。全てが同じように変わっているからです。</p>
+
+<p>　例えば、「カバ」という存在があります。「カバ」という存在にはもともと名前はありません。人間が勝手に名前を付けているわけです。この存在が "strcount" と対応していると考えて下さい。</p>
+
+<p>　日本語では「カバ」という存在に「カバ」という名前を付けて呼んでいます。勝手に名前を付けているわけですが、日本語を使う限りみんなそう呼んでいるので不自由することはありません。これが "_strcount" と対応しています。</p>
+
+<p>　これはドイツ語でも同じ事が言えます。ドイツ語では「カバ」という存在を「Nilpferd」と呼んでいますが、ドイツ語を使う限りみんなそう呼んでいるので不自由することはありません。これが "?strcount@@YAHPBDH@Z" と対応しています。</p>
+
+<p>　しかし、日本語は知っているがドイツ語を知らない人にとっては「Nilpferd」と言われても何がなんだか分かりませんし、その逆もそうです。これが上のエラーの原因です。</p>
+
+<p>　ではどうすればいいかというと、翻訳してやればいいですね。そのために使うのが <font color=red>extern "&lt;言語名&gt;"</font> です。これを使うと、その言語での名前の付け方を使うようになります。例えば上の例（前者）では、</p>
+
+<center><table border=1>
+
+<tr><th>プログラム５</th></tr>
+
+<tr><td><pre><font color=green>// Extern3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=red>extern "C"</font> <font color=blue>int</font> strcount(<font color=blue>const char</font>* str, <font color=blue>int</font> letter);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> buffer[<font color=darkcyan>1024</font>];
+    <font color=blue>char</font> letter;
+
+    cout &lt;&lt; <font color=darkcyan>"文字列を入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; buffer;
+    cout &lt;&lt; <font color=darkcyan>"どの文字を数えますか &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; letter;
+
+    cout &lt;&lt; <font color=darkcyan>'\''</font>&lt;&lt; letter &lt;&lt; <font color=darkcyan>"\' は "</font>
+         &lt;&lt; strcount(buffer, (<font color=blue>unsigned char</font>)letter)
+         &lt;&lt; <font color=darkcyan>" 個あります。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+</table></center>
+
+<p>とすることになります。こうすれば strcount はＣ言語で作られていると分かり、<font color=red>Ｃ言語用の名前の付け方で解釈してくれます</font>。</p>
+
+<p>　ではその逆はどうかというと、それはできません。<font color=red>Ｃ＋＋言語はＣ言語より後に作られたので、それを使うような機構はＣ言語には備わっていない</font>のです。クラスとかを使っているとどうしようもありませんし、あまりそうする機会もないのでどうでもいい話です。どうしても使いたければ、Ｃ言語用に書き直してやればいいですね。</p>
+
+<p>　沢山プロトタイプがある場合は、全部に extern "C" をつけて回るのはしんどいので一括して指定することもできます。</p>
+
+<pre><font color=red>extern "C"
+{</font>
+
+プロトタイプ
+
+<font color=red>}</font></pre>
+
+<p>　また、Ｃ＋＋の時は __cplusplus という組み込みマクロ（<a href="cpp03019.html" target="main">第１９章</a>参照）が定義されている環境が多いので（注：どの環境でも定義されている保証はありません）、</p>
+
+<pre><font color=red>#ifdef __cplusplus
+extern "C"
+{
+#endif</font>
+
+プロトタイプ
+
+<font color=red>#ifdef __cplusplus
+}
+#endif</font></pre>
+
+<p>としてやると、ＣでもＣ＋＋でも両方とも使えるヘッダファイルを作ることができます。string.h など、Ｃ標準のヘッダファイルの中を見るとこういう記述が見られますね。</p>
+
+<p>　実際には、Ｃ言語を使って作られた<a href="../htmlword/words032.html" target="words">ライブラリ</a>をＣ＋＋で使う、もしくは、ＣからでもＣ＋＋からでも使えるライブラリを作るというときに使うことになると思います。上の __cplusplus の機構が使われてないヘッダファイルを使うときは、ヘッダファイルを書き換えるのではなく、#include 文を extern "C" { } で囲んでやったので構いませんね。</p>
+
+<p>　あと、関数の定義の方にも extern "C" をつけることができます。でも、あまり使うことはないと思います。</p>
+
+<hr>
+
+<p>　では、ＣとＣ＋＋でなぜ名前の付け方が違うのでしょうか？</p>
+
+<p>　これは、Ｃ＋＋では関数のオーバーロードやオーバーライド、または名前空間などがあるからです。つまり、<font color=red>同じ名前の異なる関数がいくつもある可能性がある</font>からなのです。そういうわけで、Ｃ＋＋の内部では名前にそういった情報をくっつけて、一意に決まる名前に変換してから扱っているわけです。</p>
+
+<p>　この反面、Ｃ言語では同じ名前の関数を作ることができません。そのため、Ｃ言語では名前を加工する必要がないのです。ＶＣ＋＋でアンダーラインがつけてあるのは...アセンブリ言語の命令とかとかぶらないようにするためだと思います。多分。</p>
+
+<p>　これらの名前付けの方法は環境に依存するかも知れませんが、Ｃ＋＋では名前を加工して扱っているという点はどの環境でも言えることです。このことが extern "C" を必要にしているのです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>Ｃ言語とＣ＋＋言語では、関数名の内部表現が異なる。</li>
+<li>Ｃ＋＋からＣの関数を使うときは、プロトタイプの前に extern "C" をつける。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03046.html" target="main">第４６章　ハンドルされない例外</a> | <a href="cpp03048.html" target="main">第４８章　同姓同名４</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.5</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

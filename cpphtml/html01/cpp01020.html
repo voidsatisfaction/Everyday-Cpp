@@ -1,0 +1,233 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２０章 多条件分岐 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２０章　多条件分岐</font>
+</center>
+<hr>
+
+<p>　入力した数値が０のときは...、１のときは...、２のときは...、とかしたいとき、if を使っていては面倒です。今回はそういうときのいい方法を教えたいと思います。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>switch(&lt;式&gt;){ &lt;分岐&gt; } を使うと多条件分岐になる。</li>
+<li>&lt;式&gt; が case &lt;値&gt;: で示す値のとき、そこへ飛ぶ。</li>
+<li>それ以外は default: に飛ぶ。</li>
+<li>終わるには break を使う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="cpp01012.html">第１２章</a>と前回に割り算プログラムを作りました。今度は四則演算全部できるようにしましょう。</p>
+
+<p>　そのために、どれを行うか選択することにします。</p>
+
+<pre>どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; </pre>
+
+<p>　第１項と第２項の入力は共通にしていいですね。ですが、計算と出力は分岐する必要があります。</p>
+
+<p>　あと、演算の種類の選択で１〜４以外の数値を入れた場合の処理をする必要があります。</p>
+
+<p>　ここでは次のようにすればいいですね。選択の結果を sign という変数に入れます。そして、sign が 1 のときは足し算をして、そうでないときはまた sign を確かめます。それを繰り返して、それでも条件からもれれば、エラーを表示します。</p>
+
+<p>　条件分岐は if-else でしたね。上の処理を直訳すると</p>
+
+<pre>if(sign == 1){ ... }
+else if(sign == 2){ ... }
+else if(sign == 3){ ... }
+else if(sign == 4){ ... }
+else{ ... }</pre>
+
+<p>となります。でも、こんなので本当にいいんでしょうか。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Switch1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a, b, sign, result, i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>5</font>; i++)
+    {
+        cout &lt;&lt; <font color=darkcyan>"第１項 &gt; "</font>;
+        cin &gt;&gt; a;
+        cout &lt;&lt; <font color=darkcyan>"第２項 &gt; "</font>;
+        cin &gt;&gt; b;
+        cout &lt;&lt; <font color=darkcyan>"どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; "</font>;
+        cin &gt;&gt; sign;
+
+        <font color=blue>if</font>(sign == <font color=darkcyan>1</font>)
+            result = a + b;
+        <font color=blue>else if</font>(sign == <font color=darkcyan>2</font>)
+            result = a - b;
+        <font color=blue>else if</font>(sign == <font color=darkcyan>3</font>)
+            result = a * b;
+        <font color=blue>else if</font>(sign == <font color=darkcyan>4</font>)
+            result = a / b;
+        <font color=blue>else</font>
+        {
+            cout &lt;&lt; <font color=darkcyan>"真面目にせんかい！"</font> &lt;&lt; endl;
+            <font color=blue>continue</font>;
+        }
+
+        cout &lt;&lt; <font color=darkcyan>"答えは "</font> &lt;&lt; result &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>第１項 &gt; 1
+第２項 &gt; 2
+どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; 1
+答えは 3 です。
+第１項 &gt; 5
+第２項 &gt; 4
+どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; 2
+答えは 1 です。
+第１項 &gt; 9
+第２項 &gt; 6
+どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; 3
+答えは 54 です。
+第１項 &gt; 14
+第２項 &gt; 7
+どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; 4
+答えは 2 です。
+第１項 &gt; 678
+第２項 &gt; -543
+どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; 5
+真面目にせんかい！</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　どうやらこれでいいみたいです。</p>
+
+<p>　このように、単純に <font color=red>else if を使えば多条件分岐ができます</font>。</p>
+
+<hr>
+
+<p>　でも、判定するのは変数 sign だけなんだから、もうちょっと、こう、簡単にならないものですかね。</p>
+
+<p>　そのようなときは <font color=red>switch 文</font>を使います。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Switch1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a, b, sign, result, i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>5</font>; i++)
+    {
+        cout &lt;&lt; <font color=darkcyan>"第１項 &gt; "</font>;
+        cin &gt;&gt; a;
+        cout &lt;&lt; <font color=darkcyan>"第２項 &gt; "</font>;
+        cin &gt;&gt; b;
+        cout &lt;&lt; <font color=darkcyan>"どれをしますか（1：加算，2：減算，3：乗算，4：除算） &gt; "</font>;
+        cin &gt;&gt; sign;
+
+        <font color=blue>switch</font>(sign)
+        {
+        <font color=blue>case</font> <font color=darkcyan>1</font>:
+            result = a + b; <font color=blue>break</font>;
+        <font color=blue>case</font> <font color=darkcyan>2</font>:
+            result = a - b; <font color=blue>break</font>;
+        <font color=blue>case</font> <font color=darkcyan>3</font>:
+            result = a * b; <font color=blue>break</font>;
+        <font color=blue>case</font> <font color=darkcyan>4</font>:
+            result = a / b; <font color=blue>break</font>;
+        <font color=blue>default</font>:
+            cout &lt;&lt; <font color=darkcyan>"真面目にせんかい！"</font> &lt;&lt; endl;
+            <font color=blue>continue</font>;
+        }
+
+        cout &lt;&lt; <font color=darkcyan>"答えは "</font> &lt;&lt; result &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+<tr><td>上と同じだから省略</td></tr>
+
+</tbody></table></center>
+
+<p>　if - else if - else を使っていたところが switch 文に置き換わっています。</p>
+
+<p>　switch の書式は</p>
+
+<table><tr><td><pre>switch(&lt;式&gt;)
+{
+case &lt;値１&gt;: &lt;実行文&gt;
+case &lt;値２&gt;: &lt;実行文&gt;
+case &lt;値３&gt;: &lt;実行文&gt;
+<center>.
+.
+.</center>
+default: &lt;実行文&gt;
+}</pre></td></tr></table>
+
+<p>です。</p>
+
+<p>　<font color=red>&lt;式&gt; が &lt;値&gt; のどれかである場合、その場所に飛びます。もし、どれとも違う場合は default: の所へ飛びます。</font></p>
+
+<p>　switch 文を終わるには break を使います。<font size=+2 color=red>次の case に到達したからといっても、終わってくれません。</font></p>
+
+<p>　また、else と同じように、default はなくていいのなら、なくても構いません。</p>
+
+<p>　switch 文はループではないので、continue はその外のループ命令に対して効力を持ちます。</p>
+
+<hr>
+
+<p>　今回でひとまず条件分岐とループ処理は終わりです。ここまでのことを使えばある程度のことはもうできるでしょう。何か簡単なプログラムを組んでみるのもいいでしょうね。</p>
+
+<p>　今回の要点は次の通りでした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>switch(&lt;式&gt;){ &lt;分岐&gt; } を使うと多条件分岐になる。</li>
+<li>&lt;式&gt; が case &lt;値&gt;: で示す値のとき、そこへ飛ぶ。</li>
+<li>それ以外は default: に飛ぶ。</li>
+<li>終わるには break を使う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01019.html" target="main">第１９章　ループの強制終了</a> | <a href="cpp01021.html" target="main">第２１章　ビットとバイト</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.8.17</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

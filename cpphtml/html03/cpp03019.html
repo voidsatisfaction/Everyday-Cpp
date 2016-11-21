@@ -1,0 +1,256 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１９章 組み込みマクロ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１９章　組み込みマクロ</font>
+</center>
+<hr>
+
+<p>　マクロは #define ディレクティブで定義するものですが、中には自動的に定義されているマクロもあります。今回はそのマクロと、使い方について話したいと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>__FILE__ はファイル名、__LINE__ は行番号に置き換わる。</li>
+<li>これらがマクロ定義内にあっても、展開先の情報で展開される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　「ある値の評価を行い、その結果がおかしかったときにはエラーメッセージを出す」というのは、デバッグではよく使われます。なので、これを関数にすると便利そうです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th><th>プログラム２</th></tr>
+
+<tr>
+
+<td valign=top><pre><font color=green>// Debug1.h</font>
+<font color=blue>#ifndef</font> __DEBUG1_H__INCLUDED__
+<font color=blue>#define</font> __DEBUG1_H__INCLUDED__
+
+<font color=blue>#ifdef</font> _DEBUG
+<font color=green>// デバッグ時</font>
+
+<font color=green>// ログファイルを開く</font>
+<font color=blue>void</font> DebugStart();
+<font color=blue>#define</font> DEBUG_START()  DebugStart()
+
+<font color=green>// 値の確認</font>
+<font color=blue>void</font> DebugAssert(<font color=blue>bool</font> b);
+<font color=blue>#define</font> ASSERT(b)      DebugAssert((b) != <font color=darkcyan>0</font>)
+
+<font color=green>// ログファイルを閉じる</font>
+<font color=blue>void</font> DebugEnd();
+<font color=blue>#define</font> DEBUG_END()    DebugEnd()
+
+<font color=blue>#else</font>  <font color=green>#ifdef _DEBUG</font>
+<font color=green>// リリース時</font>
+
+<font color=blue>#define</font> DEBUG_START()
+<font color=blue>#define</font> ASSERT(b)
+<font color=blue>#define</font> DEBUG_END()
+
+<font color=blue>#endif</font>  <font color=green>#ifdef _DEBUG</font>
+
+<font color=blue>#endif</font>  <font color=green>#ifndef __DEBUG1_H__INCLUDED__</pre></td>
+
+<td valign=top><pre><font color=green>// Debug1.cpp</font>
+<font color=green>// デバッグ時のみコンパイルするファイルです</font>
+<font color=blue>#ifdef</font> _DEBUG
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>static</font> FILE* gs_pfLog = NULL;
+
+<font color=green>// ログファイルを開く</font>
+<font color=blue>void</font> DebugStart()
+{
+    gs_pfLog = fopen(<font color=darkcyan>"ErrorLog.txt"</font>, <font color=darkcyan>"a"</font>);
+    <font color=blue>if</font>(gs_pfLog == NULL)
+    {
+        printf(<font color=darkcyan>"エラーログファイルが開けません！"</font>);
+        exit(<font color=darkcyan>1</font>);
+    }
+
+    fprintf(gs_pfLog, <font color=darkcyan>"ログを開始します\n"</font>);
+}
+
+<font color=green>// 値の確認</font>
+<font color=blue>void</font> DebugAssert(<font color=blue>bool</font> b)
+{
+    <font color=blue>if</font>(b)
+        <font color=blue>return</font>;
+    <font color=blue>if</font>(pfLog != NULL)
+        fprintf(gs_pfLog, <font color=darkcyan>"値が異常です！\n"</font>);
+}
+
+<font color=green>// ログファイルを閉じる</font>
+<font color=blue>void</font> DebugEnd()
+{
+    fprintf(gs_pfLog, <font color=darkcyan>"ログを終了します\n\n"</font>);
+
+    <font color=blue>if</font>(pfLog != NULL)
+        fclose(gs_pfLog);
+}
+
+<font color=blue>#endif</font>  <font color=green>// #ifdef _DEBUG</font></pre></td>
+
+</tr>
+
+<tr><th colspan=2>プログラム３</th></tr>
+
+<tr><td valign=top colspan=2><pre>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Debug1.h"</font>
+
+<font color=blue>int</font> Average(<font color=blue>const int</font> pnValues[], <font color=blue>const int</font> nData)
+{
+    <font color=red>ASSERT(pnValues != NULL && nData &gt; 0);</font>
+    <font color=blue>int</font> i;
+    <font color=blue>int</font> nSum = <font color=darkcyan>0</font>;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nData; i++)
+        nSum += pnValues[i];
+    <font color=blue>return</font> nSum / nData;
+}
+
+<font color=blue>int</font> main()
+{
+    DEBUG_START();
+
+    <font color=blue>int</font> anTest[] = {
+        <font color=darkcyan>41</font>, <font color=darkcyan>100</font>, <font color=darkcyan>87</font>, <font color=darkcyan>43</font>, <font color=darkcyan>56</font>, <font color=darkcyan>78</font>, <font color=darkcyan>12</font>, <font color=darkcyan>98</font>, <font color=darkcyan>56</font>, <font color=darkcyan>67</font>,
+    };
+
+    cout &lt;&lt; <font color=darkcyan>"平均点は "</font> &lt;&lt; Average(anTest, <font color=darkcyan>-1</font>) &lt;&lt; <font color=darkcyan>" 点です。"</font> &lt;&lt; endl;
+
+    DEBUG_END();
+}</pre></td></tr>
+
+</table></center>
+
+<p>　Average 関数の初めで ASSERT マクロを使っています。このマクロはデバッグ時には DebugAssert 関数を呼び、リリース時には消えてしまいます。</p>
+
+<p>　で、DebugAssert 関数では、条件式が偽の時にエラーメッセージを ErrorLog.txt に出力するようにしています。つまり、ASSERT マクロには常に真の条件式を書いておくようにします。</p>
+
+<p>　これで、上のように Average の第２引数に -1 などを渡すと、エラーメッセージが出力されるわけです。</p>
+
+<hr>
+
+<p>　しかし、この関数には致命的な欠点があります。それは、<font color=red>どの ASSERT でエラーが起こったのかが分からない</font>ことです。これは致命的です。</p>
+
+<p>　こういうときのためにかは知りませんが、<font color=red>ファイル名と行番号に置き換わるマクロ</font>が存在します。それが <font color=red>__FILE__</font> と <font color=red>__LINE__</font> です。</p>
+
+<p>　これを使えば、次のようにして欠点を解決できます。</p>
+
+<center><table border=1>
+
+<tr><td valign=top><pre><font color=green>// 値の確認</font>
+<font color=blue>void</font> DebugAssert(<font color=blue>bool</font> b<font color=red>, const char* pszFile, int nLine</font>);
+<font color=blue>#define</font> ASSERT(b) DebugAssert((b) != <font color=darkcyan>0</font><font color=red>, __FILE__, __LINE__</font>)</pre></td></tr>
+
+<tr><td valign=top><pre><font color=green>// 値の確認</font>
+<font color=blue>void</font> DebugAssert(<font color=blue>bool</font> b<font color=red>, const char* pszFile, int nLine</font>)
+{
+    <font color=blue>if</font>(b)
+        <font color=blue>return</font>;
+    <font color=blue>if</font>(pfLog != NULL)
+        fprintf(gs_pfLog, <font color=darkcyan>"%s (%d)\n値が異常です！\n"</font>, pszFile, nLine);
+}</pre></td></tr>
+
+</table></center>
+
+<p>　「あれ？　__FILE__ はいつも "Debug1.h" になるんじゃないの」と思われるかもしれませんが、そうはなりません。先ず ASSERT マクロが展開され、その後に __FILE__ マクロが展開されるので、<font color=red>ASSERT マクロの展開先のファイル名、行番号に展開されます</font>。</p>
+
+<hr>
+
+<p>　__FILE__ や __LINE__ などは、どこでも定義されていません。__FILE__ はともかく、__LINE__ を #define を使って定義することなどできるわけがありません。このような、定義しなくても勝手に定義されるようなマクロのことを<font color=red>組み込みマクロ</font>と呼びます。</p>
+
+<p>　<a href="../htmlword/words028.html" target="words">ＡＮＳＩ Ｃ</a>は、６種類の組み込みマクロを定めています。</p>
+
+<center><table border=1>
+
+<tr>
+  <th>マクロ名</th>
+  <th>どう展開されるか</th>
+</tr>
+
+<tr>
+  <td>__FILE__</td>
+  <td>ファイル名のリテラル文字列。</td>
+</tr>
+
+<tr>
+  <td>__LINE__</td>
+  <td>行番号を示す１０進の数字。</td>
+</tr>
+
+<tr>
+  <td>__DATE__</td>
+  <td>現在のソースファイルをコンパイルしたときの日付。月、日、年の順のリテラル文字列になります。</td>
+</tr>
+
+<tr>
+  <td>__TIME__</td>
+  <td>現在のソースファイルをコンパイルしたときの時刻。時:分:秒の形式のリテラル文字列になります。</td>
+</tr>
+
+<tr>
+  <td>__TIMESTAMP__</td>
+  <td>現在のソースファイルの保存日時。曜日、月、日、年、時、分、秒の順のリテラル文字列になります。</td>
+</tr>
+
+<tr>
+  <td>__STDC__</td>
+  <td>ＡＮＳＩ Ｃに準拠しているかどうかを示します。準拠しているときは１と定義され、していないときは定義されません。</td>
+</tr>
+
+</table></center>
+
+<p>　このほかにも、ツール毎に組み込みマクロが用意されていることがあります。他のツールでは定義されていないことを頭に入れながらであれば、積極的に使ってもさほど問題はないでしょう。</p>
+
+<hr>
+
+<p>　今回のデバッグ関数はまだ発展の余地があります。エラー時刻を保存したり、値を表示したり、もっと使い勝手をよくしたり...。</p>
+
+<p>　そして、ＶＣ＋＋では crtdbg.h に色々なデバッグ関数が用意されています。他のツールでも似たようなものが用意されていることが多いと思います。</p>
+
+<p>　ここでは、そのものズバリな _ASSERT マクロも用意されています。そこで処理を止めて、そこからデバッグを行うことができるので、使い勝手はいいと思います。</p>
+
+<p>　これらのことについても、自分で調べて、ものにしておくと便利だと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>__FILE__ はファイル名、__LINE__ は行番号に置き換わる。</li>
+<li>これらがマクロ定義内にあっても、展開先の情報で展開される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は自分の好きな、とはいえほとんど使う機会のない命令についてのお話です。使う機会があると思わず小躍りしてしまうような、そんな楽しくてマイナーな奴です。</p>
+
+<hr>
+
+<p align=right><a href="cpp03018.html" target="main">第１８章　if...２</a> | <a href="cpp03020.html" target="main">第２０章　トークンを結合せよ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.18</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

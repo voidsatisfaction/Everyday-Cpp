@@ -1,0 +1,100 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４２章 ダウンキャスト -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４２章　ダウンキャスト</font>
+</center>
+<hr>
+
+<p>　前回に続いて、今回もＣ＋＋のキャストについて話します。Ｃ言語のキャストにはない特別な機能を持ったキャストです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>dynamic_cast を使えば継承関係をチェックしてくれる。</li>
+<li>不当なキャストの時は NULL を返す。</li>
+<li>dynamic_cast を利用するには、ランタイムタイプ情報が必要。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ずは、前回の CFile と CBinaryFile と CTextFile の話を思いだしてみましょう。<font color=red>CBinaryFile クラスのオブジェクトのアドレスを一旦 CFile* に渡したものを CTextFile* にキャストすると困る</font>というものでした。（ここで、CBinaryFile と CTextFile は CFile の派生クラスです。これらは第２部の継承の話で作ったあのクラスそのものです。）</p>
+
+<p>　というのも、CBinaryFile ではバイナリ形式でファイルを開いているので、それを使ってテキスト形式で開いていることを前提として処理をしようとしてもおかしくなります。また、ここでは問題になりませんが、<font color=red>派生クラス特有のメンバ変数</font>があると、もう片方にはそのメンバ変数が<font color=red>ない</font>ので処理がおかしくなります。</p>
+
+<p>　基底クラスから派生クラスへのキャストは<font color=red>ダウンキャスト</font>と呼びますが、このように<font color=red>ダウンキャストは危険を伴います</font>。</p>
+
+<p>　ということで、<font color=red>オブジェクトの真の型とその継承関係をきちんとチェックし、不正なキャストをするとエラーを返す</font>ようなキャストがＣ＋＋では必要になってきます。それが <font color=red>dynamic_cast</font> です。文法は他の３つのキャストと同じです。</p>
+
+<pre>CBinaryFile  bin;
+CFile*       pFile = <font color=red>dynamic_cast&lt;CFile*&gt;(&amp;bin)</font>;
+CTextFile*   pText = <font color=red>dynamic_cast&lt;CTextFile*&gt;(pFile)</font>;
+CBinaryFile* pBin  = <font color=red>dynamic_cast&lt;CBinaryFile*&gt;(pFile)</font>;</pre>
+
+<p>　上の例では、CBinaryFile* から CFile* へのキャストは特に問題ありませんが、３行目ではさらにそれを CTextFile* でキャストしようとしています。これが上で言っていた<font color=red>困る</font>キャストです。このように困るキャストをすると、<font color=red>dynamic_cast は NULL を返します</font>。戻り値が NULL の時はエラー処理をすればいいわけです。</p>
+
+<p>　４行目では、元が CBinaryFile なので正しいキャストです。この場合は問題なくキャストが行われます。</p>
+
+<p>　このように、dynamic_cast を使えば真のオブジェクトの型とその継承関係をチェックしてくれるわけです。もしここで static_cast を使うと、前回言ったように両方ともそのままキャストされてしまいます。</p>
+
+<p>　dynamic_cast が使えるのは<font color=red>仮想関数を持ったクラスに限ります</font>。このようなクラスを<font color=red>ポリモーフィック（多様性を持った）クラス</font>と呼びます。しかし、<font color=red>デストラクタを必ず仮想関数にする</font>ので、実質問題この制限はないのと同じ事です。</p>
+
+<p>　dynamic_cast では、void* へキャストすることもできます。しかし、<font color=red>void* からのキャストは行えません</font>。</p>
+
+<p>　<font color=red>多重継承</font>というものをすると、もうちょっといろいろな事が起こります。クロスキャストというのにお目にかかることもあるかもしれません。また、アップキャストでも失敗することも出てくるでしょう。しかし、多重継承についてはこの章ではお話ししません。後の章で話すことになるでしょう。</p>
+
+<hr>
+
+<p>　さて、そうなのかといって dynamic_cast を使ってみようとするとエラーが出てくるかもしれません。少なくともＶＣ＋＋ではそうです。</p>
+
+<p>　実は、<font color=red>dynamic_cast を使うにはランタイムタイプ情報 (RTTI : Run-Time Type Infomation) というものが必要</font>なのです。これがないとコンパイルエラーになります。</p>
+
+<p>　ランタイムタイプ情報を有効にするには、ＶＣ＋＋ではプロジェクトの設定をいじる必要があります。プロジェクトの設定はプリコンパイル済みヘッダファイル（<a href="../html03/cpp03003.html" target="main">第３部第３章</a>参照）でも使いました。Alt+F7 で開くことができます。</p>
+
+<p>　ここの「Ｃ＋＋」タブの「Ｃ＋＋言語」カテゴリのところに「ランタイムタイプ情報 (RTTI) を有効にする」というのがあると思います。これをチェックして OK ボタンか Enter キーを押せば設定終了です。</p>
+
+<p>　ここで注意することは、<font color=red>ダイアログの左上にある「設定の対象」の横にある指定を「全ての構成」にしておく</font>ということです。ビルドの構成が変わったときにランタイムタイプ情報が有効にならず、dynamic_cast のところでエラーが出てしまうからです。</p>
+
+<p>　うっかり忘れてもコンパイルエラーが出たときに設定を直せばいいだけなのですが、慣れないうちは原因が特定しにくいかもしれません。プログラムを作ったばかりのときはいいのですが、完成したと思ったときにこうなると混乱してしまうかもしれません。そういうことのないよう、設定はきちんとしておきましょう。</p>
+
+<hr>
+
+<p>　最後に。dynamic_cast を使うと処理が遅くなるのではないか、と心配になるかもしれませんが、チェックする必要のないキャスト（普通のアップキャスト）では static_cast と同じ処理に最適化されます。ダウンキャストはそれ程使うことはないので、速度を心配することはないということです。</p>
+
+<p>　ということで、アップキャスト、ダウンキャストには積極的に dynamic_cast を使うといいでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>dynamic_cast を使えば継承関係をチェックしてくれる。</li>
+<li>不当なキャストの時は NULL を返す。</li>
+<li>dynamic_cast を利用するには、ランタイムタイプ情報が必要。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　何か文字ばっかりになってしまいましたね。次回はいつものソースを交えた形式にしたいと思います。</p>
+
+<hr>
+
+<p align=right><a href="cpp02041.html" target="main">第４１章　キャスト</a> | <a href="cpp02043.html" target="main">第４３章　心の友よ</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.1.12</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

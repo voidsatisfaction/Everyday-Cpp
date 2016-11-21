@@ -1,0 +1,180 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３７章 参照 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３７章　参照</font>
+</center>
+<hr>
+
+<p>　ポインタを使った変数の操作の欠点は、& や * を付けなければならないことです。一言でいうと「面倒」ということです。</p>
+
+<p>　今回はそれを解消する方法について話していきたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>「参照」を使えば、& や * を使わなくても変数を参照できる。</li>
+<li>参照は型名に & を付けた型で定義する。</li>
+<li>参照は必ず初期化しなければならない。</li>
+<li>参照は参照する変数を途中から変更することはできない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ポインタで変数を参照するときは、アドレスを渡し、そしてポインタに * を付けて行いました。</p>
+
+<pre>void Zero(int* p)
+{
+    *p = 0;
+}
+    .
+    .
+    .
+int a;
+Zero(&a);</pre>
+
+<p>　そうそう、こんな感じです。</p>
+
+<p>　これを初めて見たとき、誰もが口にする感想は「面倒」です。関数の定義の中では * を付けなくてはなりませんし、関数を使うときには & を付けなくてはなりません。これは確かに面倒です。</p>
+
+<p>　（おそらく）そういったことから、Ｃ＋＋言語にはこれらを付けなくてよい方法が追加されました。その名もズバリ<font size=+2 color=red>参照</font>です。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果例</th></tr>
+
+<tr>
+<td><pre><font color=green>// Ref1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a;
+    <font color=red>int& r = a;</font>
+
+    a = <font color=darkcyan>0</font>;
+    cout &lt;&lt; <font color=darkcyan>"a  = "</font> &lt;&lt; a &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"r  = "</font> &lt;&lt; <font color=red>r</font> &lt;&lt; endl &lt;&lt; endl;
+
+    <font color=red>r = 100;</font>
+    cout &lt;&lt; <font color=darkcyan>"a  = "</font> &lt;&lt; a &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"r  = "</font> &lt;&lt; <font color=red>r</font> &lt;&lt; endl &lt;&lt; endl;
+
+    cout &lt;&lt; <font color=darkcyan>"&a = "</font> &lt;&lt; (<font color=blue>unsigned int</font>)&a &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"&r = "</font> &lt;&lt; (<font color=blue>unsigned int</font>)<font color=red>&r</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a  = 0
+r  = 0
+
+a  = 100
+r  = 100
+
+&a = 6618612
+&r = 6618612</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　r が参照です。そして、定義は</p>
+
+<pre>int& r = a;</pre>
+
+<p>の部分です。</p>
+
+<p>　こう書くと、<font color=red>r は a と全く同じになります</font>。どこまで同じかというと、<a href="../htmlword/words016.html" target="words">インラインアセンブラ</a>でも使わない限り全てが同じです。</p>
+
+<p>　では、それを検証してみましょう。方法はポインタの時と同じようにします。</p>
+
+<p>　先ず、a に 0 を代入してみましょう。すると、r も 0 になっています。</p>
+
+<p>　次に、今度は r のほうに 100 を代入してみましょう。すると、a も 100 になっています。</p>
+
+<p>　最後に、アドレスを表示してみましょう。何と、<font color=red>&a も &r も同じ値になっています</font>。</p>
+
+<p>　<font color=red>同じ変数に別の名前を付けたかのような感覚で変数を参照できるようにしたもの、それが参照なのです。</font></p>
+
+<hr>
+
+<p>　これは、上で書いた<font color=red>ポインタによる参照を簡便化する</font>ために使います。つまり、</p>
+
+<pre>void Zero(<font color=red>int&</font> r)
+{
+    <font color=red>r</font> = 0;
+}
+    .
+    .
+    .
+int a;
+Zero(<font color=red>a</font>);</pre>
+
+<p>のように使うのが普通です。</p>
+
+<p>　こうすれば、関数の定義の中で * を付けたり、変数を関数に渡すとき & を付けたりしなくてよいようになります。唯一必要なのは、int& r の & です。たったこれだけで、参照が可能になってしまうのです。</p>
+
+<hr>
+
+<p>　最後に、参照の細かいことをいくつか話して終わりにします。</p>
+
+<p>　先ず、参照は、引数でないときは、<font color=red>必ず初期化しなくてはなりません</font>。また、それは定義の部分で行わなくてはなりません。</p>
+
+<pre>int a;
+int& r;
+
+r = a;</pre>
+
+<p>のようには<font color=red>できません</font>。これはエラーになります。</p>
+
+<p>　また、このように、参照する変数を途中で変更することもできません。</p>
+
+<pre>int a, b;
+int& r = a;
+
+b = 0;
+r = b;</pre>
+
+<p>とやっても、r が b の参照になったりはしません。a に b の値が代入されるだけです。</p>
+
+<p>　ポインタと違って、融通は利かないということです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>「参照」を使えば、& や * を使わなくても変数を参照できる。</li>
+<li>参照は型名に & を付けた型で定義する。</li>
+<li>参照は必ず初期化しなければならない。</li>
+<li>参照は参照する変数を途中から変更することはできない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01036.html" target="main">第３６章　配列再々考</a> | <a href="cpp01038.html" target="main">第３８章　参照のしくみ</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.4.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

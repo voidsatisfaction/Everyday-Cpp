@@ -1,0 +1,146 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３４章 冶金工場４ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３４章　冶金工場４</font>
+</center>
+<hr>
+
+<p>　関数テンプレートをいろいろ使っていると、TYPE が自動的に決まったのでは困るとき、または自動的には決められないときなどがでてくると思います。今回はそういうときのお話です。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートを呼ぶときにテンプレート実引数を指定することができる。</li>
+<li>テンプレート実引数は関数名の後に &lt; &gt; で囲んで書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="cpp02031.html" target="main">第３１章</a>の話の中に p = TMAX(void*, str, &amp;num); というのが出てきました。p の型は void* 、str の型は char* 、num の型は int です。つまり、２つの参照先の型の違うアドレスを比較して、アドレスの大きい方を取得する処理です。</p>
+
+<p>　これと同じことを関数テンプレートの Max を使ってやってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Temp3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE Max(TYPE a, TYPE b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>void</font>* p;
+    <font color=blue>char</font>  str[<font color=darkcyan>100</font>];
+    <font color=blue>int</font>   num;
+
+    p = Max(str, &amp;num);
+    cout &lt;&lt; <font color=darkcyan>"より大きいアドレスは "</font>
+         &lt;&lt; p &lt;&lt; <font color=darkcyan>"です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>コンパイルエラー</th></tr>
+
+<tr><td><pre>Temp3.cpp(16) : 'TYPE Max(TYPE,TYPE)' : 'TYPE' があいまいです。
+                'int *' または 'char *' の可能性があります。</pre></td></tr>
+
+</table></center>
+
+<p>　あらら、コンパイルエラーが出てしまいました。「TYPE を char* にすればいいのか int* にすればいいのか分かりません」と言っています。どうやら、str の型は char* で、&amp;num の型は int* なので、TYPE を何にしていいのかが決められなかったようです。</p>
+
+<p>　このように TYPE を自動的に決められないとき、または自動的に決めて欲しくないときのために、<font color=red>TYPE を自分で決めることができます</font>。</p>
+
+<pre>p = Max<font color=red>&lt;void*&gt;</font>(str, &amp;num);</pre>
+
+<p>　このように関数名の後に &lt; &gt; を付けて、関数に引数を渡すときと同じように、テンプレート引数を指定します。このことを、<font color=red>テンプレート引数を明示的に指定する</font>、といいます。</p>
+
+<p>　テンプレート引数が何個もある場合、初めの何個かだけ指定することができます。例えば、</p>
+
+<pre>template &lt;typename TYPE, typename TYPE2&gt; void Disp(TYPE a, TYPE2, b);</pre>
+
+<p>で、TYPE を int にし、TYPE2 は自動で決めて欲しければ、</p>
+
+<pre>Disp&lt;int&gt;('0', '0');</pre>
+
+<p>とできるわけです。</p>
+
+<p>　では、このことを踏まえて Temp3.cpp を修正してみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Temp3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+TYPE Max(TYPE a, TYPE b)
+{
+    <font color=blue>return</font> (a &gt; b) ? a : b;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>void</font>* p;
+    <font color=blue>char</font>  str[<font color=darkcyan>100</font>];
+    <font color=blue>int</font>   num;
+
+    p = Max<font color=red>&lt;void*&gt;</font>(str, &amp;num);
+    cout &lt;&lt; <font color=darkcyan>"より大きいアドレスは "</font>
+         &lt;&lt; p &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>より大きいアドレスは 0x0065FD90 です。</pre></td></tr>
+
+</table></center>
+
+<p>　これで無事実行できるようになりました。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートを呼ぶときにテンプレート実引数を指定することができる。</li>
+<li>テンプレート実引数は関数名の後に &lt; &gt; で囲んで書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回はテンプレート引数にクラスを指定すると...ということをやります。Max を使って次回までに実験しておくのも面白いですね。</p>
+
+<p>　それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp02033.html" target="main">第３３章　冶金工場３</a> | <a href="cpp02035.html" target="main">第３５章　冶金工場５</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

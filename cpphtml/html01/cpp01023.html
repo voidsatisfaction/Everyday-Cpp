@@ -1,0 +1,196 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２３章 文字列の扱い方 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２３章　文字列の扱い方</font>
+</center>
+<hr>
+
+<p>　文字列とは文字の羅列のことで、" " で囲んだやつです。今までたくさん使ってきましたが、この文字列って一体どういうものなのでしょうか。今回はそこに焦点を当ててみます。</p>
+
+<hr>
+
+<p>　今回の要点は以下の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>文字列は文字コードの羅列で表す。</li>
+<li>文字列の終わりには０（ヌルターミネータ）を付ける。</li>
+<li>文字列は char 型の配列変数に入れる。</li>
+<li>文字列は配列変数の名前で扱う。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回、文字は文字コードで扱うと言いました。ですから、<font color=red>文字列は当然文字コードの羅列で表現します</font>。</p>
+
+<p>　ですが、ただ数字を並べただけではどこで文字列が終わるのかわかりません。そこで、文字列の最後には０を付ける決まりになっています。この０のことを<font color=red>ヌルターミネータ</font>と言います。ヌルはドイツ語で０、そしてターミネータは英語で終わらせるものという意味です。</p>
+
+<p>　例えば、"ABCDEFG" は、65, 66, 67, 68, 69, 70, 71, <font color=red>0</font> になります。</p>
+
+<p>　<font color=red>ヌルターミネータを忘れてプログラムを組んでしまうことは、初心者に多いバグの１つです。</font>気を付けましょう。</p>
+
+<p>　では、これを変数に入れるにはどうすればいいでしょうか？　データの羅列は配列変数（<a href="cpp01015.html" target="main">第１５章</a>参照）の得意分野ですから、これに任せればよいでしょう。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// String1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>char</font> szHello[] = <font color=darkcyan>"やぁ、こんちは"</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"「"</font> &lt;&lt; szHello &lt;&lt; <font color=darkcyan>"」を文字コードに変えると、"</font> &lt;&lt; endl;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>14</font>; i++)
+        cout &lt;&lt; (<font color=blue>int</font>)(<font color=blue>unsigned char</font>)szHello[i] &lt;&lt; <font color=darkcyan>", "</font>;
+
+    cout &lt;&lt; (<font color=blue>int</font>)(<font color=blue>unsigned char</font>)szHello[<font color=darkcyan>14</font>] &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"になります。"</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+<tr><td><pre>「やぁ、こんちは」をコードに変えると、
+130, 226, 130, 159, 129, 65, 130, 177, 130, 241, 130, 191, 130, 205, 0
+になります。</pre></td></tr>
+
+</tbody></table></center>
+
+<pre>char szHello[] = "やぁ、こんちは";</pre>
+
+<p>　これを見てわかるとおり、<font color=red>文字列は全角でも半角でも char 型を使います</font>。こうすれば、どちらでも入れることができるからです。全角文字は、例えば szHello[0] と szHello[1] のように、２つの変数にまたがって保存されます。</p>
+
+<p>　初期化も " " で囲んだお馴染みの形を使って行えます。</p>
+
+<p>　では、これを表示してみましょう。</p>
+
+<pre>cout  "「" &lt;&lt; <font color=red>szHello</font> &lt;&lt; "」を文字コードに変えると、" &lt;&lt; endl;</pre>
+
+<p>　このように、<font color=red>文字列は配列変数の名前で扱います</font>。これには細かい文法的な意味があるのですが、それについては後に話します。</p>
+
+<p>　では、文字コードがどんなもので、ヌルターミネータがあるかどうか表示してみましょう。</p>
+
+<pre>for(i = 0; i &lt; 14; i++)
+    cout &lt;&lt; (int)(unsigned char)<font color=red>szHello[i]</font> &lt;&lt; ", ";
+
+cout &lt;&lt; (int)(unsigned char)<font color=red>szHello[14]</font> &lt;&lt; endl
+     &lt;&lt; "になります。" &lt;&lt; endl;</pre>
+
+<p>　１文字１文字はふつうの配列変数と同じように、[ ] を使って表現します。</p>
+
+<p>　で、表示してみると、文字コードが表示され、きちんとヌルターミネータも入っていることもわかります。（ここでもキャストについては触れませんが、こうすれば文字コードを表示することができます。）</p>
+
+<hr>
+
+<p>　では、最後に szHello の中身を表にしてみましょう。</p>
+
+<center><table border=2>
+<colgroup><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle></colgroup>
+<tbody>
+
+<tr>
+<td colspan=2>や</td>
+<td colspan=2>ぁ</td>
+<td colspan=2>、</td>
+<td colspan=2>こ</td>
+</tr>
+
+<tr>
+<td>szHello[0]</td>
+<td>szHello[1]</td>
+<td>szHello[2]</td>
+<td>szHello[3]</td>
+<td>szHello[4]</td>
+<td>szHello[5]</td>
+<td>szHello[6]</td>
+<td>szHello[7]</td>
+</tr>
+
+<tr>
+<td>130</td>
+<td>226</td>
+<td>130</td>
+<td>159</td>
+<td>129</td>
+<td>65</td>
+<td>130</td>
+<td>177</td>
+</tr>
+
+<tr>
+<td colspan=2>ん</td>
+<td colspan=2>ち</td>
+<td colspan=2>は</td>
+<td colspan=2><font color=red>ヌルターミネータ</font></td>
+</tr>
+
+<tr>
+<td>szHello[8]</td>
+<td>szHello[9]</td>
+<td>szHello[10]</td>
+<td>szHello[11]</td>
+<td>szHello[12]</td>
+<td>szHello[13]</td>
+<td colspan=2><font color=red>szHello[14]</font></td>
+</tr>
+
+<tr>
+<td>130</td>
+<td>241</td>
+<td>130</td>
+<td>191</td>
+<td>130</td>
+<td>205</td>
+<td colspan=2><font color=red>0</font></td>
+</tr>
+
+</tbody></table></center>
+
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>文字列は文字コードの羅列で表す。</li>
+<li>文字列の終わりには０（ヌルターミネータ）を付ける。</li>
+<li>文字列は char 型の配列変数に入れる。</li>
+<li>文字列は配列変数の名前で扱う。</li>
+</ul>
+</font>
+<p><br></p>
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01022.html" target="main">第２２章　文字とは</a> | <a href="cpp01024.html" target="main">第２４章　文字列をいじろう</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.3.15</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

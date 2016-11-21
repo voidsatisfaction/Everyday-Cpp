@@ -1,0 +1,163 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - CIntArray クラス -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>CIntArray クラス</font>
+</center>
+
+<center><table border=1>
+
+<tr><th>IntArray.h</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.h</font>
+<font color=blue>#ifndef</font> __INTARRAY_H_INCLUDED__
+<font color=blue>#define</font> __INTARRAY_H_INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+
+<font color=blue>class</font> CIntArray
+{
+    <font color=green>// メンバ変数</font>
+<font color=blue>private</font>:
+    <font color=blue>int</font>* m_pnum;   <font color=green>// 動的配列</font>
+    <font color=blue>int</font>  m_nNumOf; <font color=green>// 配列の要素数</font>
+
+    <font color=green>// コンストラクタ・デストラクタ</font>
+<font color=blue>public</font>:
+    CIntArray(<font color=blue>const int</font> nNumOf);
+    CIntArray(<font color=blue>const</font> CIntArray&amp; rother);  <font color=green>// コピーコンストラクタ</font>
+    ~CIntArray();
+
+    <font color=green>// メンバへのアクセス関数</font>
+<font color=blue>public</font>:
+    <font color=blue>int</font> Get(<font color=blue>const int</font> index) <font color=blue>const</font>;
+    <font color=blue>void</font> Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value);
+
+    <font color=green>// インデックスのチェック</font>
+<font color=blue>private</font>:
+    <font color=blue>void</font> CheckIndex(<font color=blue>const int</font> index) <font color=blue>const</font>;
+
+    <font color=green>// その他の情報の取得</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Success() <font color=blue>const</font>;  <font color=green>// メモリの確保が成功したか</font>
+    <font color=blue>int</font> NumOf() <font color=blue>const</font>;     <font color=green>// 配列の要素数</font>
+    <font color=blue>int</font> SizeOf() <font color=blue>const</font>;    <font color=green>// 配列のサイズ</font>
+};
+
+<font color=green>// メモリの確保が成功したか</font>
+<font color=blue>inline bool</font> CIntArray::Success() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_pnum != NULL;
+}
+
+<font color=green>// 配列の要素数</font>
+<font color=blue>inline int</font> CIntArray::NumOf() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_nNumOf;
+}
+
+<font color=green>// 配列のサイズ</font>
+<font color=blue>inline int</font> CIntArray::SizeOf() <font color=blue>const</font>
+{
+    <font color=blue>return</font> m_nNumOf * <font color=blue>sizeof</font> *m_pnum;
+}
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>IntArray.cpp</th></tr>
+
+<tr><td><pre><font color=green>// IntArray.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;process.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"IntArray.h"</font>
+
+<font color=green>// コンストラクタ</font>
+CIntArray::CIntArray(<font color=blue>const int</font> nNumOf)
+{
+    m_pnum = <font color=blue>new int</font>[nNumOf];
+    <font color=blue>if</font>(m_pnum == NULL)
+       m_nNumOf = <font color=darkcyan>0</font>;
+    <font color=blue>else</font>
+    {
+        m_nNumOf = nNumOf;
+        memset(m_pnum, <font color=darkcyan>0</font>, nNumOf * <font color=blue>sizeof</font> *m_pnum);
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"コンストラクタが呼ばれました。"</font>
+         &lt;&lt; <font color=darkcyan>"要素数は "</font> &lt;&lt; m_nNumOf &lt;&lt; <font color=darkcyan>" です。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// コピーコンストラクタ</font>
+CIntArray::CIntArray(<font color=blue>const</font> CIntArray&amp; rother)
+{
+    <font color=blue>if</font>(rother.Success() == <font color=blue>false</font>)
+    {
+        m_pnum   = NULL; 
+        m_nNumOf = <font color=darkcyan>0</font>;
+    }
+    <font color=blue>else</font>
+    {
+        m_pnum = <font color=blue>new int</font>[rother.NumOf()];
+        <font color=blue>if</font>(m_pnum == NULL)
+        {
+            m_nNumOf = <font color=darkcyan>0</font>;
+            <font color=blue>return</font>;
+        }
+
+        <font color=green>// memcpy はメモリの内容をバイト単位でコピーする関数です</font>
+        memcpy(m_pnum, rother.m_pnum, rother.SizeOf());
+        m_nNumOf = rother.m_nNumOf;
+    }
+
+    cout &lt;&lt; <font color=darkcyan>"コピーコンストラクタが呼ばれました。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// デストラクタ</font>
+CIntArray::~CIntArray()
+{
+    <font color=blue>if</font>(m_pnum != NULL)
+        <font color=blue>delete</font> [] m_pnum;
+
+    cout &lt;&lt; <font color=darkcyan>"デストラクタが呼ばれました。"</font>
+         &lt;&lt; <font color=darkcyan>"要素数は "</font> &lt;&lt; m_nNumOf &lt;&lt; <font color=darkcyan>" でした。"</font> &lt;&lt; endl;
+}
+
+<font color=green>// メンバへのアクセス関数</font>
+<font color=blue>int</font> CIntArray::Get(<font color=blue>const int</font> index) <font color=blue>const</font>
+{
+    CheckIndex(index);
+    <font color=blue>return</font> m_pnum[index];
+}
+
+<font color=blue>void</font> CIntArray::Set(<font color=blue>const int</font> index, <font color=blue>const int</font> value)
+{
+    CheckIndex(index);
+    m_pnum[index] = value;
+}
+
+<font color=green>// インデックスのチェック</font>
+<font color=blue>void</font> CIntArray::CheckIndex(<font color=blue>const int</font> index) <font color=blue>const</font>
+{
+    <font color=blue>if</font>((<font color=blue>unsigned int</font>)index &lt; (<font color=blue>unsigned int</font>)m_nNumOf)
+        <font color=blue>return</font>;
+
+    cout &lt;&lt; <font color=darkcyan>"インデックスが不正です！"</font> &lt;&lt; endl
+         &lt;&lt; <font color=darkcyan>"値 : "</font> &lt;&lt; index &lt;&lt; endl;
+    exit(<font color=darkcyan>1</font>);
+}</pre></td></tr>
+
+</table></center>
+
+<hr>
+
+<p align=right><font size=-1><i>Last update was done on 2000.8.27</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

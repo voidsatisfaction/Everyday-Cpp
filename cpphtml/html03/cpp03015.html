@@ -1,0 +1,285 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１５章 伸縮自在 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１５章　伸縮自在</font>
+</center>
+<hr>
+
+<p>　構造体のメンバに可変長配列（<a href="../html01/cpp01073.html" target="main">第１部第７３章</a>参照）を入れることがあると思います。しかし、それをファイルに保存したいとき、処理が少し面倒です。もし、そのメンバ自体が可変長なら簡単なのですが...。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の最後のメンバを配列にしておくと、その構造体の後ろにあるデータを扱える。</li>
+<li>意図的に大きくメモリを確保し、その部分を配列メンバの要素とできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、ファイルの情報を構造体に入れ、それをメモリ上に保存しておくとします。簡単のため、情報はパス名（ファイルの位置名）、属性、サイズの３つとします。</p>
+
+<pre>struct SFileData
+{
+    char          szPath[_MAX_PATH];  // パス名
+    unsigned int  fAttribute;         // 属性
+    unsigned int  nFileSize;          // サイズ
+};</pre>
+
+<p>　しかし、パス名というのは最高文字数 _MAX_PATH に達するようなことは滅多にないことです。それどころか、半分にすら満たないことがほとんどです。</p>
+
+<p>　となると、szPath メンバはこんなにも確保するのはメモリがもったいないです。とはいえ、_MAX_PATH だけ必要な場合もあるので、サイズを小さくするということもできません。</p>
+
+<p>　では、どうすればいいのでしょうか？　<font color=red>可変長配列</font>（<a href="../html01/cpp01073.html" target="main">第１部第７３章</a>参照）を使うと、ある程度問題は解決しそうです。</p>
+
+<pre>struct SFileData
+{
+    char*         pszPath;     // パス名
+    unsigned int  nPathLen;    // パス名の長さ
+    unsigned int  fAttribute;  // 属性
+    unsigned int  nFileSize;   // サイズ
+};</pre>
+
+<p>　これでいい感じです。</p>
+
+<p>　さて、これをファイルに保存もできるようにしたいとします。この構造体を直接保存しようとすると、pszPath はポインタなので、そこには確保したメモリへの<font color=red>アドレス</font>が保存されてしまいます。そして、肝腎の確保したメモリの内容は保存されません。</p>
+
+<p>　となると、先ず nPathLen 以降のデータを保存し、次に確保したメモリの内容を保存するという、２回の処理が必要になります。前者のではそのまま保存できるというのに、これはちょっと面倒です。</p>
+
+<p>　<font color=red>可変長</font>でありながら<font color=red>メンバ変数にポインタを使わない</font>ということができれば、この問題も解決するのですが...。</p>
+
+<hr>
+
+<p>　そこで、次のような荒技が考えられます。</p>
+
+<p>　先ず、</p>
+
+<pre>struct SFileData
+{
+    unsigned int  nSize;      // 構造体のサイズ
+    unsigned int  fAttribute; // 属性
+    unsigned int  nFileSize;  // サイズ
+    char          szPath[1];  // パス名
+};</pre>
+
+<p>という構造体を作ります。szPath のサイズは<font color=red>１</font>です。</p>
+
+<p>　そして、この構造体を動的に確保します。この時、構造体のサイズよりも<font color=red>大きくメモリを確保</font>すれば、その<font color=red>余分に確保した部分は szPath を使うことで利用できます</font>。</p>
+
+<p>　こうすれば、ファイルに保存するときも nSize だけファイルに書き込めばいいようになりますね。</p>
+
+<p>　何とも荒っぽい方法ですが、この方法はＣ／Ｃ＋＋ではたまに使われます。この長さの変えられるメンバ szPath のことを、<font color=red>可変長配列メンバ</font>と呼びます。</p>
+
+<p>　よく使う所では、ビットマップの情報を保持する構造体 BITMAPINFO がそうなっています。</p>
+
+<p>　２５６色ビットマップは色を０〜２５５までの番号で扱います。そして、その番号に対応する色の情報をこの BITMAPINFO 構造体に保持しておきます。この色の情報のことを「パレット」と呼びます。</p>
+
+<p>　これは１６色ビットマップでも同じです。しかし、１６色と２５６色とではパレットの数は違います。ということは、このメンバは可変長だと便利ですね。</p>
+
+<p>　これがフルカラーになれば、パレットを使用しません。なので、このメンバは使わないということになります。このことから分かるように、要素数は１でなくてはならないわけではありません。</p>
+
+<hr>
+
+<p>　では、実際に SFileData 構造体を使ってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th colspan=2>プログラム</th></tr>
+
+<tr><td colspan=2 valign=top><pre><font color=green>// Sizing1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;memory.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdlib.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stddef.h&gt;</font>
+
+<font color=blue>#define</font> numof(array)   (<font color=blue>sizeof</font> (array) / <font color=blue>sizeof</font> *(array))
+
+<font color=blue>struct</font> SFileData
+{
+    <font color=blue>unsigned int</font>  nSize;      <font color=green>// 構造体のサイズ</font>
+    <font color=blue>unsigned int</font>  fAttribute; <font color=green>// 属性</font>
+    <font color=blue>unsigned int</font>  nFileSize;  <font color=green>// サイズ</font>
+    <font color=blue>char</font>          szPath[<font color=darkcyan>1</font>];  <font color=green>// パス名</font>
+};
+
+<font color=blue>void</font> Init();   <font color=green>// 初期化</font>
+<font color=blue>bool</font> Input();  <font color=green>// 入力</font>
+<font color=blue>void</font> Output(); <font color=green>// 出力</font>
+<font color=blue>void</font> Delete(); <font color=green>// メモリの解放</font>
+
+<font color=green>// ファイルのデータ</font>
+SFileData* g_apfdata[<font color=darkcyan>100</font>];
+<font color=green>// データ数</font>
+<font color=blue>int</font>        g_nData = <font color=darkcyan>0</font>;
+
+<font color=blue>int</font> main()
+{
+    Init();
+
+    <font color=blue>while</font>(Input());
+    Output();
+
+    Delete();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// 初期化
+// 一応ヌルポインタの値が０でないときのために...</font>
+<font color=blue>void</font> Init()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; numof(g_apfdata); i++)
+        g_apfdata[i] = NULL;
+}
+
+<font color=green>// 入力</font>
+<font color=blue>bool</font> Input()
+{
+    <font color=blue>if</font>(g_nData == numof(g_apfdata))
+        <font color=blue>return false</font>;
+
+    <font color=green>// 領域は動的確保しなくてはならないわけではありません</font>
+    <font color=blue>char</font>       bufFData[<font color=blue>sizeof</font> (SFileData) + _MAX_PATH];
+    SFileData* pfdTemp = (SFileData*)bufFData;
+    <font color=blue>char</font>*      pbufTemp;
+
+    cout &lt;&lt; <font color=darkcyan>"パス名、属性、サイズを入力して下さい"</font> &lt;&lt; endl;
+    cin &gt;&gt; pfdTemp-&gt;szPath &gt;&gt; pfdTemp-&gt;fAttribute
+        &gt;&gt; pfdTemp-&gt;nFileSize;
+    <font color=blue>if</font>(pfdTemp-&gt;nFileSize == <font color=darkcyan>0</font>)
+        <font color=blue>return false</font>;
+
+    <font color=green>// サイズは szPath までのバイト数＋文字列の長さ＋１
+    // 最後の１はヌルキャラクタの分です</font>
+    pfdTemp-&gt;nSize = offsetof(SFileData, szPath) +
+                     strlen(pfdTemp->szPath) + <font color=darkcyan>1</font>;
+
+    <font color=green>// メモリの確保</font>
+    pbufTemp = <font color=blue>new char</font>[pfdTemp-&gt;nSize];
+    <font color=blue>if</font>(pbufTemp == NULL)
+        <font color=blue>return false</font>;
+    g_apfdata[g_nData] = (SFileData*)pbufTemp;
+
+    <font color=green>// データのセット</font>
+    memcpy(g_apfdata[g_nData], pfdTemp, pfdTemp-&gt;nSize);
+
+    g_nData++;
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 出力</font>
+<font color=blue>void</font> Output()
+{
+    FILE* pfile;
+    <font color=blue>int</font>  i;
+
+    pfile = fopen(<font color=darkcyan>"Sizing1.dat"</font>, <font color=darkcyan>"wb"</font>);
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; g_nData; i++)
+        fwrite(g_apfdata[i], <font color=darkcyan>1</font>, g_apfdata[i]-&gt;nSize, pfile);
+
+    fclose(pfile);
+}
+
+<font color=green>// メモリの解放</font>
+<font color=blue>void</font> Delete()
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; g_nData; i++)
+        <font color=blue>delete</font> [] (<font color=blue>char</font>*)g_apfdata[i];
+}</pre></td></tr>
+
+<tr><th colspan=2>実行結果例</th></tr>
+
+<tr><td colspan=2 valign=top><pre>パス名、属性、サイズを入力して下さい
+C:\Program\Algorithms.html 32 412315
+パス名、属性、サイズを入力して下さい
+C:\Program\Registry\デスクトップアイコンの非表示法.txt 32 155
+パス名、属性、サイズを入力して下さい
+C:\Program\Program.ico 32 3638
+パス名、属性、サイズを入力して下さい
+C:\Program\カセットずらし\slide.html 32 6380
+パス名、属性、サイズを入力して下さい
+0 0 0</pre></td></tr>
+
+<tr><th colspan=2>Sizing1.dat</th></tr>
+
+<tr><th>１６進値</th><th>文字</th></tr>
+
+<tr>
+<td valign=top align=left><pre>27 00 00 00 20 00 00 00  9B 4A 06 00 43 3A 3A 5C
+72 6F 67 72 61 6D 5C 41  6C 67 6F 72 69 74 68 6D
+73 2E 68 74 6D 6C 00 43  00 00 00 20 00 00 00 9b
+00 00 00 43 3A 5C 50 72  6F 67 72 61 6D 5C 52 65
+67 69 73 74 72 79 5C 83  66 83 58 83 4E 83 67 83
+62 83 76 83 41 83 43 83  52 83 93 82 CC 94 F1 95
+5C 8E A6 96 40 2E 74 78  74 00 23 00 00 00 20 00
+00 00 36 0E 00 00 43 3A  5C 50 72 6F 67 72 61 6D
+5C 50 72 6F 67 72 61 6D  2E 69 63 6F 00 31 00 00
+00 20 00 00 00 EC 18 00  00 43 3A 5C 50 72 6F 67
+72 61 6D 5C 83 4A 83 5A  83 62 83 67 82 B8 82 E7
+82 B5 5C 73 6C 69 64 65  2E 68 74 6D 6C 00</pre></td>
+
+<td valign=top align=left><pre>'... ....J..C:\P
+rogram\Algorithm
+s.html.C... ....
+...C:\Program\Re
+gistry\デスクトッ
+ プアイコンの非表
+ 示法.txt.#... .
+..6...C:\Program
+\Program.ico.1..
+. .......C:\Prog
+ram\カセットずら
+し\slide.html.</pre></td>
+</tr>
+
+</tr>
+
+</table></center>
+
+<p>　このように、可変長配列メンバを持つ構造体は<font color=red>直接宣言しません</font>。つまり、</p>
+
+<pre>SFileData fdata;</pre>
+
+<p>のようにはしないのです。ただ、最後のメンバを使用しないときは、このようにしてもとりあえず実害はありません。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。今回のプログラムはちょっと長いですが、落ち着いて解析してみて下さいね。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の最後のメンバを配列にしておくと、その構造体の後ろにあるデータを扱える。</li>
+<li>意図的に大きくメモリを確保し、その部分を配列メンバの要素とできる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp03014.html" target="main">第１４章　整理整頓</a> | <a href="cpp03016.html" target="main">第１６章　仰山の引数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.10</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

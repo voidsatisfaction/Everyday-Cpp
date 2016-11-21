@@ -1,0 +1,151 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１４章 ループの仕方 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１４章　ループの仕方</font>
+</center>
+<hr>
+
+<p>　同じ処理を何度も行いたいときもあるでしょう。そんなとき、コピーアンドペーストなんて醜いことはもうやめて、これからは for を使いましょう。</p>
+
+<hr>
+
+<p>　今回の要点は次の通りです。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>for(i = 0; i &lt; [回数]; i++){ ... } でループになる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　では、</p>
+
+<pre>**********
+**********
+**********
+**********
+**********
+**********
+**********
+**********
+**********
+**********</pre>
+
+<p>なんかを書くことを考えます。ここで</p>
+
+<pre>cout &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl
+     &lt;&lt; "**********" &lt;&lt; endl;</pre>
+
+<p>とすることは可能です。ですが、これは</p>
+
+<pre>cout &lt;&lt; "**********" &lt;&lt; endl;</pre>
+
+<p>という処理を１０回繰り返すのと同じです。なら、この処理を１０回繰り返せばいいのです。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// For1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>10</font>; i++)
+    {
+        cout &lt;&lt; <font color=darkcyan>"**********"</font> &lt;&lt; endl;
+    }
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>**********
+**********
+**********
+**********
+**********
+**********
+**********
+**********
+**********
+**********</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　ループをする部分は</p>
+
+<pre>for(i = 0; i &lt; 10; i++){ ... }</pre>
+
+<p>です。こう書いて１０回 { } の中身を繰り返すのですから、</p>
+
+<pre><font color=red>for(i = 0; i &lt; &lt;回数&gt;; i++){ ... }</font></pre>
+
+<p><font color=red>で &lt;回数&gt; 回繰り返すことになります。</font></p>
+
+<p>　また、if と同じく、繰り返すものが１文なら { } はなくても構いません。</p>
+
+<hr>
+
+<p>　それにしても変な書き方ですよね。詳しくは次々回に話しますが、今回も少し話しましょう。</p>
+
+<p>　みなさんが同じ事をある回数だけ繰り返すとき、どのようにしますか？　おそらく<font color=red>今何回目かを数える</font>ことでしょう。</p>
+
+<p>　最初は０回で、１回する毎に回数を１ずつ増やしていき、回数が１０より小さかったらまた繰り返します。</p>
+
+<p>　<font color=red>それはコンピューターも全く同じです。</font></p>
+
+<p>　先ず、今何回目かを数えておくための変数が必要になります。それがここでは、i です。</p>
+
+<p>　最初 i は 0 で、１回処理を行う毎に i を 1 ずつ増やしていき、i が 10 より小さかったらまた処理を行うのです。</p>
+
+<p>　「最初...」が i = 0 にあたり、「１ずつ増やして...」が i++ にあたり、「i が 10 より...」が i &lt; 10 にあたります。</p>
+
+<p>　一見変な書式ですが、きちんと意味があることが分かります。</p>
+
+<hr>
+
+<p>　今回はとりあえずこれでお終いです。次回は for の話は一休みして少し別の話をします。その次にまた for の話に戻ります。</p>
+
+<p>　これが今回の要点でした。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>for(i = 0; i &lt; [回数]; i++){ ... } でループになる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01013.html" target="main">第１３章　さらに条件分岐</a> | <a href="cpp01015.html" target="main">第１５章　配列変数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.19</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

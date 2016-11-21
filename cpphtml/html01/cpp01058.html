@@ -1,0 +1,151 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５８章 構造体 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５８章　構造体</font>
+</center>
+<hr>
+
+<p>　今回はＣ＋＋プログラミングで非常に重要な<font color=red>クラス</font>の前身とも言うべき<font color=red>構造体</font>について話します。いろいろな変数をひとまとめに扱うというもので、様々なところで使うことになるでしょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の宣言の書式は struct &lt;名前&gt;{ &lt;変数宣言群&gt; }; 。</li>
+<li>構造体を使えば、関連のある変数をひとまとめに扱える。</li>
+<li>構造体の宣言は、型の宣言である。</li>
+<li>構造体の各要素はメンバと呼ぶ。</li>
+<li>メモリ上にある変数を実体（インスタンス）と、<br>構造体変数のことをオブジェクトと呼ぶ。</li>
+<li>メンバを使うときは、&lt;オブジェクト&gt;.&lt;メンバ&gt; とする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、話は<a href="cpp01015.html" target="main">第１５章</a>にさかのぼります。生徒の成績を配列変数で扱いましたね。今回はもっといろいろなデータを同時に扱うことにします。</p>
+
+<p>　先ずは名前で、そして国語、数学、英語の成績を扱いたいと思います。今までなら、</p>
+
+<pre><font color=blue>const int</font> NUMOF_STUDENTS = <font color=darkcyan>40</font>;
+<font color=blue>char</font>      szName[NUMOF_STUDENTS][<font color=darkcyan>16</font>];
+<font color=blue>int</font>       nJapanese[NUMOF_STUDENTS];
+<font color=blue>int</font>       nMath[NUMOF_STUDENTS];
+<font color=blue>int</font>       nEnglish[NUMOF_STUDENTS];</pre>
+
+<p>　とするところですね。しかし、このようにバラバラに扱うと、例えば各個人の成績の和を求める関数を作ろうとしたとき、</p>
+
+<pre><font color=blue>int</font> Sum(<font color=blue>int</font> nJapanese, <font color=blue>int</font> nMath, <font color=blue>int</font> nEnglish)
+{
+    <font color=blue>return</font> nJapanese + nMath + nEnglish;
+}</pre>
+
+<p>という風に３つもの引数をとる必要があります。（ただし、変数は全て<font color=red>内部変数</font>（<a href="cpp01009.html" target="main">第９章</a>参照）とします。これはＣ＋＋プログラムでは<a href="../htmlword/words020.html" target="words">よくあること</a>です。）</p>
+
+<p>　これが、各生徒のデータを表示する関数となると、４つもの引数をとる必要があります。こういうことは面倒であると同時に、各データの関係が有機的に繋がってきません。</p>
+
+<p>　これらのデータは<font color=red>生徒のデータ</font>という点で共通しているので、これらのデータを<font color=red>生徒のデータ</font>という<font color=red>新しい型</font>を作って扱えれば便利ですね。これを実現するのが<font color=red>構造体</font>です。</p>
+
+<hr>
+
+<p>　構造体は、次のように宣言します。</p>
+
+<pre><font color=blue>struct</font> SStudent
+{
+    <font color=blue>char</font> szName[<font color=darkcyan>16</font>];
+    <font color=blue>int</font>  nJapanese;
+    <font color=blue>int</font>  nMath;
+    <font color=blue>int</font>  nEnglish;
+};</pre>
+
+<p>　このように、</p>
+
+<pre><font color=red>struct &lt;名前&gt;
+{
+    &lt;変数宣言群&gt;
+};</font></pre>
+
+<p>とすると、これらの変数を<font color=red>ひとまとめに宣言できるような型</font>を作成することができます。（最後のセミコロンは忘れやすいので注意して下さい。）</p>
+
+<p>　szName など、構造体の要素は<font color=red>メンバ(member)</font>と呼ばれます。szName は変数なので、特に<font color=red>メンバ変数</font>と呼ばれます。</p>
+
+<p>　ここで注意することは、これは<font color=red>型</font>を作成しただけであって、<font color=red>まだ変数は宣言してはいない</font>ということです。このことは非常に重要です。</p>
+
+<hr>
+
+<p>　では、変数を作成してみましょう。</p>
+
+<pre>SStudent student;</pre>
+
+<p>　普通の変数の宣言と<font color=red>全く変わりません</font>ね。</p>
+
+<p>　<font color=red>Ｃ言語では</font> struct SStudent student; という形にしなければなりませんでしたが、Ｃ＋＋ではこの制限は無くなりました。</p>
+
+<p>　このように、「型」と「変数」は別な物です。変数となって初めてメモリ上に現れます。型は実行ファイル上では形のない物であり、型を操作するというのはナンセンスです。このことを踏まえて、メモリ上に存在しているある型の変数のことを、その型の<font color=red>「実体（インスタンス）」</font>と呼びます。</p>
+
+<p>　また、構造体は<font color=red>意味のある情報のかたまり</font>であるので、構造体変数のことを物に見立てて<font color=red>「オブジェクト」</font>とも呼びます。</p>
+
+<hr>
+
+<p>　で、あとはメンバの使い方です。</p>
+
+<pre>cout &lt;&lt; <font color=darkcyan>"名前 : "</font>   &lt;&lt; student.szName    &lt;&lt; endl
+     &lt;&lt; <font color=darkcyan>"　国語 : "</font> &lt;&lt; student.nJapanese &lt;&lt; <font color=darkcyan>" 点, "</font>
+        <font color=darkcyan>"数学 : "</font>   &lt;&lt; student.nMath     &lt;&lt; <font color=darkcyan>" 点, "</font>
+        <font color=darkcyan>"英語 : "</font>   &lt;&lt; student.nEnglish  &lt;&lt; <font color=darkcyan>" 点"</font> &lt;&lt; endl;</pre>
+
+<p>　このように、</p>
+
+<pre><font color=red>&lt;オブジェクト&gt;.&lt;メンバ&gt;</font></pre>
+
+<p>とすると、メンバを操作することができます。簡単ですね。</p>
+
+<p>　ついでですが、文字列を複数行に分けて書きたいときは、</p>
+
+<pre>char str[] = "文字列１"
+             "文字列２";</pre>
+
+<p>のように、文字列を２つ書くだけで構いません。これは別に複数行にしなくても問題ありません。</p>
+
+<pre>char str[] = "文字列１" "文字列２";</pre>
+
+<p>　ヌルターミネータは、最後の文字列にだけ付きます。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>構造体の宣言の書式は struct &lt;名前&gt;{ &lt;変数宣言群&gt; }; 。</li>
+<li>構造体を使えば、関連のある変数をひとまとめに扱える。</li>
+<li>構造体の宣言は、型の宣言である。</li>
+<li>構造体の各要素はメンバと呼ぶ。</li>
+<li>メモリ上にある変数を実体（インスタンス）と、<br>構造体変数のことをオブジェクトと呼ぶ。</li>
+<li>メンバを使うときは、&lt;オブジェクト&gt;.&lt;メンバ&gt; とする。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　今回は構造体の説明だけにしておきました。次回は、構造体を実際に使ってみます。</p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01057.html" target="main">第５７章　身長いくら？２</a> | <a href="cpp01059.html" target="main">第５９章　構造体２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.8</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

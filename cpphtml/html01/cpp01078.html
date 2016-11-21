@@ -1,0 +1,253 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７８章 逃げの一手 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７８章　逃げの一手</font>
+</center>
+<hr>
+
+<p>　printf を使うとき「\n が改行になる」といいました。他にも、何も説明しませんでしたが strcpy_ex（<a href="cpp01049.html" target="main">第４９章</a>参照）のところでタブを \t と扱っていました。この \ って何なんでしょうか？　今回はその問題に迫ってみたいと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>\ から始まる特殊な文字コードをエスケープシーケンスと呼ぶ。</li>
+<li>エスケープシーケンスは特殊な文字と数値を表現できる。</li>
+<li>\ の文字コードは '\\' で表す。</li>
+<li>エスケープシーケンスはソース上のみの話である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、改行の文字コードを取得してみましょう。</p>
+
+<pre>int letter = '
+';</pre>
+
+<p>　さて、バックスペースの文字コードを取得してみましょう。</p>
+
+<pre>int letter = ';</pre>
+
+<p>　さて、シングルクオーテーション (') の文字コードを...って、もういいですね。このように、「改行」「バックスペース」「シングルクオーテーション」などの文字コードは確かに存在するのですが、いざそれをソース上で表現しようとしても問題があります。改行やシングルクオーテーションはともかく、バックスペースに至っては何の事やら分かりません。</p>
+
+<p>　こういうときのために、Ｃ／Ｃ＋＋では<font color=red>エスケープシーケンス</font>というものを利用します。エスケープシーケンス（逃げ道）です。</p>
+
+<p>　例えば、改行は '\n' 、バックスペースは '\b' 、シングルクオーテーションは '\'' という風に、<font color=red>エスケープシーケンスは \ から始まる特殊な表記</font>になります。</p>
+
+<p>　エスケープシーケンスを表現するために \ を使いました。では、\ の文字コードを取得したいときはどうすればいいのでしょうか？</p>
+
+<pre>int letter = '\';</pre>
+
+<p>　おっと、これでは \' がシングルクオーテーションを表すエスケープシーケンスになってしまい、おかしくなってしまいます。\ は別に何の変哲もない普通の文字なのですが、このせいで <font color=red>\ もエスケープシーケンスを使って表現しなくてはいけない</font>のです。</p>
+
+<p>　<font color=red>\ を表すエスケープシーケンスは \\ です。</font>簡単ですね。</p>
+
+<pre>int letter = '\\';</pre>
+
+<p>　また、<font color=red>文字コードを直接使用する</font>こともできます。例えば文字コード４８（１６進数で３０）を表現したいときは</p>
+
+<pre>int letter = '\x30';</pre>
+
+<p>と、<font color=red>\x に２桁までの１６進数を続けます</font>。これは文字コードとして有効な値以外、例えば２５５（１６進数でＦＦ）などでも使えます。</p>
+
+<p>　他にもいろいろなエスケープシーケンスがあります。ちょっと表にしてみましょう。</p>
+
+<table align=left border=1>
+<tr>
+  <th>表現</th>
+  <th>意味</th>
+</tr>
+
+<tr>
+  <td>\a</td>
+  <td>警告音（ビープ音）</td>
+</tr>
+
+<tr>
+  <td>\b</td>
+  <td>バックスペース</td>
+</tr>
+
+<tr>
+  <td>\f</td>
+  <td>改ページ（※１）</td>
+</tr>
+
+<tr>
+  <td>\n</td>
+  <td>改行（※２）</td>
+</tr>
+
+<tr>
+  <td>\r</td>
+  <td>キャリッジリターン（※２）</td>
+</tr>
+
+<tr>
+  <td>\t</td>
+  <td>水平タブ</td>
+</tr>
+
+<tr>
+  <td>\v</td>
+  <td>垂直タブ（※１）</td>
+</tr>
+
+<tr>
+  <td>\?</td>
+  <td>半角クエスチョンマーク（※３）</td>
+</tr>
+
+<tr>
+  <td>\'</td>
+  <td>半角シングルクオーテーション</td>
+</tr>
+
+<tr>
+  <td>\"</td>
+  <td>半角ダブルクオーテーション</td>
+</tr>
+
+<tr>
+  <td>\\</td>
+  <td>半角円マーク（バックスラッシュ）</td>
+</tr>
+
+<tr>
+  <td>\ooo</td>
+  <td>８進数（３桁までの８進数を ooo に書く）（※４）</td>
+</tr>
+
+<tr>
+  <td>\xhh</td>
+  <td>１６進数（２桁までの１６進数を hh に書く）（※５）</td>
+</tr>
+</table>
+
+<p>※１：プリンタ出力用の制御文字です。</p>
+
+<p>※２：ＯＳによって意味が変わってきます。</p>
+
+<p>※３：「３文字表記」と区別するために必要になります。３文字表記についてはここでは話しませんが、? を２つ以上連続して書きたいときには \? を使うようにして下さい。</p>
+
+<p>※４：なるべく３桁書くようにして下さい。こういう癖をつけておけば、この後に数字が続くときにおこるバグを防げます。</p>
+
+<p>※５：先頭の０は桁数に含みません。文字列中で例えば数値の１０（１６進数で a ）と小文字の b を連ねたものを表現したいときは、"\xab" とはできず、"\x0ab" ともできません。<a href="cpp01058.html" target="main">第５８章</a>で紹介した方法、"\xa""b"を使えば問題ありません。</p>
+
+<p><br clear=left><br></p>
+
+<hr>
+
+<p>　さて、ここで注意することがあります。このエスケープシーケンスは「特殊な文字コードをソース上で表すための手段」に過ぎません。<font color=red>コンパイルされると対応する文字コードに変換されるのです。</font></p>
+
+<p>　分かっている人にとってはくどいでしょうが、プログラムを組んでこのことを確認してみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Escape1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>void</font> DumpLetterCode(<font color=blue>const char</font>* str)
+{
+    <font color=blue>for</font>(; *str; str++)
+        printf(<font color=darkcyan>"%02X "</font>, (<font color=blue>unsigned char</font>)*str);
+    cout &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    DumpLetterCode(<font color=darkcyan>"\"\'\?\\"</font>);
+    DumpLetterCode(<font color=darkcyan>"\a\b\t\n\v\f\r"</font>);
+    DumpLetterCode(<font color=darkcyan>"\xab" "\x0ab" "\xa" "b"</font>);
+    DumpLetterCode(<font color=darkcyan>"\11111"</font>);
+    DumpLetterCode(<font color=darkcyan>"c:\new\abc"</font>);
+    DumpLetterCode(<font color=darkcyan>"c:\\new\\abc"</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>22 27 3F 5C 
+07 08 09 0A 0B 0C 0D 
+AB AB 0A 62 
+49 31 31 
+63 3A 0A 65 77 07 62 63 
+63 3A 5C 6E 65 77 5C 61 62 63 </pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　最初は "\"\'\?\\" です。これは ", ', ?, \ の４つの文字コードを連ねた文字列になるはずです。それぞれ文字コードは１６進数で２２，２７，３Ｆ，５Ｃなのですが...ちゃんとそうなっているみたいですね。</p>
+
+<p>　見た目は５Ｃ，２２，５Ｃ，２７，５Ｃ，３Ｆ，５Ｃ，５Ｃに見えるのですが、それはソース上だけの話です。コンパイルされてしまえば、<font color=red>それぞれがエスケープシーケンスに対応する文字コード<font size=+2>１つ</font></font>になってしまいます。</p>
+
+<p><br></p>
+
+<p>　次は特殊な文字コードを集めた "\a\b\f\n\r\t\v" です。このような特殊な機能を持った特殊な文字のことを制御文字といいます。これらの文字コードは...０７〜０Ｄになっていますね。そうなるように並べましたから。</p>
+
+<p>　これも、見た目は５Ｃ，６１，５Ｃ，６２，... に見えるのですが、それはソース上だけの話だということがよく分かるでしょう。</p>
+
+<p><br></p>
+
+<p>　次は上の表で※５に書いてあることを実践したまでです。分かりやすいように "\xab" "\x0ab" "\xa" "b" と分けて書いてあります。</p>
+
+<p>　※５に書いてあるとおりなら、b の文字コードは６２なのでＡＢ，ＡＢ，０Ａ，６２になるはずです。実際にも...そうなっていますね。</p>
+
+<p><br></p>
+
+<p>　次はよくあるバグの１つです。慣れていても、たまにやってしまうバグです。</p>
+
+<p>　"c:\new\abc" というのはあるフォルダのパス名です（「パス」とはファイルやフォルダの位置のことです）。各フォルダ名を \ で区切るというのはＷｉｎｄｏｗｓではよくやることですが、ソース上では \ はエスケープシーケンスの印になってしまいます。普通はエラーになるのですが、ここではたまたま \n も \a も意味を持っています。なので、エラーは出ません。</p>
+
+<p>　実行結果を見て下さい。\n のところは０Ａに、\a のところは０７になってしまっています。２番目の結果と照らし合わしてみると、\n と \a になってしまっていることは一目瞭然です。</p>
+
+<p>　なので、ここは正しくは次のように <font color=red>"c:\\new\\abc"</font> とすべきなのです。こうすると、きちんと \\n は５Ｃ，６Ｅに、\\a は５Ｃ，６１になってくれていますね。</p>
+
+<p>　<font color=red>パス名では \ を \\ にし忘れることがよくあるので気を付けましょう。</font></p>
+
+<p>　そして、コンパイル後でも \\ と、つまり５Ｃ，５Ｃとなっていると勘違いする人も多いです。エスケープシーケンスはあくまでソース上で表現できないものを表現するための<font color=red>逃げ道</font>なのであって、<font color=red>メモリ上の表現までこうなっているのでは<font size=+2>ない</font></font>のです。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>\ から始まる特殊な文字コードをエスケープシーケンスと呼ぶ。</li>
+<li>エスケープシーケンスは特殊な文字と数値を表現できる。</li>
+<li>\ の文字コードは '\\' で表す。</li>
+<li>エスケープシーケンスはソース上のみの話である。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　もう今回で基本的な事項は全て話してしまいました。まだまだいろいろ話したいこともあるのですが、ちょっと重箱の隅をつつくような感じになってしまいます。そういったことは第３部で行いたいと思います。お楽しみに。</p>
+
+<p>　残りあと２章は、言語の話ではなく、その他で重要なことについての話や、次の部のイントロダクションのようなものにしたいと思っています。</p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01077.html" target="main">第７７章　リテラル文字列</a> | <a href="cpp01079.html" target="main">第７９章　Significance of Errors</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.6.16</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１３章 関数のすげ替え -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１３章　関数のすげ替え</font>
+</center>
+<hr>
+
+<p>　今回は、CTextFile で Open したときはテキストモードで開かれるようにしたいと思います。果たして、その方法とは？</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>同じ形の関数を派生先で再定義することをオーバーライドと呼ぶ。</li>
+<li>オーバーライドされた関数は、オブジェクトの型によって呼び分けられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の ReadLine 関数は、実はテキストモードで開かれていることを前提としたコードになっていました。よく見ると、改行コードが '\n' １文字であるという想定されていますね。これでは<a href="../htmlword/words023.html" target="words">環境依存</a>になってしまいます。</p>
+
+<p>　だから、というわけでもありませんが、さっさとテキストモードで開くように変えてしまいたいものです。ということで、今回はそれをやってみたいと思います。</p>
+
+<p>　とはいえ、どうすればいいのでしょうか？　新しく OpenText 関数でも作ったらいいのでしょうか？　しかし、ファイルを開く関数は <font color=red>Open で統一したい</font>ものです。</p>
+
+<p>　ということで、とりあえず Open を作ってみましょう。オーバーロードと違い、今度は引数の型が同じになってしまいますが大丈夫なのでしょうか？</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// TextFile.h</font>
+<font color=blue>#ifndef</font> __TEXTFILE_H__INCLUDED__
+<font color=blue>#define</font> __TEXTFILE_H__INCLUDED__
+
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=blue>const int</font> TF_OVERFLOW = EOF - <font color=darkcyan>1</font>;  <font color=green>// オーバーフロー</font>
+
+<font color=blue>class</font> CTextFile : <font color=blue>public</font> CFile
+{
+    <font color=green>// ファイルを開く</font>
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags);
+                   <font color=green>// ファイルを開く</font>
+
+<font color=blue>private</font>:
+    <font color=blue>bool</font> ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize);
+                   <font color=green>// フラグの調整</font>
+
+    <font color=green>// 他のメンバは省略</font>
+};
+
+<font color=green>// インライン関数の実装は省略</font>
+
+<font color=blue>#endif</font></pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// TextFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"MainDefs.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=green>// ファイルを開く</font>
+<font color=blue>bool</font> CTextFile::Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags)
+{
+    Close();
+
+    <font color=blue>char</font> bufFlags[<font color=darkcyan>8</font>];
+    <font color=blue>if</font>(ModifyFlags(pszFlags, bufFlags, numof(bufFlags)) == <font color=blue>false</font>)
+        <font color=blue>return false</font>;
+
+    m_pfile = fopen(pszFile, bufFlags);
+    <font color=blue>return</font> (m_pfile != NULL);
+}
+
+<font color=green>// フラグの調整</font>
+<font color=blue>bool</font> CTextFile::ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize)
+{
+    <font color=blue>bool</font> bBinary;  <font color=green>// 'b' の指定があるかどうか</font>
+
+    bBinary = (strchr(pszSource, <font color=darkcyan>'b'</font>) != NULL);
+
+    <font color=green>// フラグが多すぎるときは false を返す</font>
+    <font color=blue>if</font>((<font color=blue>int</font>)strlen(pszSource) - bBinary &gt; nSize - <font color=darkcyan>1</font>)
+        <font color=blue>return false</font>;
+
+    <font color=green>// 強制的にテキストモードで開きます
+    // 'b' 以外の文字だけコピーします</font>
+    <font color=blue>for</font>(; *pszSource; pszSource++)
+    {
+        <font color=blue>if</font>(*pszSource != <font color=darkcyan>'b'</font>)
+        {
+            *pszDest = *pszSource;
+            pszDest++;
+        }
+    }
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 他の実装は省略</font></pre></td></tr>
+
+</table></center>
+
+<p>　どうやら、エラーは出なかったようです。</p>
+
+<p>　では、実行してみましょう。どちらで開かれたか分かるように、関数にちょっと細工をしておきました。</p>
+
+<center><table border=1>
+
+<tr><th colspan=2>プログラム２</th></tr>
+
+<tr><td colspan=2><pre><font color=green>// TextFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"MainDefs.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=green>// ファイルを開く</font>
+<font color=blue>bool</font> CTextFile::Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags)
+{
+    cout &lt;&lt; <font color=darkcyan>"CTextFile::Open"</font> &lt;&lt; endl;
+    <font color=green>// 後は同じ</font>
+}
+
+<font color=green>// フラグの調整</font>
+<font color=blue>bool</font> CTextFile::ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize)
+{
+    cout &lt;&lt; <font color=darkcyan>"CTextFile::ModifyFlags"</font> &lt;&lt; endl;
+    <font color=green>// 後は同じ</font>
+}
+
+<font color=green>// 他の実装は省略</font></pre></td></tr>
+
+<tr><th colspan=2>プログラム３</th></tr>
+
+<tr><td colspan=2><pre><font color=green>// File.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"MainDefs.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+
+<font color=green>// ファイルを開く</font>
+<font color=blue>bool</font> CFile::Open(<font color=blue>const char</font>* pszFile, <font color=blue>const char</font>* pszFlags)
+{
+    cout &lt;&lt; <font color=darkcyan>"CFile::Open"</font> &lt;&lt; endl;
+    <font color=green>// 後は同じ</font>
+}
+
+<font color=green>// フラグの調整</font>
+<font color=blue>bool</font> CFile::ModifyFlags(<font color=blue>const char</font>* pszSource, <font color=blue>char</font>* pszDest, <font color=blue>int</font> nSize)
+{
+    cout &lt;&lt; <font color=darkcyan>"CFile::ModifyFlags"</font> &lt;&lt; endl;
+    <font color=green>// 後は同じ</font>
+}
+
+<font color=green>// 他の実装は省略</font></pre></td></tr>
+
+<tr><th>プログラム４</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// TestFile.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"File.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"TextFile.h"</font>
+
+<font color=blue>void</font> Viss(<font color=blue>const int</font> num)
+{
+    cout &lt;&lt; <font color=darkcyan>"Viss : No."</font> &lt;&lt; num &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CFile     bin;
+    CTextFile txt;
+
+    Viss(<font color=darkcyan>1</font>);
+    bin.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    Viss(<font color=darkcyan>2</font>);
+    txt.Open(<font color=darkcyan>"Test.txt"</font>, <font color=darkcyan>"r"</font>);
+    Viss(<font color=darkcyan>3</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>Viss : No.1
+CFile::Open
+CFile::ModifyFlags
+Viss : No.2
+CTextFile::Open
+CTextFile::ModifyFlags
+Viss : No.3</pre></td>
+</tr>
+
+</table></center>
+
+<p>　CFile のオブジェクトからは CFile::Open と CFile::ModifyFlags が、CTextFile のオブジェクトからは CTextFile::Open と CTextFile::ModifyFlags が呼ばれていることが分かります。</p>
+
+<p>　つまり、派生元の関数を派生先で再定義すると、<font color=red>呼び出したオブジェクトの型にあった方の関数が呼ばれる</font>のです。</p>
+
+<p>　このように、<font color=red>派生元の関数を派生先で再定義すること</font>を<font color=red>オーバーライド</font>と呼びます。これで当初の目的は達せられました。</p>
+
+<hr>
+
+<p>　早いですが、これで終わりです。１章につき１つずつ、ゆっくりとやっていきましょう。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>同じ形の関数を派生先で再定義することをオーバーライドと呼ぶ。</li>
+<li>オーバーライドされた関数は、オブジェクトの型によって呼び分けられる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02012.html" target="main">第１２章　第３のアクセス指定子</a> | <a href="cpp02014.html" target="main">第１４章　仮想関数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

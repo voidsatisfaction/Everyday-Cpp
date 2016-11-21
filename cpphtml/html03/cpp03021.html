@@ -1,0 +1,150 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２１章 call itself -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２１章　call itself</font>
+</center>
+<hr>
+
+<p>　この章からは、しばらく言語の話と言うよりは、アルゴリズムの話になります。その第１回目として、自分自身を呼ぶ関数について話します。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>自分自身を呼ぶ関数を再帰関数と呼ぶ。</li>
+<li>終了条件をきちんとしないと、無限ループになる可能性がある。</li>
+<li>あまり多く再帰すると、スタックオーバーフローが起こることがある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　唐突ですが、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Recurse1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func()
+{
+    cout &lt;&lt; <font color=darkcyan>"forever"</font> &lt;&lt; endl;
+    Func();
+}
+
+<font color=blue>int</font> main()
+{
+    Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>forever
+forever
+forever
+forever
+   :
+   :
+   :
+   :
+（エラーが出るまで続く）</pre></td>
+</tr>
+
+</table></center>
+
+<p>　何と、<font color=red>Func 関数内で Func 関数を呼びだしています</font>。自分を呼んでいるわけです。確かに、Func の定義内では既に Func の戻り値の型と、引数の情報は分かっています。呼べても不思議はありません。</p>
+
+<p>　このように、自分自身を呼ぶことを<font color=red>再帰呼び出し</font>、そして再帰呼び出ししている関数のことを<font color=red>再帰関数</font>と呼びます。</p>
+
+<p>　しかし、上の結果を見て分かるとおり、Func に入ったが最後<font color=red>関数を抜けることができなくなりました</font>。先ず、Func を呼ぶ。その中で Func が呼ばれ、またその中で Func が呼ばれる。これをずっと続けるわけですから、関数を抜けられないのも当然ですね。</p>
+
+<p>　で、抜けられないままずっと呼び続けていると<font color=red>スタックオーバーフロー</font>が起きます（<a href="../html01/cpp01061.html" target="main">第１部第６１章</a>参照）。実は、どこから呼ばれても呼び出し元へ戻れるようにするために、関数を呼ぶときにスタックへ<font color=red>戻る場所のアドレス（リターンアドレス）</font>を渡します。これがずっと続くので、スタックオーバーフローが起こるわけです。</p>
+
+<hr>
+
+<p>　ではどうすればいいかといえば、それは特に難しいことではありません。<font color=red>終了条件を付けてやればいいだけ</font>です。例えば、こういう風にします。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Recurse2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> i;
+
+<font color=blue>void</font> Func()
+{
+    cout &lt;&lt; i &lt;&lt; endl;
+    i--;
+    <font color=blue>if</font>(i &gt; <font color=darkcyan>0</font>)
+        Func();
+}
+
+<font color=blue>int</font> main()
+{
+    i = <font color=darkcyan>5</font>;
+    Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>5
+4
+3
+2
+1</pre></td>
+</tr>
+
+</table></center>
+
+<p>　グローバル変数 i を作り、それに値を入れておくと、カウントダウンをしていきます。</p>
+
+<p>　先ず、Func が呼ばれます。初めは i は５です。で、cout が 5 が表示されます。</p>
+
+<p>　次に i をデクリメントし、if 文で i が正の時だけ Func を呼ぶようにしてあります。つまり、<font color=red>i が０以下になった時点で Func が呼ばれなくなります</font>。</p>
+
+<p>　すると、i が０以下になったときに、その Func 関数は終了します。そして、呼び出し元の Func 関数も、関数の終わりが来て終了します。このように、堰を切ったように次々と Func 関数が終わっていき、最後に一番初めに Func を呼んだ場所へ戻ります。</p>
+
+<p>　このように、終了条件を入れてやれば再帰関数は簡単に終わらせることができます。</p>
+
+<hr>
+
+<p>　短いですが、今回はこれで終わりです。これだけでは <font color=red>for 文でいいじゃないかという処理</font>ですね。実用的な話は次回以降に話すことにします。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>自分自身を呼ぶ関数を再帰関数と呼ぶ。</li>
+<li>終了条件をきちんとしないと、無限ループになる可能性がある。</li>
+<li>あまり多く再帰すると、スタックオーバーフローが起こることがある。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03020.html" target="main">第２０章　トークンを結合せよ</a> | <a href="cpp03022.html" target="main">第２２章　call itself ２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.23</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

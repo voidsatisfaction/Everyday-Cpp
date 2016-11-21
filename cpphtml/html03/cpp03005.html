@@ -1,0 +1,273 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５章 飛んでいきな -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５章　飛んでいきな</font>
+</center>
+<hr>
+
+<p>　この章ではＣ／Ｃ＋＋で悪名高い goto 文について話します。「goto 文は絶対悪だ」という人もいますが、気をつけて使えば有用なこともあります。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>&lt;名前&gt;: をラベルという。</li>
+<li>goto &lt;ラベル名&gt;; でラベルのある行に飛べる。</li>
+<li>goto 文はエラー処理と多重ループの抜け出しに利用できる。</li>
+<li>変な goto の使い方は厳禁。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　ファイル２つのデータを使ってもう１つのファイルにデータを書き込むとします。すると、同時にファイルを３つ開くことになります。</p>
+
+<p>　ファイルを使うときは必ず<font color=red>ファイルが開けない可能性</font>を考える必要があります。そして、使い終わったら必ず<font color=red>ファイルを閉じる</font>ことも必要です。</p>
+
+<p>　さて、これらを踏まえてファイルを３つ開いてみましょう。</p>
+
+<table align=left border=1>
+<tr><td><pre><font color=blue>bool</font> Func()
+{
+    FILE *pf1, *pf2, *pf3;
+    <font color=blue>bool</font> bRet = <font color=blue>false</font>;
+
+    pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+    pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+    pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+
+    <font color=blue>if</font>(!(pf1 == NULL || pf2 == NULL || pf3 == NULL))
+    {
+        Func2(pf1, pf2, pf3);
+        bRet = <font color=blue>true</font>;
+    }
+
+    <font color=blue>if</font>(pf1 != NULL)
+        fclose(pf1);
+    <font color=blue>if</font>(pf2 != NULL)
+        fclose(pf2);
+    <font color=blue>if</font>(pf3 != NULL)
+        fclose(pf3);
+
+    <font color=blue>return</font> bRet;
+}</pre></td></tr>
+</table>
+
+<p>　一旦ファイルを全て開いています。しかし、ファイル１が開けなかったときはすぐに関数を終わらせたのでいいですし、いろいろ無駄があることが分かります。ファイル１、ファイル２を開くのに失敗してもファイル３を作ろうとしてしまうというのも問題ですね。</p>
+
+<p><br clear=left><br></p>
+
+<p>　ということで、ファイルを開く毎にエラー判定してみましょう。</p>
+
+<table align=left border=1>
+<tr><td><pre><font color=blue>bool</font> Func()
+{
+    FILE *pf1, *pf2, *pf3;
+    <font color=blue>bool</font> bRet = <font color=blue>false</font>;
+
+    pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf1 == NULL)
+        <font color=blue>return false</font>;
+
+    pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf2 == NULL)
+    {
+        fclose(pf1);
+        <font color=blue>return false</font>;
+    }
+
+    pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(pf3 != NULL)
+    {
+        Func2(pf1, pf2, pf3);
+        fclose(pf3);
+        bRet = <font color=blue>true</font>;
+    }
+
+    fclose(pf1);
+    fclose(pf2);
+
+    <font color=blue>return</font> bRet;
+}</pre></td></tr>
+</table>
+
+<p>　fclose(pf1); が２つもありますし、プログラムも非常に読みにくく分かりにくいです。</p>
+
+<p><br clear=left><br></p>
+
+<table align=left border=1>
+<tr><td><pre><font color=blue>bool</font> Func()
+{
+    FILE *pf1, *pf2, *pf3;
+    <font color=blue>bool</font> bRet = <font color=blue>false</font>;
+
+    pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf1 == NULL)
+        <font color=red>&lt;return bRet; の行へ飛ぶ&gt;</font>
+
+    pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf2 == NULL)
+        <font color=red>&lt;fclose(pf1); の行へ飛ぶ&gt;</font>
+
+    pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(pf3 == NULL)
+        <font color=red>&lt;fclose(pf2); の行へ飛ぶ&gt;</font>
+
+    Func2(pf1, pf2, pf3);
+    bRet = <font color=blue>true</font>;
+
+    fclose(pf3);
+    fclose(pf2);
+    fclose(pf1);
+
+    <font color=blue>return</font> bRet;
+}</pre></td></tr>
+</table>
+
+<p>　もし、このときこのようにできたらすっきりすると思います。</p>
+
+<p><br clear=left><br></p>
+
+<p>　Ｃ／Ｃ＋＋言語には、このようなときに便利な命令があります。それが <font color=red>goto</font> です。</p>
+
+<table align=left border=1>
+<tr><td><pre><font color=blue>bool</font> Func()
+{
+    FILE *pf1, *pf2, *pf3;
+    <font color=blue>bool</font> bRet = <font color=blue>false</font>;
+
+    pf1 = fopen(szFile1, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf1 == NULL)
+        <font color=red>goto ERROR_1;</font>
+
+    pf2 = fopen(szFile2, <font color=darkcyan>"r"</font>);
+    <font color=blue>if</font>(pf2 == NULL)
+        <font color=red>goto ERROR_2;</font>
+
+    pf3 = fopen(szFile3, <font color=darkcyan>"w"</font>);
+    <font color=blue>if</font>(pf3 == NULL)
+        <font color=red>goto ERROR_3;</font>
+
+    Func2(pf1, pf2, pf3);
+    bRet = <font color=blue>true</font>;
+
+    fclose(pf3);
+<font color=red>ERROR_3:</font>
+    fclose(pf2);
+<font color=red>ERROR_2:</font>
+    fclose(pf1);
+<font color=red>ERROR_1:</font>
+
+    <font color=blue>return</font> bRet;
+}</pre></td></tr>
+</table>
+
+<p>　ERROR_1: と、<font color=red>&lt;名前&gt;:</font> のようになっている部分があります。これが<font color=red>ラベル</font>です。ラベル自体は何の動作も行いません。</p>
+
+<p>　goto はこの<font color=red>ラベルの位置へと飛んでいく</font>命令です。</p>
+
+<p>　ラベルのスコープ（<a href="../html01/cpp01068.html" target="main">第１部第６８章</a>参照）はその関数の中全体です。<font color=red>goto 文よりも前にラベルがあっても構いません。</font></p>
+
+<p>　ラベルの後には必ず何か文が来なければいけません。ブロックの終わりに飛ぶときは、ラベルの後に空文を入れておく必要があります。</p>
+
+<p>　また、変数の宣言をまたいで飛ぶこともできません。またいでしまうときは、変数の宣言を goto 文の前にもっていく必要があります。</p>
+
+<p><br clear=left><br></p>
+
+<p>　このように、<font color=red>goto 文はエラー処理の時に活躍する</font>のです。</p>
+
+<hr>
+
+<p>　この goto 文は他にも<font color=red>多重ループを抜ける</font>ときにも利用できます。break 文では１つのループしか抜けることができません。そこで、goto 文を利用すれば多重ループも抜けることができます。</p>
+
+<center><table border=1><tr>
+<td><pre><font color=blue>void</font> Func2(FILE* pf1, FILE* pf2, FILE* pf3)
+{
+    <font color=blue>int</font> i, nNumbers;
+    <font color=blue>int</font> num1, num2;
+
+    nNumbers = <font color=darkcyan>0</font>;
+    <font color=blue>while</font>(<font color=darkcyan>1</font>)
+    {
+        <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>8</font>; i++)
+        {
+            <font color=green>// ショートサーキット（<a href="cpp03002.html" target="main">第２章</a>参照）</font>
+            <font color=blue>if</font>(fscanf(pf1, <font color=darkcyan>"%d"</font>, &amp;num1) == EOF ||
+               fscanf(pf2, <font color=darkcyan>"%d"</font>, &amp;num2) == EOF)
+            {
+                fputc(<font color=darkcyan>'\n'</font>, pf3);
+                <font color=blue>goto</font> LAST;
+            }
+
+            fprintf(pf3, <font color=darkcyan>"%d "</font>, num1 + num2);
+            nNumbers++;
+        }
+        fputc(<font color=darkcyan>'\n'</font>, pf3);
+    }
+
+LAST:
+    fprintf(pf3, <font color=darkcyan>"\n%d 回の計算を行いました。"</font>, nNumbers);
+}</pre></td>
+</tr></table></center>
+
+<p>　２つのファイルに書いてある数をそれぞれ足し、その合計をもう１つのファイルに書いていくことにしました。</p>
+
+<p>　８つの数を書き終えると改行するようにしています。fputc は１文字だけファイルに書き込む関数です。</p>
+
+<p>　fscanf 関数は、ファイルの終端に達すると EOF を返します（EOF はマクロであり、置き換えられるテキストは (-1) です）。どちらかのファイルが終わるとループを抜けることにします。</p>
+
+<p>　しかし、ここに break 文を書いても抜けるのは for ループだけです。while ループまでは抜けられず、for ループの後に while を抜けるかどうかを判定するコードが必要になります。しかし、goto 文を使えば余計な処理を増やさずにループを抜けることができるのです。</p>
+
+<hr>
+
+<p>　さて、goto 文でいろいろな所に飛べるからといって、<font size=+2 color=red>好き勝手することは厳禁</font>です。goto が悪名高いのは、この好き勝手ができるということにあります。</p>
+
+<p>　例えば、for 文の、while 文の代わりに if, goto 文を使うことはできます。しかし、そういうときは for 文、while 文を使った方が意味がよく分かります。わざわざ goto 文を使って分かりにくくすることはしてはいけません。</p>
+
+<p>　そして、１重ループをぬけるのに goto 文を使うこともできます。ループの先頭に戻るというのも goto 文で可能です。しかし、これらには break 文、continue 文というものが用意されているので、これらを使うようにしましょう。</p>
+
+<p>　また、<font size=+3 color=red>ブロックの外から中へ goto してはいけません</font>。ブロック内というのは、普通はある条件を満たしている時だけ入れるようにしています。goto 文で入るときはこの条件判定を無視してしまうことになり、<font color=red>さまざまなバグの可能性を秘めています</font>。ブロック内で使われている<font color=red>変数の初期化</font>についての問題も秘めています。</p>
+
+<p>　「何とか気をつければどうでもいいじゃないか」という心構えは、「いかに楽をしてバグを少なくするか」を考えている自分にはとても真似できません。一杯努力をして、その努力の分だけ危なくなるなんて、まっぴら御免です。</p>
+
+<p>　goto 文を好き勝手使ったプログラムのことを<font color=red>スパゲティプログラム</font>と呼びます。「あっちこっちに飛んで、プログラムの流れがまるでからまったスパゲティのようだ」つまり「どこがどうなってるのか、よーわからん」プログラムのことです。「goto 文を全面禁止せよ」と主張する人は、スパゲティプログラムを<font color=red>組みたがる</font>人が出てこないようにということなのでしょう。</p>
+
+<p>　というように、goto 文は気をつけて使わないとバグの温床になってしまうような命令です。<font color=red>スパゲティプログラムは厳禁です！</font>　しかし、だからといって goto 文をかたくなに使わないというのも頑固というものです。<font color=red>危険な使い方さえしなければ</font>、goto は非常に便利な命令です。</p>
+
+<p>　薬と同じですね。大量に服用すれば危険ですが、量を守って気をつけて服用すれば健康を守ってくれます。goto 文の処方箋は出しました。処方箋を守らないと、あなたのプログラムは死んでしまうかもしれませんよ...。プログラムを生かすも殺すもあなた次第なのです。</p>
+
+<hr>
+
+<p>　さて、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>&lt;名前&gt;: をラベルという。</li>
+<li>goto &lt;ラベル名&gt;; でラベルのある行に飛べる。</li>
+<li>goto 文はエラー処理と多重ループの抜け出しに利用できる。</li>
+<li>変な goto の使い方は厳禁。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　最後にもう１度。<font size=+3 color=red>スパゲティプログラムは厳禁です！</font>　それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03004.html" target="main">第４章　参照先は何もなし？</a> | <a href="cpp03006.html" target="main">第６章　コンマ演算子</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.7</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

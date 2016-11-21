@@ -1,0 +1,172 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５６章 身長いくら？ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５６章　身長いくら？</font>
+</center>
+<hr>
+
+<p>　変数にはサイズがあります。これをプログラム上ではかれると便利ですね。今回は、そういうことをやっていきます。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数のサイズは sizeof &lt;変数名&gt; で取得できる</li>
+<li>型のサイズも sizeof (&lt;型名&gt;) で取得できる</li>
+<li>得られるサイズの単位はバイト</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回まで、ファイルの操作について話してきました。そのとき、読み込むサイズを数値で表していましたね。<a href="cpp01029.html" target="main">第２９章</a>で言ったように、こういうことはあまりやらない方がいいことです。</p>
+
+<p>　では、これをどうしたらいいでしょうか？　やはり<a href="cpp01029.html" target="main">第２９章</a>で言ったように、マクロを使うという手があります。配列のサイズをマクロで置き換え、それを使えばいいわけです。</p>
+
+<p>　しかし、もう１つ便利な方法があります。それは、<font color=red>配列のサイズを取得する</font>という方法です。実に単純な発想です。が、どうするのでしょうか？</p>
+
+<p>　ということで、以下のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// File4c.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+    <font color=blue>int</font>   nLength;
+    <font color=blue>char</font>  buffer[<font color=darkcyan>512</font>];
+
+    pFile = fopen(<font color=darkcyan>"fwrite.txt"</font>, <font color=darkcyan>"rb"</font>);
+    <font color=blue>if</font>(pFile == NULL)
+      <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    fread(&amp;nLength, <font color=red>sizeof nLength</font>, <font color=darkcyan>1</font>, pFile);
+    fread(buffer, <font color=darkcyan>1</font>, <font color=red>sizeof buffer</font>, pFile);
+    buffer[<font color=red>sizeof buffer - 1</font>] = <font color=darkcyan>0</font>;
+
+    printf(<font color=darkcyan>"文字列の長さは %d バイトです。\n%s\n"</font>, nLength, buffer);
+
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>文字列の長さは 10 バイトです。
+1234567890</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　赤くなっている部分が、<a href="cpp01055.html" target="main">第５５章</a>と違っている部分です。</p>
+
+<p>　ここには、共通して出てくるものがありますね。そうです。<font size=+2 color=red>sizeof</font> です。</p>
+
+<p>　この sizeof が、<font color=red>変数のサイズを取得する演算子</font>です。サイズの<font color=red>単位はバイト</font>です。</p>
+
+<pre>sizeof [変数]</pre>
+
+<p>とすると、その変数のサイズが分かります。</p>
+
+<p>　こうすると、マクロを使わないでも<font color=red>数値を直接書くことなしに</font>、サイズが指定できました。さらに、<font color=red>配列でない nLength についても</font>、数値を使わずにサイズを指定することができました。ついでに、バッファの最後の位置も怪しい数値を使わずに指定することができました。これは便利ですね。</p>
+
+<hr>
+
+<p>　さて、「sizeof は変数のサイズを取得する」と言いましたが、これは厳密には正しくありません。<font color=red>型のサイズ</font>を取得することもできるからです。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Sizeof1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    cout &lt;&lt; <font color=darkcyan>"int     : "</font> &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>int</font>)     &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"char    : "</font> &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>char</font>)    &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"double  : "</font> &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>double</font>)  &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"int*    : "</font> &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>int</font>*)    &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"char*   : "</font> &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>char</font>*)   &lt;&lt; endl;
+    cout &lt;&lt; <font color=darkcyan>"double* : "</font> &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>double</font>*) &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>int     : 4
+char    : 1
+double  : 8
+int*    : 4
+char*   : 4
+double* : 4</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　今まで言ってきたとおりのサイズになっていますね。ポインタのサイズは常に int のサイズと同じになっていますね。</p>
+
+<p>　このように、型のサイズを取得するときは、<font color=red>キャスト演算子</font>に sizeof を付けます。キャスト演算子は、型キャスト（<a href="cpp01021.html" target="main">第２１章</a>参照）の時の、カッコ付きの型のことです。実は、カッコなしでも int とかは問題ないようですが、double だと問題があるようです。何でなのか分かりませんが、とりあえず<font color=red>型のサイズを取得するときはカッコは必ず付けておきましょう</font>。</p>
+
+<hr>
+
+<p>　ここで、文法的な補足をしておきます。</p>
+
+<p>　sizeof は演算子です。<a href="cpp01043.html" target="main">第４３章</a>で説明した区分では、単項演算子に入ります。インクリメント演算子 ++ や、マイナス符号 - などと同じですね。</p>
+
+<p>　ところで、sizeof を使うときに</p>
+
+<pre>sizeof(a)</pre>
+
+<p>のように、対象をカッコで囲み、sizeof と (a) の間を詰めて、あたかも関数のように書く人がいます。というか、かなりの人がそうしています。もちろん、型のサイズを取得するときは当然のことです。配列の要素のサイズを取得するときも、気になるなら付けても構わないでしょう（必要はありませんが）。ですが、a のように単一の変数に付けるのは<font color=red>無駄</font>です。優先順位（＋より×の方が優先、というような暗黙の計算順序）が気になるときは</p>
+
+<pre>(sizeof a)</pre>
+
+<p>と、全体を囲むのが筋というものです。sizeof(a) では、優先順位には何も影響を与えていませんよね。(-x)<sup>2</sup> としたいのに、-(x)<sup>2</sup> としているようなものです。関数みたいに見えることで、全体がひとかたまりになっている気分がして逆に<font color=red>紛らわしい</font>です。</p>
+
+<p>　しかし、sizeof の優先順位は、普通気にすることはありません。気にならないようになっています。カッコを付けようが、付けまいが、どっちでも問題になることはないでしょう。しかし、一応<font color=red>「優先順位がある」</font>ということは覚えておいた方がいいかもしれません。</p>
+
+<p>　あと、関数のサイズは取得できません。あしからず。</p>
+
+<hr>
+
+<p>　今回はこれでお終いです。では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数のサイズは sizeof 演算子で取得できる</li>
+<li>型のサイズも sizeof (&lt;型名&gt;) で取得できる</li>
+<li>得られるサイズの単位はバイト</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回も sizeof について掘り下げてみましょう。それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp01055.html" target="main">第５５章　ファイルのススメ４</a> | <a href="cpp01057.html" target="main">第５７章　身長いくら？２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2002.2.28</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

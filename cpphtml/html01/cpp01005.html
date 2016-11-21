@@ -1,0 +1,110 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５章 変数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<p><font size=6>第５章　変数</font></p>
+</center>
+<hr>
+
+<p>　数学や物理などをやっていると、変数をよく使いますね。プログラムにおいても変数は大事なものです。基本的なことは普通の変数と同じです。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数は宣言してから使う。</li>
+<li>変数へは、= を使って値を入れる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　変数といえば、値を入れて、値を変えて、値を使って、の３つが基本です。プログラムの世界でもそれは同じです。問題はその表現の方法です。</p>
+
+<p>　どうこう言う前に、プログラムを見てみましょう。ファイル名は好きなようにして構いません。悩む方は Val1.cpp にでもして下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a;
+
+    a = <font color=darkcyan>0</font>;
+    cout &lt;&lt; <font color=darkcyan>"a = "</font> &lt;&lt; a &lt;&lt; endl;
+
+    a = <font color=darkcyan>5</font>;
+    cout &lt;&lt; <font color=darkcyan>"a * 2 = "</font> &lt;&lt; a * <font color=darkcyan>2</font> &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a = 0
+a * 2 = 10</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　何か、a というものが出てきてます。これが変数です。一番はじめに出てきているのは</p>
+
+<pre>int a;</pre>
+
+<p>というところです。これは、「変数 a をこれから使うよー」と宣言するものです。「濃度を c とすると...」とか「体積を V とすると...」とかいうのと一緒です。テストでこういった宣言なしに変数を使って減点された経験はないですか？　<font color=red>Ｃ／Ｃ＋＋言語でもそんなことをすると怒られてしまいます。</font></p>
+
+<p>　int というのは、整数(integer)の略で、つまりここでは、<font color=red>「整数の変数 a をつかうよー」という宣言をしている</font>ことになります。他にも char（整数・文字）とか float（小数）とかいろいろあり、こういったものを<font color=red>変数の型</font>といいます。</p>
+
+<p>　変数に使える文字は、アルファベットと数字とアンダーラインです。ただし、数字は２文字目からしか使えません。つまり、<font color=red>数字から始まる変数は作れません</font>。</p>
+
+<p>　さて、変数ができました。でも、この変数にはまだ値が入れられていません。では、この変数に値を入れてみましょう。</p>
+
+<pre>a = 0;</pre>
+
+<p>　<font color=red>変数に値を入れるには、= を使います。</font>そして、<font color=red>この = なしには変数は変えられません</font>。</p>
+
+<p>　さて、きちんと変数の中身が 0 になっているか確かめてみましょう。値の表示は cout でできるのでしたね。...どうやらきちんと 0 になっているようです。</p>
+
+<p>　では、次はこの値を変えてみましょう。次は 5 にしてみます。</p>
+
+<pre>a = 5;</pre>
+
+<p>　次はただ a を表示するのではなくて、２倍した値を表示してみましょう。...きちんと 10 と表示されましたね。</p>
+
+<hr>
+
+<p>　一度にたくさん書いてあるのを見ると気が滅入るでしょうから、この章はこれでお終いです。次の章では変数の値を増やしたり減したりということをしてみます。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>変数は宣言してから使う。</li>
+<li>変数へは、= を使って値を入れる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01004.html" target="main">第４章　次のプログラムに移る前に</a> | <a href="cpp01006.html" target="main">第６章　中身を変えよう</a></p>
+<p align=right><font size=-1><i>Last update was done on 1999.2.23</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

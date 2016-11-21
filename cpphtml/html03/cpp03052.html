@@ -1,0 +1,313 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５２章 多重継承事始２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５２章　多重継承事始２</font>
+</center>
+<hr>
+
+<p>　さて、今回も多重継承をやってみましょう。２つ以上の「同じ」クラスを継承するとどうなるのか、そういうお話です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>一度に２つ以上の同じクラスを継承することはできない。</li>
+<li>間にクラスを挟めば２つ以上の同じクラスを継承することもできる。</li>
+<li>曖昧な場合はキャストかアクセス解決を利用する。</li>
+<li>オーバーライドはその全てに対して行われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回の CJohnin クラスは、次のような継承関係を持っていました。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　このように、２つ以上のクラスを継承することを多重継承と呼ぶのでした。</p>
+
+<p>　ここで、CJohnin に一度に２つ以上の CFirstClass を継承させることはできません。つまり、</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=120 bgcolor="#F0A0A0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=120 bgcolor="#F0A0A0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=120 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=120>｜</th>
+  <td width=10></td>
+  <th align=center width=120>｜</th>
+  <td width=10></td>
+  <th align=center width=120>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=5 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　ということはできないわけです。まぁ、こういうことをするよりはコンポジションした方が便利なので、これは問題ない話です。</p>
+
+<p>　しかし、次のようにすると、２つ継承することができます。</p>
+
+<center><table border=0>
+
+<tr>
+  <th align=center width=150 bgcolor="#F0A0A0">CFirstClass</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#F0A0A0">CFirstClass</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center width=150 bgcolor="#B0B0B0">CMaster</th>
+  <td width=10></td>
+  <th align=center width=150 bgcolor="#B0B0B0">CNinja</th>
+</tr>
+
+<tr>
+  <th align=center width=150>｜</th>
+  <td width=10></td>
+  <th align=center width=150>｜</th>
+</tr>
+
+<tr>
+  <th align=center colspan=3 bgcolor="#B0B0B0">CJohnin</th>
+</tr>
+
+</table></center>
+
+<p>　つまり、<font color=red>間に何かを挟めば同じクラスを２つ以上継承できる</font>わけです。</p>
+
+<hr>
+
+<p>　しかし、ここで３つの疑問が生まれます。</p>
+
+<font color=red>
+<ol>
+<li><font color=black>CNinja と CMaster で GetString をオーバーライドしたとき、</font>CJohnin ではどちらの GetString が呼ばれるのか</li>
+<li><font color=black>CFirstClass にアップキャストすると</font>どちらの CFirstClass になるのか</li>
+<li><font color=red>CJohnin で GetString をオーバーライドするとどうなるのか</font></li>
+</ol>
+</font>
+
+<p>です。</p>
+
+<p>　先ずは１つ目の疑問を見てみましょう。CJohnin は違う実装のされた２つの GetString を持っていることになります。ということは、普通に johnin.GetString() と使ってもどちらを呼んでいいのか分からないはずです。ということは、<font color=red>どちらの GetString を呼ぶのかを指定する</font>必要がありそうです。どうやれば指定できるでしょうか？</p>
+
+<p>　これには２通りの方法が考えられます。１つは<font color=red>アップキャスト</font>であり、もう１つは<font color=red>アクセス解決</font>です。では、両方やってみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// MulInh2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CFirstClass
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font> = <font color=darkcyan>0</font>;
+};
+
+<font color=blue>class</font> CNinja  : <font color=blue>public</font> CFirstClass
+{
+    <font color=blue>public</font>: <font color=blue>virtual</font> ~CNinja();
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font>;
+};
+
+<font color=blue>class</font> CMaster : <font color=blue>public</font> CFirstClass
+{
+    <font color=blue>public</font>: <font color=blue>virtual</font> ~CMaster();
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font>;
+};
+
+<font color=blue>class</font> CJohnin : <font color=blue>public</font> CNinja, <font color=blue>public</font> CMaster
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> ~CJohnin();
+};
+
+CNinja::~CNinja(){ }
+CMaster::~CMaster(){ }
+CJohnin::~CJohnin(){ }
+
+<font color=blue>const char</font>* CNinja::GetString() <font color=blue>const</font>
+{
+    <font color=blue>return</font> <font color=darkcyan>"忍者"</font>;
+}
+
+<font color=blue>const char</font>* CMaster::GetString() <font color=blue>const</font>
+{
+    <font color=blue>return</font> <font color=darkcyan>"マスター"</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    CJohnin johnin;
+    <font color=green>// アップキャスト</font>
+    cout &lt;&lt; <font color=red>dynamic_cast&lt;CNinja&amp;&gt;(</font>johnin<font color=red>)</font>.GetString() &lt;&lt; endl;
+    <font color=green>// アクセス解決</font>
+    cout &lt;&lt; johnin.<font color=red>CMaster::</font>GetString() &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>忍者
+マスター</pre></td></tr>
+
+</table></center>
+
+<p>　どちらも成功しました。試しに johnin.GetString() でやってみるのもいいでしょう。その場合、やはり「どちらを呼べばいいのか分かりません」というようなエラーが吐かれます。</p>
+
+<p>　このように、<font color=red>呼びたい方の仮想関数を持っているクラスを指定してやれば自由に呼び分けられる</font>というわけです。</p>
+
+<p>　第２の疑問も、これで大体解決できたと思います。どちらの CFirstClass なのかを<font color=red>アップキャストで指定してやればいい</font>わけですね（この場合はアクセス解決は使えませんね）。</p>
+
+<p><br></p>
+
+<p>　では、いよいよ第３の疑問です。「どちらの GetString をオーバーライドするか」という指定ができない以上、CJohnin で GetString をオーバーライドすると<font color=red>両方の GetString がオーバーライドされる</font>と考えられます。</p>
+
+<p>　これが本当なのか、実際にやって確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// MulInh3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>class</font> CFirstClass
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font> = <font color=darkcyan>0</font>;
+};
+
+<font color=blue>void</font> DispInfo(<font color=blue>const</font> CFirstClass&amp; obj)
+{
+    cout &lt;&lt; <font color=darkcyan>"そのクラスの情報は“"</font>
+         &lt;&lt; obj.GetString() &lt;&lt; <font color=darkcyan>"”です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>class</font> CNinja  : <font color=blue>public</font> CFirstClass
+{
+    <font color=blue>public</font>: <font color=blue>virtual</font> ~CNinja();
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font>;
+};
+
+<font color=blue>class</font> CMaster : <font color=blue>public</font> CFirstClass
+{
+    <font color=blue>public</font>: <font color=blue>virtual</font> ~CMaster();
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font>;
+};
+
+<font color=blue>class</font> CJohnin : <font color=blue>public</font> CNinja, <font color=blue>public</font> CMaster
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual</font> ~CJohnin();
+    <font color=blue>virtual const char</font>* GetString() <font color=blue>const</font>;
+};
+
+CNinja::~CNinja(){ }
+CMaster::~CMaster(){ }
+CJohnin::~CJohnin(){ }
+
+<font color=blue>const char</font>* CNinja::GetString() <font color=blue>const</font>
+{
+    <font color=blue>return</font> <font color=darkcyan>"忍者"</font>;
+}
+
+<font color=blue>const char</font>* CMaster::GetString() <font color=blue>const</font>
+{
+    <font color=blue>return</font> <font color=darkcyan>"マスター"</font>;
+}
+
+<font color=blue>const char</font>* CJohnin::GetString() <font color=blue>const</font>
+{
+    <font color=blue>return</font> <font color=darkcyan>"上忍"</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    CJohnin johnin;
+    DispInfo(<font color=blue>dynamic_cast</font>&lt;<font color=red>CNinja</font>&amp;&gt;(johnin));
+    DispInfo(<font color=blue>dynamic_cast</font>&lt;<font color=red>CMaster</font>&amp;&gt;(johnin));
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>そのクラスの情報は“上忍”です。
+そのクラスの情報は“上忍”です。</pre></td></tr>
+
+</table></center>
+
+<p>　このように、<font color=red>両方の GetString がオーバーライドされる</font>ことが分かります。</p>
+
+<p>　また、このことから分かるように、両方ともオーバーライドされてはまずいような処理は別々の関数にする必要があるわけです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>一度に２つ以上の同じクラスを継承することはできない。</li>
+<li>間にクラスを挟めば２つ以上の同じクラスを継承することもできる。</li>
+<li>曖昧な場合はキャストかアクセス解決を利用する。</li>
+<li>オーバーライドはその全てに対して行われる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03051.html" target="main">第５１章　多重継承事始</a> | <a href="cpp03053.html" target="main">第５３章　融合</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.5.12</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

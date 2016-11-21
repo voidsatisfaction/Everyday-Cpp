@@ -1,0 +1,234 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５５章 ファイルのススメ４ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５５章　ファイルのススメ４</font>
+</center>
+<hr>
+
+<p>　ファイルには文字列しか書き込めないわけではありません。およそメモリ上で表現できるデータは全て書き込むことが出来ます。今回はメモリ上の生の数値データをファイルに書き込んでみましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>生のデータは fwrite で書き込む。</li>
+<li>生のデータは fread で読み出す。</li>
+<li>エラーを考えてプログラムを組もう。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回は前回書き込んだデータを生のデータで読み書きしてみましょう。そのため、今回はバイナリモードを使うことにします。</p>
+
+<p>　前回は、文字列を入力させ、その長さと文字列の文字コードを数字（文字列）で書き込みました。この際、長さは１０進数、文字コードは１６進数で書き込みました。</p>
+
+<p>　しかし、今回は生のデータを読み書きします。なので、このように進数を考えることはありません。では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+<tr>
+<td><pre><font color=green>// File3b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;string.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+    <font color=blue>char</font>  buffer[<font color=darkcyan>512</font>];
+    <font color=blue>int</font>   nLength;
+
+    printf(<font color=darkcyan>"何か文字列を入力して下さい &gt; "</font>);
+    gets(buffer);
+
+    pFile = fopen(<font color=darkcyan>"fwrite.txt"</font>, <font color=darkcyan>"wb"</font>);
+
+    nLength = strlen(buffer);
+    fwrite(&amp;nLength, <font color=darkcyan>4</font>, <font color=darkcyan>1</font>, pFile);
+    fwrite(buffer, <font color=darkcyan>1</font>, nLength + <font color=darkcyan>1</font>, pFile);
+
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+<tr><td><pre>何か文字列を入力して下さい > 1234567890</pre></td></tr>
+
+<tr><th>fwrite.txt の中身（１６進ダンプ）</th></tr>
+<tr><td><pre>0A 00 00 00 31 32 33 34 35 36 37 38 39 30 00</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　<font color=red>「１６進ダンプ」</font>というのは、ファイルの中に書き込まれている数値を、１６進数で書き下したものです。別に何進法で書き下してもいいのですが、こういう時は通例１６進法を使います。</p>
+
+<p>　それでは、プログラムを見ていきましょう。</p>
+
+<p>　先ずは、文字列の長さを一旦変数に入れておきます。そして、次に <font color=red>fwrite</font> という関数でファイルに書き込んでいます。<font color=red>fwrite はメモリ上にあるデータをそのままの形でファイルに書き込む関数</font>なので、<font color=red>書き込む内容は変数上に置いていなければなりません</font>。そのため、
+文字列の長さを一旦変数に入れておきました。ついでに、この情報は次の文字列の保存でも使います。</p>
+
+<p>　では、fwrite の引数を見ていきましょう。</p>
+
+fwrite(&amp;nLength, 4, 1, pFile);
+
+<p>　初めの &amp;nLength は、<font color=red>書き込みたいデータの置いてあるアドレス</font>です。書き込みたいデータは nLength に入っているので、先ずこのアドレスを渡します。</p>
+
+<p>　次の 4 は、<font color=red>書き込むデータの１要素のサイズ</font>です。そして、次の 1 は、<font color=red>書き込むデータの要素数</font>です。配列を書き込むときに、配列の１つ１つのサイズと、そして配列の要素数を指定すればいいようになっているわけです。が、別に<font color=red>これらを無茶苦茶に使っても問題ありません</font>。面倒なら、一方を１にして、もう一方にデータ全体の長さを指定したのでも構わないでしょう。</p>
+
+<p>　で、最後の pFile は言うまでもありませんね。このように指定すれば、ファイルにデータを書き込むことが出来ます。</p>
+
+<p>　で、次には文字列を書き込んでいます。先ず、書き込みたいデータのアドレス buffer を渡し、次に１要素のサイズ 1 を渡します。で、要素数、つまり文字数 nLength + 1（文字列の終わりのヌルも含む）を渡し、最後に pFile を渡しています。それ程問題はありませんね。</p>
+
+<p>　で、最後にファイルを閉じて、終了です。</p>
+
+<hr>
+
+<p>　と、とりあえずファイルに書き込んでみましたが、いろいろ疑問に思った方もいるでしょう。ちょっとここで、解説を加えます。</p>
+
+<p>
+<font size=+2>
+出るであろう疑問その１<br>
+<font color=red>何故 fprintf の時は、最終的に書き込まれるデータを変数（メモリ）に入れていなくても良かったのか？</font>
+</font>
+</p>
+
+<p>　これは、fprintf が内部で処理してくれるからです。内部で、fprintf が書き込むべき文字列をメモリ上に生成し、それを書き込んでくれるようになっています。fwrite はこのような仕様にはなっていません。</p>
+
+<p>
+<font size=+2>
+出るであろう疑問その２<br>
+<font color=red>進数を考えて、もしくは考えずに書き込むっていうところがよく分からない。</font>
+</font>
+</p>
+
+<p>　fprintf は、データを<font color=red>文字列として</font>書き込む関数でした。例えば 32 という数値を１０進数として書き込むとすると、それは<font color=red>文字列 "32"</font> つまり、文字コードで言うと <font color=red>0x33, 0x32 という２バイトのデータ</font>を書き込むことになります。一方、これを１６進数として書き込むとすると、３２は１６進数で２０ですから、それは<font color=red>文字列 "20"</font> つまり <font color=red>0x32, 0x30 という２バイトのデータ</font>を書き込むことになります。</p>
+
+<p>　一方、fwrite はメモリ上にあるものを<font color=red>そのまま</font>書き込むので、進数とかは無関係です。１０進数と解釈するのも、１６進数と解釈するのも、なんと解釈するのも勝手です。32 という数値を１０進数として解釈しようと、６０進数として解釈しようと、メモリ上の表現には全く影響を及ぼさないのです。</p>
+
+<p>　考えてみて下さい。今 int 型の変数 a に 64 という数値が入っているとします。<font color=red>これを私たちが「１６進数の 40 だ」とか「７進数の 91 だ」とか考えたところで、メモリ上のデータは変わらないでしょう？</font>　物理的にあり得ないことですね。</p>
+
+<p>　これで分かりましたでしょうか？</p>
+
+<p>
+<font size=+2>
+出るであろう疑問その３<br>
+<font color=red>テキストモードで fwrite を使うと、改行はどうなるのか？</font>
+</font>
+</p>
+
+<p>　テキストモードなので、<font color=red>改行コードは変換されます</font>。</p>
+
+<p>　例えば int a = 13; の a をテキストモードで書き込もうとすると、'\n' は１３なので、意図した通りに書き込まれないことになります。注意しましょう。</p>
+
+<p>　その逆で、バイナリモードで改行を書き込むときは、あらかじめ改行コードを変換しておく必要があることも注意して下さい。変換後の改行は、Ｗｉｎｄｏｗｓでは '\r\n' 、Ｍａｃでは '\r' 、ＵＮＩＸでは '\n' です。</p>
+
+<p>
+<font size=+2>
+出るであろう疑問その４<br>
+<font color=red>文字列の長さ１０が 0x0A000000 として書き込まれているのでは？</font>
+</font>
+</p>
+
+<p>　メモリ上で実際にこういう風に値が格納されているということです。</p>
+
+<p>　若いアドレスの方に、下位のバイトが格納されていますね。こういうデータの格納形式を<font color=red>「リトルエンディアン」</font>と言います。語源はガリバー旅行記にあります。</p>
+
+<p>　逆に、大きいアドレスの方に、下位のバイトが格納されるというデータ形式を<font color=red>「ビッグエンディアン」</font>と言います。こういったデータの格納方式のことを<font color=red>エンディアンネス</font>と呼びます。</p>
+
+<p>　この両者の格納形式は、ＣＰＵによって違います。Ｗｉｎｄｏｗｓの動く環境ではリトルエンディアン、Ｍａｃの動く環境ではビッグエンディアンになっていると思います。ＵＮＩＸはＣ言語でできることの全てを実現できる環境ではどこでも動くので、エンディアンネスは環境によって変わります。</p>
+
+<p><br></p>
+
+<p>　まだ疑問に思うことがあるかもしれませんが、一応先に進みます。まだ疑問に思うところがあれば、何度もテストプログラムを組んでみて理解して下さい。</p>
+
+<hr>
+
+<p>　では、今度は読み出しをやってみましょう。では、プログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// File4b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    FILE* pFile;
+    <font color=blue>int</font>   nLength;
+    <font color=blue>char</font>  buffer[<font color=darkcyan>512</font>];
+
+    pFile = fopen(<font color=darkcyan>"fwrite.txt"</font>, <font color=darkcyan>"rb"</font>);
+    <font color=blue>if</font>(pFile == NULL)
+      <font color=blue>return</font> <font color=darkcyan>0</font>;
+
+    fread(&amp;nLength, <font color=darkcyan>4</font>, <font color=darkcyan>1</font>, pFile);
+    fread(buffer, <font color=darkcyan>1</font>, <font color=darkcyan>512</font>, pFile);
+    buffer[<font color=darkcyan>511</font>] = <font color=darkcyan>0</font>;
+
+    printf(<font color=darkcyan>"文字列の長さは %d バイトです。\n%s\n"</font>, nLength, buffer);
+
+    fclose(pFile);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>文字列の長さは 10 バイトです。
+1234567890</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　<font color=red>生のデータでの読み出しには fread という関数を使います。</font>引数は fwrite と同じです。読み出すか、書き込むか、の違いだけです。簡単ですね。</p>
+
+<p>　で、あとはそれを printf で表示しています。ここは何も問題ないですね。</p>
+
+<p>　一応問題としては、２つめの fread で<font color=red>５１２バイトも読み出そうとしている</font>というのがあるかと思います。このファイルが上のプログラムで作られたのであれば、nLength + 1 にしても正常動作します。ですが、いたずらでここに５１２以上の値が入れられて、データも５１２バイト以上用意されているかもしれません。その時は、buffer を越えてデータが読み出されることになります。これは危険なので、上のようにしました。</p>
+
+<p>　こんなテストプログラムではここまでする必要もないかもしれませんが、実用する段階になればこのようなことを考えるのも必要になってきます。もちろん、nLength が５１２以上なら nLength を５１１にして...という処理でも構いませんし、このあとにもデータが続くようであれば５１２バイト固定で読み出すこともできないでしょう。どういう処理を行うかは各自に任せるとしまして、とにかく、<font color=red>ファイルは「別のプログラムでも簡単に操作できる」という危険性を持っているのだ</font>、ということを忘れないようにしましょう。</p>
+
+<p>　あと、ファイルサイズ以上のデータを読み出そうとしても、別に<font color=red>エラーは出ません</font>。fread は読み出したバイト数を返しますので、この数値が読み出そうとしたバイト数よりも小さければファイルの終端に達したことが分かります。</p>
+
+<p>　正確にはファイルの読み出しエラーが生じたという可能性もあります。なので、厳密には <font color=red>feof という関数で確認する必要があります</font>。feof(pFile) が<font color=red>０以外</font>の時、ファイルの終端に達していることになります。if(feof(pFile)) 〜 とできますね。</p>
+
+<hr>
+
+<p>　今回はこれで終わりです。ちょっと長かったでしょうか？　次回はファイル操作を離れて、ちょっと簡単なことをしてみます。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>生のデータは fwrite で書き込む。</li>
+<li>生のデータは fread で読み出す。</li>
+<li>エラーを考えてプログラムを組もう。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01054.html" target="main">第５４章　ファイルのススメ３</a> | <a href="cpp01056.html" target="main">第５６章　身長いくら？</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

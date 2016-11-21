@@ -1,0 +1,178 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第７５章 乱数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第７５章　乱数</font>
+</center>
+<hr>
+
+<p>　ゲームなどを作っていると、乱数が欲しいなと思うことがよくあります。しかし、乱数というのはコンピュータにとっては苦手な分野です。でも、なんとか乱数を使うことができます。今回はその方法を教えましょう。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>乱数は rand で取得できる。</li>
+<li>乱数は srand で初期化できる。</li>
+<li>初期化には時間を利用すると良い。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さて、サイコロ２つを振ってその合計を求めたいと思います。そのためには、サイコロの動作を真似する必要があります。</p>
+
+<p>　これには、<font color=red>乱数</font>を用いればいいですね。乱数とは、一言で言うと<font color=red>「無茶苦茶な値」</font>です。例えば、まさにサイコロを適当に振ったときの目の値は乱数になりますね。</p>
+
+<p>　<font color=red>この乱数は rand という関数で得ることができます。</font>０から RAND_MAX までの範囲の乱数値を得ることができます（RAND_MAX はマクロです）。必要なヘッダファイルは stdio.h です。</p>
+
+<p>　しかし、サイコロの目は１〜６です。そこで、rand の値にある計算をほどこして、１〜６の値に変換してしまいましょう。これには普通<font color=red>割り算の余り</font>を使います。６で割った余りは０〜５になります。これに１を足せば１〜６になるという算段です。</p>
+
+<p>　まぁ、RAND_MAX + 1 は実は６の倍数ではないので１〜６が完全に均等には現れませんが、RAND_MAX は結構大きいので実際上はあまり気にはなりません。</p>
+
+<p>　さて、では次のプログラムを実行してみましょう。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Rand1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>inline int</font> Dice()
+{
+    <font color=blue>return</font> rand() % <font color=darkcyan>6 + 1</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>20</font>; i++)
+        cout &lt;&lt; Dice() + Dice() &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; flush;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>12 10 11 2 8 12 6 8 5 5 5 7 10 7 9 7 7 9 8 3</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　確かに乱数になっていますね。このように、rand を使えば乱数が使えるわけです。</p>
+
+<hr>
+
+<p>　しかし、ＶＣ＋＋を使っている人は上と全く同じ結果になっていませんか？　ＶＣ＋＋以外でも同じになることもあるかも知れません。そして、<font color=red>このプログラムを何回実行しても同じ結果になる</font>と思います。</p>
+
+<p>　コンピュータは用意された値を正確に計算することは得意なのですが、乱数のように無茶苦茶な値を扱うのには向いていないのです。そこである計算を行い、乱数っぽい値を作ってごまかしているわけです。（しかもＣ／Ｃ＋＋の rand はかなり乱数としての質も低く、乱数としては不自然な挙動を行うことがあります。）なので、コンピュータが計算してはじき出したこの偽物の乱数を<font color=red>疑似乱数</font>と呼びます。</p>
+
+<p>　で、やはり疑似乱数が毎回同じ結果をはじくのは困るので、それを防ぐ方法があります。疑似乱数はある<font color=red>初期値</font>を元に計算を行って生成されます。初期値を設定する関数は <font color=red>srand</font> です。この初期値に毎回違う値を設定してやれば、毎回同じ結果をはじくことはなくなります。</p>
+
+<p>　しかし、この初期値に毎回違う値を入れるといわれても、「そういうことをするために乱数があるんじゃないのか？」と思うことでしょう。手動で値を入れるのも馬鹿馬鹿しいですよね。そこで、こういうときは普通<font color=red>現在の時間</font>を元に初期化します。現在の時間自体は乱数として利用できませんが、初期値としては十分利用できます。</p>
+
+<p>　<font color=red>現在の時間を取得する関数は time です。</font>必要なヘッダファイルは time.h です。この値は「万国標準時（ＵＣＴ）での１９７０年１月１日０時０分０秒からの秒単位での経過時間」になります。が、そんなことはどうでもいいです。とにかく、<font color=red>１秒ごとに値が違う</font>ということが重要なのです。</p>
+
+<p>　この値の型は time_t です。この time_t という型は耳慣れませんが、これもどうでも構いません。これは srand の引数の型である unsigned int に安全にキャストを行うことができます。それさえ分かっていればいいのです。</p>
+
+<p>　結局、<font color=red>srand((unsigned int)time(NULL));</font> という文を書けば、毎回違う結果になるわけです。一応理屈を説明しましたが、実用上はここだけ分かっていればいいです。</p>
+
+<p>　で、最終的に、次のようになります。</p>
+
+<center><table border=1>
+<colgroup><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Rand1b.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;time.h&gt;</font>
+
+<font color=blue>inline void</font> InitRand()
+{
+    srand((<font color=blue>unsigned int</font>)time(NULL));
+}
+
+<font color=blue>inline int</font> Dice()
+{
+    <font color=blue>return</font> rand() % <font color=darkcyan>6 + 1</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> i;
+
+    InitRand();
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>20</font>; i++)
+        cout &lt;&lt; Dice() + Dice() &lt;&lt; <font color=darkcyan>' '</font>;
+    cout &lt;&lt; flush;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例１</th></tr>
+
+<tr><td><pre>9 8 10 5 6 5 3 4 6 7 6 6 9 4 4 5 8 8 6 7</pre></td></tr>
+
+<tr><th>実行結果例２</th></tr>
+
+<tr><td><pre>10 11 8 8 9 9 6 7 5 6 4 10 7 9 6 9 4 8 6 12</pre></td></tr>
+
+<tr><th>実行結果例３</th></tr>
+
+<tr><td><pre>5 2 6 4 2 7 9 9 10 9 2 6 7 8 10 10 9 7 7 11</pre></td></tr>
+
+</tbody></table></center>
+
+<p>　毎回値が変わってくれました。これでやっときちんとした乱数として利用できそうですね。</p>
+
+<hr>
+
+<p>　疑似乱数の生成法にはいろいろあります。rand は<font color=red>線形合同法</font>という方法を使っています。他にも<font color=red>Ｍ系列乱数</font>、<font color=red>Ｍｅｒｓｅｎｎｅ Ｔｗｉｓｔｅｒ法（ＭＴ法）</font>というのが有名です。</p>
+
+<p>　ＭＴ法は２０００年７月２９日現在、最も質のよい疑似乱数生成法です。質を求めるなら迷わずＭＴ法を使いましょう。質はＭＴ法よりは落ちますが、速度を求めるならＭ系列乱数がいいでしょう。線形合同法は質があまり良くないので、普通のゲームなどには利用できますが、数学、物理、化学計算といった、精度の要求される場合には使えません。</p>
+
+<p>　この中でＭＴ法は日本人が開発したので、開発者のホームページは日本語です（結構英語のページもありますが）。興味のある人は一度検索してみてはどうでしょうか？</p>
+
+<hr>
+
+<p>　さて、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>乱数は rand で取得できる。</li>
+<li>乱数は srand で初期化できる。</li>
+<li>初期化には時間を利用すると良い。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次回は面白い型の作り方を紹介します。特定の値しかとることのできない型です。それでは次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp01074.html" target="main">第７４章　もっとロジカルに</a> | <a href="cpp01076.html" target="main">第７６章　列挙子</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.30</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

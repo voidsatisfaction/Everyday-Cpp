@@ -1,0 +1,260 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２２章 call itself ２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２２章　call itself ２</font>
+</center>
+<hr>
+
+<p>　今回も、前回に続いて再帰関数のお話です。静的内部変数と自動変数の違いと、引数と戻り値の引継についてのお話です。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的内部変数は、常に同じ実体を指す。</li>
+<li>自動変数は、呼ぶ毎に異なる実体が作られる。</li>
+<li>仮引数も、呼ぶ毎に異なる実体が作られる。</li>
+<li>引数と戻り値の値は引き継ぐことが出来る。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　<a href="../html01/cpp01067.html" target="main">第１部第６７章</a>でやった静的内部変数のことを思い出してみましょう。</p>
+
+<p>　静的内部変数は、関数をいつ、どこで、何回呼んでも同じアドレスのメモリを使っている、というものでした。平たく言えば、<font color=red>変数は１つしか作られない</font>ということです。</p>
+
+<p>　これに対して、自動変数は関数を呼ぶたびにアドレスが変わりました（同じ事もありますが）。平たく言えば、<font color=red>変数は関数に入るたびに作られる</font>ということです。</p>
+
+<p>　このことを踏まえると、こんなことができるわけです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Recurse3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func()
+{
+    <font color=blue>static const int</font> INIT = <font color=darkcyan>5</font>;
+    <font color=blue>static int</font> i = INIT;
+    cout &lt;&lt; i &lt;&lt; endl;
+    i--;
+    <font color=blue>if</font>(i &gt; <font color=darkcyan>0</font>)
+        Func();
+    <font color=blue>else</font>
+        i = INIT;
+}
+
+<font color=blue>int</font> main()
+{
+    Func();
+    Func();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>5
+4
+3
+2
+1
+5
+4
+3
+2
+1</pre></td>
+</tr>
+
+</table></center>
+
+<p>　前回のグローバル変数 i を、静的内部変数にしました。</p>
+
+<p>　先ず、i は INIT によって初期化されます。実は、これは<font color=red>初めて関数に入ったときに１回だけ行われる</font>ということになっているのですが、実際はプログラムの初めと考えて構いません。ここでは<font color=red>コンストラクタがない</font>からです。コンストラクタがあれば、それが呼ばれたか、呼ばれていないかという大きな違いがありますね。</p>
+
+<p>　で、後は前回と同じ事をやります。やはり中で Func を呼ぶわけですが、<font color=red>呼ぶ前の i と呼んだ後の i は同じ i です</font>。ということで、前回と同じような結果になるわけです。</p>
+
+<p>　最後、関数を終えるときに i を INIT に戻しておきます。もうこれ以降に中で Func を呼ぶことはないので問題ありません。</p>
+
+<p>　もし、これを自動変数にしたらどうなるでしょうか？</p>
+
+<center><table border=1>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>5
+5
+5
+5
+5
+5
+:
+:
+:
+（エラーが出るまで続く）</pre></td></tr>
+
+</table></center>
+
+<p>　関数に入る毎に i が作られます。その時さらに i は INIT で初期化されてしまうので、無限ループになってしまいます。</p>
+
+<p>　このように、<font color=red>再帰関数の結果には内部変数が静的かどうかが大きく影響します</font>。</p>
+
+<hr>
+
+<p>　そして、関数の内部で使える変数といえば、もう１つありました。そうです。<font color=red>仮引数</font>です。</p>
+
+<p>　仮引数も自動変数と同じく、<font color=red>関数を呼ぶたびに新しい変数が作られます</font>。しかし、この利用価値はとても大きいです。次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Recurse4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func(<font color=blue>int</font> nCount)
+{
+    cout &lt;&lt; nCount &lt;&lt; endl;
+    <font color=blue>if</font>(nCount &gt; <font color=darkcyan>1</font>)
+        Func(nCount - <font color=darkcyan>1</font>);
+}
+
+<font color=blue>int</font> main()
+{
+    Func(<font color=darkcyan>3</font>);
+    Func(<font color=darkcyan>7</font>);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>3
+2
+1
+7
+6
+5
+4
+3
+2
+1</pre></td>
+</tr>
+
+</table></center>
+
+<p>　先ず、nCount を表示します。次に、これが１より大きければ Func を呼ぶわけですが、このとき <font color=red>nCount - 1 を渡しています</font>。つまり、<font color=red>呼ばれるたびに nCount は１つずつ小さくなっていく</font>のです。</p>
+
+<p>　nCount 自体は Func が呼ばれるたびに別の変数を指すのですが、nCount を実引数に取ることで<font color=red>値を引き継ぐ</font>ことが出来るのです。</p>
+
+<p>　このことを利用すると、階乗を求める関数というのも作れますね。階乗というのは、数学でｎ！と表し、１からｎまでの整数を掛けた答になります。</p>
+
+<p>　上で表示したのは最初に入れた数から１までの数でした。これをうまく使うことができれば、階乗が求められそうです。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td valign=top><pre><font color=green>// Recurse5.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> Factorial(<font color=blue>int</font> num)
+{
+    <font color=blue>if</font>(num &gt; <font color=darkcyan>1</font>)
+        <font color=blue>return</font> Factorial(num - <font color=darkcyan>1</font>) * num;
+    <font color=blue>else</font>
+        <font color=blue>return</font> <font color=darkcyan>1</font>;
+}
+
+<font color=blue>void</font> InputAndOutput()
+{
+    <font color=blue>int</font> num;
+
+    cout &lt;&lt; <font color=darkcyan>"何の階乗を求めますか？ &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; num;
+
+    cout &lt;&lt; num &lt;&lt; <font color=darkcyan>" の階乗は "</font>
+         &lt;&lt; Factorial(num) &lt;&lt; <font color=darkcyan>"です。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    InputAndOutput();
+    InputAndOutput();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>何の階乗を求めますか？ > 3
+3 の階乗は 6です。
+何の階乗を求めますか？ > 10
+10 の階乗は 3628800です。</pre></td>
+</tr>
+
+</table></center>
+
+<p>　今度は戻り値も利用してます。簡単なので、３を入れたときの動作を例にとって考えてみます。</p>
+
+<p>　先ず、<font color=red>num(1) は３</font>です。（カッコに入っているのは、何回目の Factorial の num であるかです。）これは１よりも大きいので、Factorial をまた呼び出します。このとき、<font color=red>num(2)</font> は num(1) - 1 なので、<font color=red>２</font>になります。</p>
+
+<p>　で、やはりこれも１より大きいので、Factorial をまた呼び出します。このとき、<font color=red>num(3)</font> は num(2) - 1 なので、<font color=red>１</font>になります。</p>
+
+<p>　すると、ここで１以下になったので、Factorial を呼ばずに<font color=red>１を返します</font>。</p>
+
+<p>　そして、２回目の Factorial の呼び出しに戻りました。ここで、次は Factorial(num(2) - 1) * num(2) を返します。Factorial(num(2) - 1) の結果は１でした。そして num(2) は２でした。なので、この２回目の Factorial は<font color=red>１×２を返します</font>。</p>
+
+<p>　そして、いよいよ１回目の Factorial の呼び出しに戻りました。ここで、最後に Factorial(num(1) - 1) * num(1) を返します。Factorial(num(1) - 1) の結果は１×２でした。そして num(1) は３でした。なので、結局この１回目の Factorial は<font color=red>１×２×３</font>、つまり<font color=red>３の階乗</font>を返すことになります。</p>
+
+<p>　このようにすれば、再帰関数を使って階乗を求める関数が作れます。引数だけでなく、<font color=red>戻り値も引き継いでいくことができる</font>わけですね。</p>
+
+<hr>
+
+<p>　しかし、これらの関数は相変わらず for 文を使えば簡単に作ることができます。</p>
+
+<pre>int Factorial(int num)
+{
+    int nFactorial = 1;
+    for(int i = num; i &gt; 1; i--)
+        nFactorial *= i;
+    return nFactorial;
+}</pre>
+
+<p>　次回こそは、再帰関数を使った方が便利なことをやってみたいと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>静的内部変数は、常に同じ実体を指す。</li>
+<li>自動変数は、呼ぶ毎に異なる実体が作られる。</li>
+<li>仮引数も、呼ぶ毎に異なる実体が作られる。</li>
+<li>引数と戻り値の値は引き継ぐことが出来る。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03021.html" target="main">第２１章　call itself</a> | <a href="cpp03023.html" target="main">第２３章　call itself ３</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.25</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

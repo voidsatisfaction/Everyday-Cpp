@@ -1,0 +1,150 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３３章 冶金工場３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３３章　冶金工場３</font>
+</center>
+<hr>
+
+<p>　関数テンプレートを実際に使う際には、どこに、どのように書けばいいのでしょうか。今回はそれについてお話しします。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートは型に合わせた実体を適宜作る。</li>
+<li>関数テンプレートの実装は実体を作る所から見えなくてはならない。</li>
+<li>template int Max<int>(int, int); のように書けば実体を作ることができる。</li>
+<li>関数テンプレートの実装はヘッダファイルに書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　何度も言うように、関数テンプレートは「型の違う関数を適宜自動的に作ってくれる」というものです。つまり、定義は１つしかないように見えても、例えば前回の Max では <font color=red>TYPE の異なる関数がいくつも作られる</font>ことになります。</p>
+
+<p>　もし TYPE が int か unsigned int か void* となるような呼び出しを全部行ったとすると、前回の冒頭でやったように３つ関数を作ったのと<font color=red>全く同じことになります</font>。１つの関数で場合分けして処理しているのではなく、<font color=red>それぞれに全く独立した関数を作っている</font>わけですね。</p>
+
+<p>　表面上はサイズが小さくなったように見えても、コンパイルしてしまうと思ったよりもサイズが増えることになります。しかし、別々に関数を作ったのでも同じサイズになるので、気にしても仕方はないかも知れませんね。</p>
+
+<p>　また、逆に言えば<font color=red>１回も使わなければ Max という関数はどこにも存在しない</font>わけです。Max という関数テンプレートを定義しましたが、あくまでもそれは「<a href="../htmlword/words029.html" target="words">鋳型</a>」の定義なのです。実際に使う関数はこの鋳型を使って「鋳造」するわけです。この「鋳造」することを<font color=red>実体化（インスタンス化）</font>と呼び、作られた関数を<font color=red>実体（インスタンス）</font>と呼びます。</p>
+
+<hr>
+
+<p>　また、関数を作るには呼び出したところから実装が見える必要があります。鋳型がなければ鋳物は鋳造できないのです。つまり、TYPE が同じである関数テンプレートの呼び出しのうち、<font color=red>どれか１つは関数テンプレートの実装が見えていなければなりません</font>。</p>
+
+<p>　つまり、次のようになるわけです。</p>
+
+<center><table border=1>
+
+<tr><td valign=top colspan=2><pre><font color=green>// Temp1.cpp</font>
+
+<font color=green>// プロトタイプ</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt; <font color=blue>void</font> Disp(TYPE value);
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a = <font color=darkcyan>0</font>;
+    Disp(a);
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr>
+
+<td valign=top><pre><font color=green>// Temp2a.cpp</font>
+
+<font color=green>// 実装</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> Disp(TYPE value)
+{
+    cout &lt;&lt; value &lt;&lt; endl;
+}</pre></td>
+
+<td valign=top><pre><font color=green>// Temp2b.cpp</font>
+
+<font color=green>// 実装</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> Disp(TYPE value)
+{
+    cout &lt;&lt; value &lt;&lt; endl;
+}
+
+<font color=green>// TYPE = int で呼び出す</font>
+<font color=blue>void</font> Dummy()
+{
+    <font color=blue>int</font> b = <font color=darkcyan>1</font>;
+    <font color=red>Disp(b);</font>
+}</pre></td>
+
+</tr>
+
+<tr><th>エラー！</th><th>エラー無し</th></tr>
+
+</table></center>
+
+<p>　Temp1.cpp ではプロトタイプしかありません。なので、Temp1.cpp 内では実体化はできません。どこか別のところで実体化されていれば使えますが、どこでも実体化されていないと「実体がない」というリンクエラーが出ます。</p>
+
+<p>　Temp2a.cpp では実体化されていないのでリンクエラーになり、Temp2b.cpp では TYPE = int で実体化されているので、リンクエラーにはなりません。</p>
+
+<p>　しかし、実体化するためだけに関数を呼び出さなくてはならないのは不便です。そこで、関数を呼ばなくても実体を作ることができます。</p>
+
+<center><table border=1>
+
+<tr><td valign=top><pre><font color=green>// Temp2c.cpp</font>
+
+<font color=green>// 実装</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> TYPE&gt;
+<font color=blue>void</font> Disp(TYPE value)
+{
+    cout &lt;&lt; value &lt;&lt; endl;
+}
+
+<font color=green>// 実体化</font>
+<font color=red>template void Disp(int);</font></pre></td></tr>
+
+</table></center>
+
+<p>　<font color=red>TYPE の部分に具体的な型名を入れたプロトタイプを書き、先頭に template を付ければいい</font>のです。これだけで実体化することができ、リンクエラーは無事出なくなります（注：古いバージョンのコンパイラではできない場合があります）。これを<font color=red>明示的な実体化（インスタンス化）</font>と呼びます。</p>
+
+<hr>
+
+<p>　実際にはこのようなことを考えてプログラムを組むのは不便で汎用性に欠けるので、<font color=red>関数テンプレートの実装は全てヘッダファイルに書きます</font>。こうすれば、いちいち明示的に実体化する必要はなくなります。</p>
+
+<p>　「二重定義になるのでは？」と思うかも知れませんが、関数テンプレートは<font color=red>リンクエラーとしての二重定義を起こしません</font>。それは、関数テンプレートは<font color=red>実体の定義ではない</font>からです。そして、作られる実体は<font color=red>型の異なる関数につき１個ずつ</font>です。同じ関数が何個もできてしまうということはありません。もしそうなってしまうと同じファイル内で何個も呼び出しをする、つまり実体化をすることができなくなってしまうからです。</p>
+
+<p>　ということで、関数テンプレートはヘッダファイルに書くのが普通です。インライン関数や const 定数もそうでしたね。これらは<font color=red>マクロの代替手段</font>として発展したもので、ヘッダファイルに書くのもうなずける話です。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数テンプレートは型に合わせた実体を適宜作る。</li>
+<li>関数テンプレートの実装は実体を作る所から見えなくてはならない。</li>
+<li>template int Max<int>(int, int); のように書けば実体を作ることができる。</li>
+<li>関数テンプレートの実装はヘッダファイルに書く。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp02032.html" target="main">第３２章　冶金工場２</a> | <a href="cpp02034.html" target="main">第３４章　冶金工場４</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.12.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

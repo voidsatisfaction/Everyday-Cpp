@@ -1,0 +1,160 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５７章 身長いくら？２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５７章　身長いくら？２</font>
+</center>
+<hr>
+
+<p>　sizeof なんぞにこんなに章を割いていいものか迷いましたが、結局２章に分けて話しています。今回はその第２回目です。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列のサイズは、引数に渡すと分からなくなる。</li>
+<li>配列の要素数は sizeof &lt;名前&gt; / sizeof *&lt;名前&gt;</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回、<font color=red>sizeof を使えば配列のサイズが分かる</font>と言いました。でも、ああそうなんだと思って以下のようなプログラムを組むと、変な結果になってしまいます。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Sizeof2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> DispSize(<font color=blue>const char</font>* array)
+{
+    cout &lt;&lt; <font color=darkcyan>"この配列のサイズは "</font> &lt;&lt; <font color=blue>sizeof</font> array
+         &lt;&lt; <font color=darkcyan>" バイトです。"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>char</font> data1[<font color=darkcyan>100</font>];
+    <font color=blue>char</font> data2[<font color=darkcyan>200</font>];
+
+    DispSize(data1);
+    DispSize(data2);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>この配列のサイズは 4 バイトです。
+この配列のサイズは 4 バイトです。</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　なぜこんな結果になるのでしょうか？</p>
+
+<p>　答は簡単です。DispSize の引数 <font color=red>array の型は const char*</font> だからです。array はポインタなので、sizeof をとると答は４になります。</p>
+
+<p>　では、DispSize 内で配列のサイズを取得する方法はないのでしょうか？　実は、<font color=red>ありません</font>。なので、配列のサイズを使いたければ、<font color=red>サイズは引数に渡さなければいけないのです</font>。</p>
+
+<hr>
+
+<p>　ああそうなんだ、と次のようなプログラムを組むと、また変なことになってしまいます。これは、フィボナッチ数列（前２つの要素の和をその要素とする数列）を作って、それを出力するプログラムなのですが...。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th></tr>
+
+<tr>
+<td><pre><font color=green>// Sizeof3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> StoreFibo(<font color=blue>int</font>* array, <font color=blue>int</font> nSize)
+{
+    <font color=blue>int</font> i;
+
+    <font color=blue>if</font>(nSize &lt; <font color=darkcyan>0</font>)
+        <font color=blue>return</font>;
+    array[<font color=darkcyan>0</font>] = <font color=darkcyan>1</font>;
+
+    <font color=blue>if</font>(nSize == <font color=darkcyan>1</font>)
+        <font color=blue>return</font>;
+    array[<font color=darkcyan>1</font>] = <font color=darkcyan>1</font>;
+
+    <font color=blue>for</font>(i = <font color=darkcyan>2</font>; i &lt; nSize; i++)
+        array[i] = array[i - <font color=darkcyan>1</font>] + array[i - <font color=darkcyan>2</font>];
+}
+
+<font color=blue>void</font> DispFibo(<font color=blue>const int</font>* array, <font color=blue>int</font> nSize)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; nSize; i++)
+        cout &lt;&lt; array[i] &lt;&lt; ' ';
+    cout &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> nFibo[<font color=darkcyan>10</font>];
+
+    StoreFibo(nFibo, <font color=blue>sizeof</font> nFibo);
+    DispFibo(nFibo, <font color=blue>sizeof</font> nFibo);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　実行結果がありませんね。なぜなら、このプログラムを実行すると<font color=red>大変なことになる</font>からです。</p>
+
+<p>　sizeof は、ある変数の<font color=red>バイト単位での</font>サイズを取得するものです。なので、int 型の要素が１０個の配列 nFibo の sizeof をとると、答は４０になります。要素は４０もないのに StoreFibo では４０も書き込もうとしてしまいます。このため、異常な動作を起こし、最後には異常終了してしまいます。</p>
+
+<p>　ならどうすればいいのでしょうか？　答はやはり簡単です。<font color=red>要素のサイズで割ればいいのです。</font></p>
+
+<pre>sizeof nFibo / sizeof *nFibo</pre>
+
+<p>　nFibo は int 型の配列です。なので、*nFibo の型は int になります。よって、sizeof *nFibo は４になります。で、結局この値は４０÷４＝１０となり、無事要素数を取得できました。</p>
+
+<p>　この処理は、マクロにしておくと後々便利でしょう。（関数では無理です。関数を通すとサイズは取得できないのでしたね。）</p>
+
+<pre><font color=red>#define ELEM(array)    (sizeof (array) / sizeof *(array))</font></pre>
+
+<p>　これを使って、上のプログラムを書き換えてみて下さい。これで、満足のいく動作を行ってくれるようになったでしょう。</p>
+
+<hr>
+
+<p>　これで sizeof については終わりです。では、今回の要点をおさらいしましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>配列のサイズは、引数に渡すと分からなくなる。</li>
+<li>配列の要素数は sizeof &lt;名前&gt; / sizeof *&lt;名前&gt; で取得。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　これで sizeof については終わりです。次回はいよいよ<font color=red>構造体</font>について話します。Ｃ＋＋の<font color=red>クラス</font>に繋がる重要なものですから、しっかり理解しましょう。では。</p>
+
+<hr>
+
+<p align=right><a href="cpp01056.html" target="main">第５６章　身長いくら？</a> | <a href="cpp01058.html" target="main">第５８章　構造体</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.7.4</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

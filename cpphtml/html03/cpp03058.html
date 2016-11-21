@@ -1,0 +1,356 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第５８章 メンバ関数ポインタ天国２ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第５８章　メンバ関数ポインタ天国２</font>
+</center>
+<hr>
+
+<p>　メンバ関数ポインタの使い方については前回ので問題ありません。今回は、メンバ関数ポインタについての細かい話をしようと思います。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メンバ関数ポインタは仮想関数の呼び出しも適切に処理してくれる。</li>
+<li>メンバ関数ポインタのサイズは int のサイズと同じとは限らない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前回はメンバ関数ポインタの文法と使い方について話しただけだったので、先ずは１つ例でも挙げておきましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム１</th></tr>
+
+<tr><td><pre><font color=green>// Lane.h
+// 実行レーンクラス</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> t_Lane&gt;
+<font color=blue>class</font> CLane
+{
+<font color=blue>private</font>:
+    <font color=green>// enum はクラスの中でも定義できます
+    // int 型の定数を使いたい場合によくやります</font>
+    <font color=blue>enum</font> Const{ LaneSize = <font color=darkcyan>16</font>, };      <font color=green>// レーンのサイズ</font>
+    <font color=blue>typedef void</font> (t_Lane::*FPLANE)();  <font color=green>// 処理関数の型</font>
+
+<font color=blue>private</font>:
+    t_Lane* m_pHandlee;         <font color=green>// 操作対象</font>
+    FPLANE m_fpLane[LaneSize];  <font color=green>// 実行レーン</font>
+    <font color=blue>int</font>    m_nLane;             <font color=green>// 処理数</font>
+
+<font color=blue>public</font>:
+    CLane(t_Lane&amp; rHandlee)
+        : m_pHandlee(&amp;rHandlee), m_nLane(<font color=darkcyan>0</font>) { }
+    <font color=blue>void</font> Set(t_Lane&amp; rHandlee)  <font color=green>// オブジェクトのすり替え</font>
+        { m_pHandlee = &amp;rHandlee; }
+
+<font color=blue>public</font>:
+    <font color=blue>bool</font> Push(FPLANE fpLane);     <font color=green>// レーンに処理を追加</font>
+    <font color=blue>void</font> Do();                    <font color=green>// 処理を全実行</font>
+    <font color=blue>void</font> Clear(){ m_nLane = <font color=darkcyan>0</font>; }  <font color=green>// レーンを全削除</font>
+};
+
+<font color=green>// レーンに処理を追加</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> t_Lane&gt;
+<font color=blue>bool</font> CLane&lt;t_Lane&gt;::Push(FPLANE fpLane)
+{
+    <font color=blue>if</font>(m_nLane &gt;= LaneSize)
+        <font color=blue>return false</font>;
+    <font color=green>// この書き方は<a href="cpp03007.html" target="main">第７章</a>を参照</font>
+    m_fpLane[m_nLane++] = fpLane;
+    <font color=blue>return true</font>;
+}
+
+<font color=green>// 処理を全実行</font>
+<font color=blue>template</font> &lt;<font color=blue>typename</font> t_Lane&gt;
+<font color=blue>void</font> CLane&lt;t_Lane&gt;::Do()
+{
+    <font color=blue>for</font>(<font color=blue>int</font> i = <font color=darkcyan>0</font>; i &lt; m_nLane; i++)
+        (m_pHandlee-&gt;*m_fpLane[i])();
+}</pre></td></tr>
+
+<tr><th>プログラム２</th></tr>
+
+<tr><td><pre><font color=green>// MemFP1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Lane.h"</font>
+
+<font color=blue>class</font> CCalc
+{
+<font color=blue>private</font>:
+    <font color=blue>int</font> m_a, m_b;
+
+<font color=blue>public</font>:
+    CCalc(){ m_a = 0; m_b = 0; }
+
+<font color=blue>public</font>:
+    <font color=green>// 値のセット</font>
+    <font color=blue>void</font> Set(<font color=blue>int</font> a, <font color=blue>int</font> b){ m_a = a; m_b = b; }
+
+<font color=blue>public</font>:
+    <font color=green>// 各種計算を行い、結果を表示</font>
+    <font color=blue>void</font> Add();
+    <font color=blue>void</font> Sub();
+    <font color=blue>void</font> Mul();
+    <font color=blue>void</font> Div();
+    <font color=blue>void</font> Mod();
+};
+
+<font color=green>// 足し算</font>
+<font color=blue>void</font> CCalc::Add()
+{
+    cout &lt;&lt; m_a &lt;&lt; <font color=darkcyan>" + "</font> &lt;&lt;
+            m_b &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; m_a + m_b &lt;&lt; endl;
+}
+
+<font color=green>// 引き算</font>
+<font color=blue>void</font> CCalc::Sub()
+{
+    cout &lt;&lt; m_a &lt;&lt; <font color=darkcyan>" - "</font> &lt;&lt;
+            m_b &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; m_a - m_b &lt;&lt; endl;
+}
+
+<font color=green>// 掛け算</font>
+<font color=blue>void</font> CCalc::Mul()
+{
+    cout &lt;&lt; m_a &lt;&lt; <font color=darkcyan>" * "</font> &lt;&lt;
+            m_b &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; m_a * m_b &lt;&lt; endl;
+}
+
+<font color=green>// 割り算</font>
+<font color=blue>void</font> CCalc::Div()
+{
+    cout &lt;&lt; m_a &lt;&lt; <font color=darkcyan>" / "</font> &lt;&lt;
+            m_b &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; m_a / m_b &lt;&lt; endl;
+}
+
+<font color=green>// 余り</font>
+<font color=blue>void</font> CCalc::Mod()
+{
+    cout &lt;&lt; m_a &lt;&lt; <font color=darkcyan>" % "</font> &lt;&lt;
+            m_b &lt;&lt; <font color=darkcyan>" = "</font> &lt;&lt; m_a % m_b &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    CCalc calc;
+    calc.Set(<font color=darkcyan>51</font>, <font color=darkcyan>7</font>);
+
+    CLane &lt;CCalc&gt; lane(calc);
+    lane.Push(CCalc::Mul);  <font color=green>// 51 * 7</font>
+    lane.Push(CCalc::Mod);  <font color=green>// 51 % 7</font>
+    lane.Push(CCalc::Add);  <font color=green>// 51 + 7</font>
+    lane.Push(CCalc::Div);  <font color=green>// 51 / 7</font>
+    lane.Push(CCalc::Sub);  <font color=green>// 51 - 7</font>
+    lane.Do();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>51 * 7 = 357
+51 % 7 = 2
+51 + 7 = 58
+51 / 7 = 7
+51 - 7 = 44</pre></td></tr>
+
+</table></center>
+
+<p>　CLane は、<font color=red>メンバ関数ポインタを登録</font>しておいて、<font color=red>あとで一気にその全てを実行する</font>ためのクラステンプレートです。仕組みは実に簡単で、登録して、実行するだけです（笑）。先に登録した方を先に実行します（このような処理形態を「先入れ先出し（ＦＩＦＯ：First In First Out）」と呼びます）。</p>
+
+<p>　<font color=red>関数ポインタは typedef して使うと便利</font>と<a href="cpp03009.html" target="main">第９章</a>で言ったように、登録する関数の型は FPLANE という名前に typedef して使っています（typedef をクラス内で使っても問題ありません）。</p>
+
+<p>　そして MemFP1.cpp では、CCalc という<font color=red>計算結果を表示するクラス</font>を作り、CLane を利用しています。</p>
+
+<p>　このように、メンバ関数ポインタを使えば逐次処理を登録してまとめて実行するということができます。他にも、あるフラグ変数によって処理を分岐させたいときにメンバ関数ポインタを使って分岐する、といったこともできます。使い方はまだまだあると思います。</p>
+
+<hr>
+
+<p>　では次に、上の CLane に<font color=red>仮想関数</font>を登録するとどうなるのでしょうか？　それは、やはり実際にやって確かめてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム３</th></tr>
+
+<tr><td><pre><font color=green>// MemFP2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>"Lane.h"</font>
+
+<font color=blue>class</font> CCommand
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual void</font> Command() = <font color=darkcyan>0</font>;
+};
+
+<font color=blue>class</font> C1 : <font color=blue>public virtual</font> CCommand
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual void</font> Command();
+};
+
+<font color=blue>void</font> C1::Command()
+{
+    cout &lt;&lt; <font color=darkcyan>"C1::Command"</font> &lt;&lt; endl;
+}
+
+<font color=blue>class</font> C2 : <font color=blue>public virtual</font> CCommand
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual void</font> Command();
+};
+
+<font color=blue>void</font> C2::Command()
+{
+    cout &lt;&lt; <font color=darkcyan>"C2::Command"</font> &lt;&lt; endl;
+}
+
+<font color=blue>class</font> C3 : <font color=blue>public</font> C1, <font color=blue>public</font> C2
+{
+<font color=blue>public</font>:
+    <font color=blue>virtual void</font> Command();
+};
+
+<font color=blue>void</font> C3::Command()
+{
+    cout &lt;&lt; <font color=darkcyan>"C3::Command"</font> &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    C1 c1;
+    C2 c2;
+    C3 c3;
+
+    CLane &lt;CCommand&gt; lane(c1);
+    lane.Push(CCommand::Command);
+    lane.Do();
+
+    lane.Set(c2);
+    lane.Do();
+
+    lane.Set(c3);
+    lane.Do();
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>C1::Command
+C2::Command
+C3::Command</pre></td></tr>
+
+</table></center>
+
+<p>　複雑なのもなんなので簡単な例にしましたが、検証のために仮想継承まで使っています。</p>
+
+<p>　CCommand::Command を登録しましたが、実際には<font color=red>オブジェクトごとに適切な関数が呼ばれています</font>。このように、<font color=red>メンバ関数ポインタに仮想関数を代入しても適切に動作する</font>のです。仮想継承なんかを使っても適切に動作します。</p>
+
+<hr>
+
+<p>　では、最後に<font color=red>メンバ関数ポインタのサイズ</font>について話したいと思います。</p>
+
+<p>　先ず、MemFP1.cpp でサイズを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム４</th></tr>
+
+<tr><td><pre><font color=green>// MemFP1b.cpp</font>
+<font color=gray>... 略 ...</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=gray>... 略 ...</font>
+
+    cout &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>void</font> (CCalc::*)()) &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre><font color=gray>... 略 ...</font>
+4</pre></td></tr>
+
+</table></center>
+
+<p>　次は MemFP2.cpp です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム４</th></tr>
+
+<tr><td><pre><font color=green>// MemFP2b.cpp</font>
+<font color=gray>... 略 ...</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=gray>... 略 ...</font>
+
+    cout &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>void</font> (CCommand::*)()) &lt;&lt; endl;
+    cout &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>void</font> (C1::*)()) &lt;&lt; endl;
+    cout &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>void</font> (C2::*)()) &lt;&lt; endl;
+    cout &lt;&lt; <font color=blue>sizeof</font> (<font color=blue>void</font> (C3::*)()) &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre><font color=gray>... 略 ...</font>
+4
+12
+12
+12</pre></td></tr>
+
+</table></center>
+
+<p>　<font color=red>何と、サイズが４だったり１２だったりしています！</font></p>
+
+<p>　このように、<font color=red>メンバ関数ポインタのサイズは int と同じになるとは限らない</font>のです。</p>
+
+<p>　ＶＣ＋＋で試したところ、普通は４、多重継承していれば８、仮想継承していれば１２となりましたが、これは<font color=red>一般にコンパイラに依存します</font>。ＶＣ＋＋の場合、多重／仮想継承しているときには正しい関数を探し出すために必要な情報でも付加されているのでしょう。</p>
+
+<p>　汎用的な処理を行う関数では、引数を int にしておき、int 値とポインタのどちらも渡せるようにすることがあります。そのような場合、普通の関数ポインタならそのまま渡して構わないのですが、<font color=red>メンバ関数ポインタの場合はそのまま渡せない</font>わけです。現に<font color=red>メンバ関数ポインタから int へはキャスト不能</font>になっています。メンバ関数ポインタのアドレスを渡すなど、ちょっと面倒なことをする必要があるわけです。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>メンバ関数ポインタは仮想関数の呼び出しも適切に処理してくれる。</li>
+<li>メンバ関数ポインタのサイズは int のサイズと同じとは限らない。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03057.html" target="main">第５７章　メンバ関数ポインタ天国</a>
+<!--
+ | <a href="cpp03059.html" target="main">第５９章　</a>
+-->
+</p>
+<p align=right><font size=-1><i>Last update was done on 2001.6.16</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

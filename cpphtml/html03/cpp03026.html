@@ -1,0 +1,222 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第２６章 たのしいソート３ -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第２６章　たのしいソート３</font>
+</center>
+<hr>
+
+<p>　今回は、先ずはバブルソート同様低速なソート法を考えます。しかし、それをもとにした高速なソート法も同時に紹介したいと思います。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ソート列の中に順番通りに挿入していくソート法を挿入法と呼ぶ。</li>
+<li>何個かおきに挿入ソートし、徐々に幅を詰めていくと高速にソートできる。</li>
+<li>これをシェルソートと呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　今回も新しいソート法を考えてみます。今回のソート法は人間がよく使う方法です。</p>
+
+<p>　トランプをするとき、手札を数字の順番通りに並べることがよくあります。こういうとき、以前のバブルソート、選択法と同じように並べ替える人は少ないと思います。（そうしている人いたら、ごめんなさい。）</p>
+
+<p>　普通は、<font color=red>並んでいない部分から１枚抜き取り、並んでいる部分に大小の合うように差し込んでいく</font>と思います。これが今回のソート法、<font color=red>挿入法</font>です。</p>
+
+<table align=right border=1>
+<tr><td><img src="images/0302601.gif" width=270 height=480 alt="挿入法"></td></tr>
+<tr><th>図．１　挿入法</th></tr>
+</table>
+
+<p>　コンピュータにやらせるときは、右の図のようにします。</p>
+
+<p>　先ず、初めの１要素を<font color=red>ソートされた列</font>と見なします。そして、２番目の要素をここに<font color=red>挿入</font>します。これでこの２要素はソートされました。</p>
+
+<p>　次、３番目の要素をソートされた列に挿入します。これで３要素がソートされました。</p>
+
+<p>　あとは同じように要素をソートされた列に挿入していき、挿入するものがなくなった時点でソート完了です。</p>
+
+<p><br clear=right><br></p>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortData.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortSub.h"</font>
+
+<font color=green>// 挿入法によるソート</font>
+<font color=blue>void</font> InsertionSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> iInsert;  <font color=green>// 挿入する要素のインデックス</font>
+    <font color=blue>int</font> iSwap;    <font color=green>// 交換していくときのループ変数</font>
+
+    <font color=green>// 挿入する要素のインデックスは１から始まる</font>
+    <font color=blue>for</font>(iInsert = <font color=darkcyan>1</font>; iInsert &lt; nNumOf; iInsert++)
+    {
+        <font color=green>// 挿入は順次交換することで行う</font>
+        <font color=blue>for</font>(iSwap = iInsert; iSwap &gt; <font color=darkcyan>0</font>; iSwap--)
+        {
+            <font color=green>// 順序がきちんとした時点でループを終える</font>
+            <font color=blue>if</font>(pnData[iSwap - <font color=darkcyan>1</font>] &lt; pnData[iSwap])
+                <font color=blue>break</font>;
+            Swap(pnData[iSwap - <font color=darkcyan>1</font>], pnData[iSwap]);
+        }
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    InsertionSort(g_anData, g_nNumOf);
+    DispArray(g_anData, g_nNumOf);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>  1,   1,   4,   6,   9,   9,  10,  11,  13,  14,
+ 15,  16,  23,  25,  28,  29,  31,  33,  34,  39,
+ 39,  40,  40,  41,  42,  44,  48,  51,  51,  53,
+ 54,  55,  56,  63,  67,  68,  73,  73,  76,  77,
+ 78,  79,  79,  87,  89,  99,  99, 101, 101, 103,
+110, 112, 116, 117, 117, 118, 124, 128, 136, 137,
+137, 138, 148, 150, 152, 155, 157, 160, 161, 164,
+166, 167, 168, 169, 173, 173, 174, 175, 185, 186,
+188, 192, 199, 203, 213, 215, 222, 228, 228, 229,
+231, 235, 239, 240, 240, 242, 249, 249, 254, 255,</pre></td></tr>
+
+</table></center>
+
+<p>　はい、きちんとソートできましたね。</p>
+
+<hr>
+
+<p>　確かにソートはできるのですが、これでは交換回数が多くバブルソートと大して変わりがありません。事実、速度はバブルソートと大して変わりません。乱数のソートで試したところ、データ数が少なければバブルソートの方が、多ければ挿入法の方が若干速いみたいです。</p>
+
+<p>　では、そんなものを何故紹介したのかというと、このソート法を元にした<font color=red>高速な</font>ソート法が開発されているからです。名前は<font color=red>シェルソート</font>といいます。shell は「殻」という意味の単語ですが、シェルソートのシェルは開発者の名前 D.Shell から来ています。</p>
+
+<p>　挿入法が何故遅いのかというと、挿入位置が<font color=red>遠く</font>にあった場合に沢山交換が起こるからです。</p>
+
+<p>　そこで先ずは<font color=red>離れた要素間</font>でソートするようにすれば、極端に位置のずれた要素も少ない交換回数でソートできます。ただ、もちろんそれだけではソートは完了しません。その幅を狭めてまたソートし、それを幅が１になるまで続ければ、ソートが完了します。こうすれば、もっと交換回数を減らすことができるはずです。</p>
+
+<p>　これを図にすると次のようになります。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0302602.gif" width=460 height=400 alt="シェルソート"></td></tr>
+
+<tr><th>図．２　シェルソート</th></tr>
+
+</table></center>
+
+<p>　先ず、一番上の列を見て下さい。ここで、<font color=red>同じ色の要素同士</font>でソートをします。すると、その下の列のようになります。</p>
+
+<p>　で、次に分け方を変えます。同じ色の要素同士の<font color=red>距離が短く</font>なっていますね。そして、また同じ色の要素同士でソートします。すると、大体大雑把にソートされていることが目に見えて分かります。</p>
+
+<p>　そして、最後に全体でソートをし直すと終了です。挿入法では、<font color=red>ソートされた状態に近いと、挿入位置が近いため処理は格段に減ります</font>。こうして、初めは各グループの要素数が少ないので速く、後の方はソートされている位置に近くて速くなり、全体的にかなりの高速化が期待できます。</p>
+
+<p>　では、プログラムを見てみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Sort4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortData.h"</font>
+<font color=blue>#include</font> <font color=darkcyan>"SortSub.h"</font>
+
+<font color=green>// シェルソート</font>
+<font color=blue>void</font> ShellSort(<font color=blue>int</font>* pnData, <font color=blue>int</font> nNumOf)
+{
+    <font color=blue>int</font> nSpan;  <font color=green>// ソート間隔</font>
+
+    <font color=green>// 初めは nNumOf / 2 だけ離れた場所の要素同士でソートする
+    // 以後、間隔を２分の１していき、最終的には nSpan が１になる
+    // ２進数で考えると分かりやすいが、最終的には nSpan は必ず１に到達する</font>
+    <font color=blue>for</font>(nSpan = nNumOf / <font color=darkcyan>2</font>; nSpan &gt;= <font color=darkcyan>1</font>; nSpan /= <font color=darkcyan>2</font>)
+    {
+        <font color=blue>int</font> iInsert;  <font color=green>// 挿入する要素のインデックス</font>
+        <font color=blue>int</font> iSwap;    <font color=green>// 交換していくときのループ変数</font>
+
+        <font color=green>// 各グループのソートをまとめて行う</font>
+        <font color=blue>for</font>(iInsert = nSpan; iInsert &lt; nNumOf; iInsert++)
+        {
+            <font color=blue>for</font>(iSwap = iInsert; iSwap &gt;= nSpan; iSwap -= nSpan)
+            {
+                <font color=blue>if</font>(pnData[iSwap - nSpan] &lt; pnData[iSwap])
+                    <font color=blue>break</font>;
+                Swap(pnData[iSwap - nSpan], pnData[iSwap]);
+            }
+        }
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    ShellSort(g_anData, g_nNumOf);
+    DispArray(g_anData, g_nNumOf);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>  1,   1,   4,   6,   9,   9,  10,  11,  13,  14,
+ 15,  16,  23,  25,  28,  29,  31,  33,  34,  39,
+ 39,  40,  40,  41,  42,  44,  48,  51,  51,  53,
+ 54,  55,  56,  63,  67,  68,  73,  73,  76,  77,
+ 78,  79,  79,  87,  89,  99,  99, 101, 101, 103,
+110, 112, 116, 117, 117, 118, 124, 128, 136, 137,
+137, 138, 148, 150, 152, 155, 157, 160, 161, 164,
+166, 167, 168, 169, 173, 173, 174, 175, 185, 186,
+188, 192, 199, 203, 213, 215, 222, 228, 228, 229,
+231, 235, 239, 240, 240, 242, 249, 249, 254, 255,</pre></td></tr>
+
+</table></center>
+
+<p>　この例では分からないと思いますが、随分速くなっています。どれくらい速いかというと、１０万要素の乱数列をソートしてみたところ２，３秒（ＭＭＸペンティアム３００ＭＨｚで）で終わりました。同じものを生の挿入法を使ってソートすると３０分くらいかかりました。</p>
+
+<p>　このように、高速なソートアルゴリズムは要素数の多いときに<font color=red>劇的に</font>効果が現れます。遅いソート法を使っていると、それは大きな損になります。</p>
+
+<p>　次回はさらに高速なアルゴリズムを紹介します。速度にムラはあるものの、高速ソートアルゴリズムの代表格に君臨しています。次回を楽しみにしていて下さい。</p>
+
+<hr>
+
+<p>　それでは、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>ソート列の中に順番通りに挿入していくソート法を挿入法と呼ぶ。</li>
+<li>何個かおきに挿入ソートし、徐々に幅を詰めていくと高速にソートできる。</li>
+<li>これをシェルソートと呼ぶ。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　それでは、次回まで。</p>
+
+<hr>
+
+<p align=right><a href="cpp03025.html" target="main">第２５章　たのしいソート２</a> | <a href="cpp03027.html" target="main">第２７章　たのしいソート４</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.9.20</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

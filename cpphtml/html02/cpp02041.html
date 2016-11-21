@@ -1,0 +1,264 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第４１章 キャスト -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第４１章　キャスト</font>
+</center>
+<hr>
+
+<p>　今回はキャストのお話です。「何を今さら」と思うかも知れませんが、実はそうでもないのです...。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>Ｃ言語のキャストは３種類に分類できる。</li>
+<li>static_cast は静的な普通の型変換を行うキャスト。</li>
+<li>reinterpret_cast はポインタの関係する強引な型変換を行うキャスト。</li>
+<li>const_cast はポインタの const を外すキャスト。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　キャストについては<a href="../html01/cpp01021.html" target="main">第１部第２１章</a>で話しましたが、実はこれは<font color=red>Ｃ言語のキャスト</font>です。Ｃ＋＋から導入されたキャストというものも存在します。今回はそのお話です。</p>
+
+<p>　今まで、キャストは何も考えず (int) や (void*) としてきました。しかし、<font color=red>Ｃ＋＋ではそのキャストを３種類に分類しています</font>。どう分類しているかは、順を追って話していきましょう。</p>
+
+<hr>
+
+<p>　先ずは１つ目は<font color=red>「静的な普通の型変換」</font>です。次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+
+<td valign=top><pre><font color=green>// Cast1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;stdio.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>signed char</font> a = <font color=darkcyan>-1</font>;
+    <font color=blue>int</font> b;
+
+    b = a;
+    printf(<font color=darkcyan>"%08X (%d)\n"</font>, b, b);
+
+    b = (<font color=blue>unsigned char</font>)a;
+    printf(<font color=darkcyan>"%08X (%d)\n"</font>, b, b);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+
+<td valign=top><pre>FFFFFFFF (-1)
+000000FF (255)</pre></td>
+
+</tr>
+
+</table></center>
+
+<p>　signed char から unsigned char への型変換にキャストを使っています。キャストとして一番普通の使い方ですね。</p>
+
+<p>　また、void* から char* へのキャスト、クラスへのポインタのアップキャスト、ダウンキャスト（アップキャストの逆）などもこの範疇に入ります。</p>
+
+<p>　こういったキャストには、Ｃ＋＋では <font color=red>static_cast 演算子</font>を使います。</p>
+
+<pre>
+a        = <font color=red>static_cast&lt;char&gt;(b)</font>;            <font color=green>// char a; int b;</font>
+pszPath  = <font color=red>static_cast&lt;char*&gt;(buffer)</font>;      <font color=green>// char* pszPath; void* buffer;</font>
+pFile    = <font color=red>static_cast&lt;CFile*&gt;(pTxtFile)</font>;   <font color=green>// CFile* pFile; CTextFile* pTxtFile;</font>
+pTxtFile = <font color=red>static_cast&lt;CTextFile*&gt;(pFile)</font>;</pre>
+
+<p>　書式は</p>
+
+<pre><font color=red>static_cast&lt; &lt;型&gt; &gt;(&lt;変換したいデータ&gt;)</font></pre>
+
+<p>となります。</p>
+
+<p>　この型変換の時、<font color=red>実行時に自動的に安全性を確認することはありません</font>。例えば int の値を char に代入するときに桁あふれするかどうかとか、ダウンキャストの時にそれは安全なのかとかです。</p>
+
+<p>　ただ、<font color=red>実行しなくても危険な変換だと分かるときはコンパイルエラーになります</font>。例えば、ポインタから int への変換、int からポインタへの変換、int へのポインタから double へのポインタへの変換、全く関係ないクラスへのポインタ同士の型変換などがそうです。</p>
+
+<p>　基本的には無茶な型変換ではありませんが、<font color=red>使い方を間違えれば危険なこともあります（特にダウンキャスト）</font>。上の例では、pFile に pTxtFile を代入した後に pFile を CTextFile に代入しようとしています。これは問題ないのですが、もし pFile に CBinaryFile クラスへのポインタの値が入っていたとすると、CBinaryFile と CTextFile 同士には直接の継承関係はないので危険です。CBinaryFile から CTextFile へ直接 static_cast することはできませんが、CFile を介することでできてしまいます。</p>
+
+<p>　多少そういう危険性はあるものの、基本的に static_cast は<font color=red>「ポインタに関して厳しいだけの普通のキャスト」</font>ということになります。普通はこのキャストを使うことになると思います。</p>
+
+<hr>
+
+<p>　しかし、意図的に危険なキャストをしたいときもあります。例えば、Ｗｉｎｄｏｗｓプログラムをやっていると、unsigned int とポインタの相互変換をしないといけない状況がほぼ必ず起こります。そういうときのキャストが２番目のキャスト、<font color=red>「ポインタの関係する強引な型変換」</font>です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Cast2.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=green>// MultiFunc に渡されたデータの種類</font>
+<font color=blue>enum</font> EMFType
+{
+    MF_INT,     <font color=green>// 符号付き整数</font>
+    MF_UINT,    <font color=green>// 符号無し整数</font>
+    MF_FLOAT,   <font color=green>// 単精度小数へのポインタ</font>
+    MF_DOUBLE,  <font color=green>// 倍精度小数へのポインタ</font>
+    MF_STRING,  <font color=green>// 文字列</font>
+};
+
+<font color=green>// いろいろなデータを１つの関数で表示します</font>
+<font color=blue>void</font> MultiFunc(EMFType type, <font color=blue>unsigned int</font> data)
+{
+    <font color=blue>switch</font>(type)
+    {
+    <font color=blue>case</font> MF_INT   : cout &lt;&lt; (<font color=blue>int</font>)data            &lt;&lt; endl; <font color=blue>break</font>;
+    <font color=blue>case</font> MF_UINT  : cout &lt;&lt; data                 &lt;&lt; endl; <font color=blue>break</font>;
+    <font color=blue>case</font> MF_FLOAT : cout &lt;&lt; *(<font color=blue>const float</font>*)data  &lt;&lt; endl; <font color=blue>break</font>;
+    <font color=blue>case</font> MF_DOUBLE: cout &lt;&lt; *(<font color=blue>const double</font>*)data &lt;&lt; endl; <font color=blue>break</font>;
+    <font color=blue>case</font> MF_STRING: cout &lt;&lt; (<font color=blue>const char</font>*)data    &lt;&lt; endl; <font color=blue>break</font>;
+    }
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font>          a = <font color=darkcyan>-10</font>;
+    <font color=blue>unsigned int</font> b = <font color=darkcyan>-10</font>;
+    <font color=blue>float</font>        c = <font color=darkcyan>-10.3f</font>;
+    <font color=blue>double</font>       d = <font color=darkcyan>3.14159265358979</font>;
+    <font color=blue>const char</font>*  e = <font color=darkcyan>"えいっ"</font>;
+
+    MultiFunc(MF_INT   , a);
+    MultiFunc(MF_UINT  , b);
+    MultiFunc(MF_FLOAT , (<font color=blue>unsigned int</font>)&amp;c);
+    MultiFunc(MF_DOUBLE, (<font color=blue>unsigned int</font>)&amp;d);
+    MultiFunc(MF_STRING, (<font color=blue>unsigned int</font>)e);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td valign=top><pre>-10
+4294967286
+-10.3
+3.14159
+えいっ</pre></td></tr>
+
+</table></center>
+
+<p>　MultiFunc は第１引数の値によってデータをどう解釈するかを決めます。それは整数値であったり、ポインタであったりします。unsigned int とポインタのサイズは同じなので、unsigned int にポインタを代入するのも、その逆も、問題はありません。</p>
+
+<p>　上のキャストのうち unsigned int から int へのキャストは普通のキャストですが、float* から unsigned int へのキャストや unsigned int から const char* へのキャストは例の危険なキャストです。しかし、ここでは使い方に注意しているので、普通はおかしな事にはならないでしょう。こういうことをしたいとき、またはせざるを得ないとき、static_cast しか許されていなかったら困ります。</p>
+
+<p>　こういうキャストに使うのが <font color=red>reinterpret_cast 演算子</font>です。リインタープリットキャストと読みます。</p>
+
+<pre>MultiFunc(MF_FLOAT, <font color=red>reinterpret_cast&lt;unsigned int&gt;(&amp;c)</font>);
+cout &lt;&lt; <font color=red>reinterpret_cast&lt;const char*&gt;(data)</font> &lt;&lt; endl;</pre>
+
+<p>　書式は static_cast と同じですね。</p>
+
+<p>　reinterpret_cast は<font color=red>ポインタの関係する危険なキャストを強引にやってしまう</font>ので、普段は使いません。特殊な状況でのみ使うようにして下さい。</p>
+
+<p>　普段のキャストを static_cast を使うようにしていれば、うっかり変な変換を書いてしまってもエラーになってくれます。意図的に使うときだけ reinterpret_cast を使うようにすれば、比較的安全にキャストを行うことができるでしょう。</p>
+
+<p>　なお、reinterpret_cast の使い方には、<font color=red>危険な参照へのキャスト</font>も含まれます。</p>
+
+<pre><font color=blue>float</font> f = <font color=darkcyan>8.9f</font>;
+<font color=green>// hex を挟むと、１６進数で出力します</font>
+cout &lt;&lt; hex &lt;&lt; <font color=blue>reinterpret_cast</font>&lt;<font color=blue>int</font>&amp;&gt;(f) &lt;&lt; endl;
+cout &lt;&lt; hex &lt;&lt; <font color=blue>static_cast</font>&lt;<font color=blue>int</font>&gt;(f) &lt;&lt; endl;
+
+実行結果）
+410e6666
+8</pre>
+
+<p>　float と int のサイズは（３２ビット機では）同じなので、float の内容をそのまま１６進数で書き出すことができます。これを static_cast&lt;int&gt; で行うと小数点以下が切り捨てられた８と表示されます。代入に関しても reinterpret_cast&lt;int&amp;&gt;(f) = a;（a の型は int）という風にできます。</p>
+
+<p>　しかし、これらは基本的に危険だということは忘れないで下さい。<font color=red>reinterpret_cast を使うときは充分に気を付けて下さい。</font></p>
+
+<hr>
+
+<p>　最後のキャストは<font color=red>「const 外し」</font>です。その名の如く、<font color=red>ポインタや参照についた const を外すためのキャスト</font>です。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Cast3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>void</font> Func(<font color=blue>char</font>* str)
+{
+    cout &lt;&lt; str &lt;&lt; endl;
+}
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>const char</font> szMsg[] = <font color=darkcyan>"const がついとらんじゃと！"</font>;
+    Func((<font color=blue>char</font>*)szMsg);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果</th></tr>
+
+<tr><td><pre>const がついとらんじゃと！</pre></td></tr>
+
+</table></center>
+
+<p>　Func 内では str はいじられませんが、str の型には const がついていません。このままでは const なデータである szMsg のアドレスを渡すことはできません。</p>
+
+<p>　こういうことはほとんどないとは思いますが、万が一あったときのためにキャストで const を外すことができます。</p>
+
+<p>　しかし、これはとても危険なことなので、そう軽々できて欲しくはありません。そこで、<font color=red>const は static_cast で、また reinterpret_cast ですら外すことはできません</font>。</p>
+
+<p>　こういう場合は、専用の演算子 <font color=red>const_cast</font> を使います。</p>
+
+<pre>Func(<font color=red>const_cast&lt;char*&gt;(szMsg)</font>);</pre>
+
+<p>　しかし、<font color=red>Func が自分の作った関数なら Func の定義を変えて下さい</font>。変えられない状況の場合、やむなく const_cast を使うことになります。</p>
+
+<p>　const の他にも volatile というものも外すことができます。volatile はその変数に対して最適化を行わないようにするための型修飾子です。</p>
+
+<p>　他にも、const メンバ関数から非 const メンバ関数を強引に呼ぶ必要のある場合にも、this を const_cast することによって実現できます。ただ、危険なので先ずしないで下さい。</p>
+
+<p>　実用的には、非 const メンバ関数の中で const メンバ関数の戻り値の const を外す、というような限定的な状況で使うことになるでしょう。</p>
+
+<hr>
+
+<p>　以上がＣ言語のキャスト代わりにＣ＋＋で追加されたキャスト演算子です。まとめると、</p>
+
+<font size=+2 color=red>
+<ul>
+<li>Ｃ言語のキャストは３種類に分類できる。</li>
+<li>static_cast は静的な普通の型変換を行うキャスト。</li>
+<li>reinterpret_cast はポインタの関係する強引な型変換を行うキャスト。</li>
+<li>const_cast はポインタの const を外すキャスト。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>となります。</p>
+
+<p>　実はＣ＋＋ではもう１つキャスト演算子が追加されているのですが、それは次回にお話しします。それでは、また。</p>
+
+<hr>
+
+<p align=right><a href="cpp02040.html" target="main">第４０章　シリアル入り</a> | <a href="cpp02042.html" target="main">第４２章　ダウンキャスト</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.1.12</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

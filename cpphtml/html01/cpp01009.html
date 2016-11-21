@@ -1,0 +1,173 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第９章 グローバル変数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第９章　グローバル変数</font>
+</center>
+<hr>
+
+<p>　関数の話が出てきました。関数を作った際、変数はどこで宣言してやればいいのでしょうか。今回はこんな事を話していきます。</p>
+
+<hr>
+
+<p>　以下が今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数の外で宣言した変数は、それ以降に書かれた関数全てで使える。</li>
+<li>関数の中で宣言した変数は、その関数内でしか使えない。</li>
+<li>関数の中で宣言した変数は、関数が終わると破棄される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　前々回に main も関数だと言いました。で、今まで変数の宣言を main の { } の中に書いてきました。</p>
+
+<p>　つまり、<font color=red>関数の中で変数の宣言ができることは確かです</font>。</p>
+
+<p>　実は、もう１つ変数の宣言できるところがあります。って、もう１ヶ所しか残ってませんね（笑）。そうです。関数の外でも変数の宣言ができるのです。</p>
+
+<p>　この２つには大きな違いがあります。次のプログラムを見てください。ちなみに、このプログラムは<font color=red>ビルドエラーが出ます</font>。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>エラーコード</th></tr>
+
+<tr>
+<td><pre><font color=green>// Val3.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> a = <font color=darkcyan>0</font>;
+
+<font color=blue>void</font> Test()
+{
+    <font color=blue>int</font> b = <font color=darkcyan>1</font>;
+    cout &lt;&lt; a &lt;&lt; b &lt;&lt; c &lt;&lt; d &lt;&lt; endl;
+    <font color=blue>return</font>;
+}
+
+<font color=blue>int</font> c = <font color=darkcyan>2</font>;
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> d = <font color=darkcyan>3</font>;
+    Test();
+    cout &lt;&lt; a &lt;&lt; b &lt;&lt; c &lt;&lt; d &lt;&lt; endl;
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre> 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+'c' : 定義されていない識別子です。
+'d' : 定義されていない識別子です。
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+'b' : 定義されていない識別子です。
+ 
+ </pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　どうやら、Test の中では c と d が、main の中では b が使えないようです。</p>
+
+<p>　つまり、<font color=red>関数内で宣言された変数は関数外では使えない</font>ようです。</p>
+
+<p>　また、関数外で宣言された変数でも、<font color=red>その変数を宣言する前までに書いた関数では使えない</font>ようです。</p>
+
+<hr>
+
+<p>　この２つの変数にはさらに違いがあります。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Val4.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> a = <font color=darkcyan>0</font>;
+
+<font color=blue>void</font> Inc()
+{
+    <font color=blue>int</font> b = <font color=darkcyan>0</font>;
+    a++;
+    b++;
+    cout &lt;&lt; a &lt;&lt; <font color=darkcyan>" <- a | b -> "</font> &lt;&lt; b &lt;&lt; endl;
+    <font color=blue>return</font>;
+}
+
+<font color=blue>int</font> main()
+{
+    Inc();
+    Inc();
+    Inc();
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>1 <- a | b -> 1
+2 <- a | b -> 1
+3 <- a | b -> 1</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　あらら、b のほうはいつまでたっても 1 のまんまですね。このように、<font color=red>関数内で宣言した変数は毎回初期化されます</font>（初期化に関しては<a href="cpp01006.html" target="main">第６章</a>を参照）。ですが、関数の外に書いた変数は最初に初期化されるだけです。</p>
+
+<p>　また、初期化処理を書いていない場合は、関数の外に書いた変数は 0 に勝手に初期化され、関数内で宣言した変数は<font color=red>何が入っているか分かりません</font>。</p>
+
+<p>　「あれ？　前に使っていた値が残っているのでは？」と思った人もいるかもしれませんが、基本的に関数内で宣言された変数の中身は、<font color=red>関数を出ると破棄されます</font>。条件によっては同じ値が入っていることもありますが、それを仮定したプログラムは<font color=red>絶対に組んではいけません！</font></p>
+
+<hr>
+
+<p>　以上のように、関数の外で宣言された変数を<font color=red>外部変数</font>または<font color=red>グローバル変数</font>と言います。一方関数の中で宣言された変数を<font color=red>内部変数</font>と言います。</p>
+
+<hr>
+
+<p>　今回は一度にたくさん話しすぎた気がします。なので、今回のことは次回以降にも少しずつ話に織り込んでいきたいと思います。</p>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>関数の外で宣言した変数は、それ以降に書かれた関数全てで使える。</li>
+<li>関数の中で宣言した変数は、その関数内でしか使えない。</li>
+<li>関数の中で宣言した変数は、関数が終わると破棄される。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　また次回まで。さようなら。</p>
+
+<hr>
+
+<p align=right><a href="cpp01008.html" target="main">第８章　void</a> | <a href="cpp01010.html" target="main">第１０章　値の入力</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.6.17</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

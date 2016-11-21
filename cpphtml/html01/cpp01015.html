@@ -1,0 +1,202 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第１５章 配列変数 -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第１５章　配列変数</font>
+</center>
+<hr>
+
+<p>　同じ用途の変数をたくさん使いたいときがあるでしょう。今回はそんなときに役に立つ配列変数の話をしたいと思います。</p>
+
+<hr>
+
+<p>　今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>int a[&lt;個数&gt;]; で &lt;個数&gt; 個の変数が作れる。</li>
+<li>a[0], a[1], ... という風に使う。</li>
+<li>カッコ内の数字は０から始まる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　さぁ、みなさんは高校の先生になりました。クラスには４０人の生徒がいます。</p>
+
+<p>　テストがあったので成績をまとめる必要があります。先ず、成績を変数に入れてみましょう。これは大変です。４０個の変数を作らなくてはいけません。</p>
+
+<pre>int nAkaiTakashi    = 641;
+int nKagaNaomichi   = 703;
+int nKasaiDaisuke   = 405;
+int nKitagawaShinya = 598;
+...</pre>
+
+<p>　うわぁ、こんなこと<font color=red>とてもやってられませんね</font>。</p>
+
+<p>　それに、全部作ったとしてもこの変数をどうやって使えばよいのでしょうか？　これでは変数毎に別の処理を書かなくてはなりません。そんなことをやってられるのは<font color=red>よほどの暇人しかいない</font>でしょう。</p>
+
+<p>　このように、同じ用途の変数をたくさん使いたいときがあるでしょう。そんなときに役に立つのが<font color=red>配列変数</font>です。</p>
+
+<pre><font color=red>int nResults[40];</font></pre>
+
+<p>　はい、これで変数が４０個できました。簡単ですね。</p>
+
+<p>　では、これをどう使えばいいのでしょうか。</p>
+
+<p><font color=red>nResults[0] = 641;</font></p>
+
+<p>　このように、変数名の後に [ ] を付けて、その中に番号（インデックス）を書きます。すると、nResults はその番号に対応した変数になります。</p>
+
+<p>　<font color=red>nResult[0] 全体で１つの変数になります。</font>nResult 自体は配列変数の名前であって、これに代入することはできません。</p>
+
+<p>　このとき注意するのは、<font color=red>カッコ内の数字は０から始まる</font>ということです。０から始まって４０個なので、最後の番号は３９です。<font color=red>間違って nResults[40] を使ってしまうと、どうなるかわかりません。</font></p>
+
+<hr>
+
+<p>　では、この変数に値を入れてみましょう。後から代入していくのではなく、ここでは変数の初期化で済ませてしまいましょう。</p>
+
+<pre>int nResults[] = <font color=red>{</font>
+    641, 703, 405, 598, 402, 752, 330,   0, 445, 662,
+    254, 710, 467, 530, 548, 485, 244, 396, 601, 510,
+    532, 687, 623, 420, 647, 587, 490, 647, 575, 688,
+    764, 633, 712, 312, 655, 425, 722, 631, 680, 602
+<font color=red>}</font>;</pre>
+
+<p>　配列変数の中身を初期化するときは、<font color=red>中身（要素）を { } で囲んでやります</font>。要素要素はコンマ（,）で区切ります。</p>
+
+<p>　このとき、<font color=red>要素を全部書いているのであれば、[ ] の中に数字を書く必要はありません</font>。勝手に中身の数だけ変数を作ってくれます。むしろ、そういう場合には <font color=red>[ ] の中に数字を書かない方が、要素の増減が簡単にできるので望ましい</font>です。</p>
+
+<p>　では、この変数がどうなっているかを表にしてみましょう。（名前は現実味を持たせるためだけに付けたもので、完全に創作です。）</p>
+
+<center><table border=1>
+<colgroup><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle><col valign=middle></colgroup>
+<tbody>
+
+<tr>
+<th>出席番号</th>
+<td align=center>１</td>
+<td align=center>２</td>
+<td align=center>３</td>
+<td align=center>...</td>
+<td align=center>３９</td>
+<td align=center>４０</td>
+</tr>
+
+<tr>
+<th>名前</th>
+<td align=center>赤井孝</td>
+<td align=center>加賀直道</td>
+<td align=center>笠井大介</td>
+<td align=center>...</td>
+<td align=center>矢野純子</td>
+<td align=center>吉田叶</td>
+</tr>
+
+<tr>
+<th>変数</th>
+<td align=center>nResults[0]</td>
+<td align=center>nResults[1]</td>
+<td align=center>nResults[2]</td>
+<td align=center>...</td>
+<td align=center>nResults[38]</td>
+<td align=center>nResults[39]</td>
+</tr>
+
+<tr>
+<th>変数の中身</th>
+<td align=center>641</td>
+<td align=center>703</td>
+<td align=center>405</td>
+<td align=center>...</td>
+<td align=center>680</td>
+<td align=center>602</td>
+</tr>
+
+</tbody></table></center>
+
+<p>　大体配列変数のことが分かってきたでしょうか？</p>
+
+<hr>
+
+<p>　では、これをどう処理すればいいのでしょうか？　nResults[0], nResults[1], ... と使っていたのでは、nAkaiTakashi, nKagaNaomichi, ... と変わりがありません。</p>
+
+<p>　そこで登場するのが前回話した for です。では、次のプログラムを...といきたいところですが、それは次回にしましょう。</p>
+
+<p>　次回までに自分で考えてみるのもいいかも知れません。ヒントは、配列変数を使う際、[ ] の中には変数も入れられるということです。ちなみに、<font color=red>配列変数を宣言するときには [ ] の中に変数は入れられません</font>。</p>
+
+<hr>
+
+<p>　代わりに、今回は少し小さい配列変数を使って、配列変数というものを見ていきましょう。</p>
+
+<p>　では、次のプログラムを見て下さい。</p>
+
+<center><table border=1>
+<colgroup><col valign=top><col valign=top></colgroup>
+<tbody>
+
+<tr><th>プログラム</th><th>実行結果</th></tr>
+
+<tr>
+<td><pre><font color=green>// Array1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+
+<font color=blue>int</font> main()
+{
+    <font color=blue>int</font> a[<font color=darkcyan>2</font>];
+
+    a[<font color=darkcyan>0</font>] = <font color=darkcyan>100</font>;
+    cout &lt;&lt; <font color=darkcyan>"a[0] = "</font> &lt;&lt; a[<font color=darkcyan>0</font>] &lt;&lt; endl;
+
+    a[<font color=darkcyan>1</font>] = <font color=darkcyan>200</font>;
+    cout &lt;&lt; <font color=darkcyan>"a[0] = "</font> &lt;&lt; a[<font color=darkcyan>0</font>] &lt;&lt; endl;
+
+    a[<font color=darkcyan>0</font>] = <font color=darkcyan>300</font>;
+    cout &lt;&lt; <font color=darkcyan>"a[0] = "</font> &lt;&lt; a[<font color=darkcyan>0</font>] &lt;&lt; endl;
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}</pre></td>
+<td><pre>a[0] = 100
+a[0] = 100
+a[0] = 300</pre></td>
+</tr>
+
+</tbody></table></center>
+
+<p>　配列変数の要素数は２です。a[0] と a[1] しか使えません。こんなのでも立派な配列変数で、実際にも充分使うことがあります。</p>
+
+<p>　このプログラムは変数の値を変えて、a[0] の中身がどうなったかを表示するというものです。</p>
+
+<p>　結果は見ての通りです。a[0] に代入したときはその値が表示されますが、a[1] に代入したときは a[0] の値は変わりません。やはり <font color=red>a[0] と a[1] とは別の変数なのです</font>。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>int a[&lt;個数&gt;]; で &lt;個数&gt; 個の変数が作れる。</li>
+<li>a[0], a[1], ... という風に使う。</li>
+<li>カッコ内の数字は０から始まる。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、また次回。</p>
+
+<hr>
+
+<p align=right><a href="cpp01014.html" target="main">第１４章　ループの仕方</a> | <a href="cpp01016.html" target="main">第１６章　ループと配列変数</a></p>
+<p align=right><font size=-1><i>Last update was done on 2000.8.19</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>

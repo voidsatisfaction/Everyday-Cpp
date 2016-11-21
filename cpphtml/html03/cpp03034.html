@@ -1,0 +1,319 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=x-euc-jp">
+<title>ロベールのＣ＋＋教室 - 第３４章 大樹の如く -</title>
+</head>
+<body bgcolor=white>
+
+<center>
+<font size=6>第３４章　大樹の如く</font>
+</center>
+<hr>
+
+<p>　今回はおそらく一番身近なデータ構造について話します。それは一体何なのでしょうか。</p>
+
+<hr>
+
+<p>　では、今回の要点です。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>リストを二次元的にしたものを木と呼ぶ。</li>
+<li>木の要素を節、ノード、頂点と、節を繋ぐ線を枝、辺と呼ぶ。</li>
+<li>木はデータを階層的に扱うことができる。</li>
+<li>次の節を最高２つしか持たないような木を二分木と呼ぶ。</li>
+<li>木は再帰関数で扱いやすい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　では、いってみましょう。</p>
+
+<hr>
+
+<p>　先ずは、次の図を見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0303401.gif" width=133 height=147 alt="木"></td></tr>
+
+<tr><th>図．１　木</th></tr>
+
+</table></center>
+
+<p>これが今回話すデータ構造である<font color=red>「木 (tree)」</font>です。<a href="cpp03023.html" target="main">第２３章</a>でも少し触れましたね。</p>
+
+<p>　木構造はファイルシステムであまりにも有名です。エクスプローラの左<a href="../htmlword/words030.html" target="words">ペイン</a>を見れば、木構造がどんなものかはすぐ分かるでしょう。ＶＣ＋＋をやっていても、ワークスペースに木構造を見ることができます。</p>
+
+<p>　先ず、木は要素を持っています。ファイルシステムではファイルやフォルダがこれに当たります。こういった<font color=red>木の要素</font>のことを<font color=red>「節 （ノード：node）」</font>や<font color=red>「頂点」</font>と呼びます。</p>
+
+<p>　そして、ノードは下にいくつか別のノードを持っていることがあります。例えば図．１では、CCOM は CShortCut, CItemIDList, Com.cpp, Com.h という４つのノードを持っています。さらに CShortCut は Shortcut.cpp, Shortcut.h を、CItemIDList は ItemIDList.cpp, ItemIDList.h を持っています。こうして<font color=red>木は階層的にデータを扱うことができます</font>。次のノードのことを<font color=red>「子ノード」</font>、前のノードのことを<font color=red>「親ノード」</font>とも呼びます。そして、<font color=red>親と子を繋ぐ線</font>を<font color=red>「枝 (branch)」</font>や<font color=red>「辺」</font>と呼びます。</p>
+
+<p>　そして、木は<font color=red>一番元となるノード</font>をただ１つだけ持っています。ファイルシステムではルートフォルダがこれに当たります。図．１では CCOM に当たります。これを<font color=red>「根 （ルート：root）」</font>と呼びます。反対に、<font color=red>子を持たないノード</font>のことを<font color=red>「葉 (leaf)」</font>と呼びます。</p>
+
+<hr>
+
+<p>　では、この木というデータ構造をプログラムで扱おうとするとどうなるのでしょうか？　</p>
+
+<p>　これには前回までやったリスト構造がヒントになります。よく考えてみると、リストは<font color=red>子ノードが最高１つしかない木</font>と考えることができます。ということは、<font color=red>次の要素へのポインタを何個も持つ</font>ようにすればいいことが分かります。また、リストに単方向リストと双方向リストがあるように、木でも単方向と双方向の木を作ることができます。</p>
+
+<p>　今度はノードを扱う処理を考えます。やってみると分かりますが、これを普通の関数で処理しようとすると結構骨です。ある子ノードに処理を移し、そこでの処理を終えたとします。すると、親ノードに戻る必要があります。単方向なら親ノードが何かを保存しておく必要があります。深く潜っていくことを考えると、これは配列かリストかなどに保存する必要があります。もしくは、ノードに含ませておく必要があります。また、親に戻ったところで次に処理するべき子ノードがどれかというのが分かりません。これも保存しておく必要があります。</p>
+
+<p>　しかし、ここで考えて下さい。そのノードにあるデータをいつ扱うかは状況によるので何とも言えませんが、とにかく子ノードに対しても同じ処理を行っていく事は確かです。そうです。どのノードも<font color=red>全く同じ処理</font>が適用できるということで、<font color=red>再帰関数</font>が使えそうです。親ノードは引数で渡し、ノードの処理の順番を管理する変数は内部変数におけばいいですね。引数も内部変数も呼ぶたびに新しいものができるので、その値の保存に関しては何の問題もありません。再帰関数を使えば、木を何の苦もなく扱うことができるのです。</p>
+
+<hr>
+
+<p>　簡単な例として<font color=red>子ノードを最大２つまでしか持たない木</font>を考えてみましょう。このような木のことを<font color=red>二分木 (binary tree)</font> と呼びます。二分木という名前が付いているからには、いろいろな用途があります。例えば、次の章で話す二分探索木や<a href="cpp03029.html" target="main">第２９章</a>で少し触れたヒープソートなどに使われます。（注：ヒープソートは配列を木と見なして扱うだけなので、ノードはポインタを持つとは限りません。）</p>
+
+<p>　では、次の図を見て下さい。</p>
+
+<center><table border=1>
+
+<tr><td><img src="images/0303402.gif" width=350 height=270 alt="二分木"></td></tr>
+
+<tr><th>図．２　二分木</th></tr>
+
+</table></center>
+
+<p>　赤色のノードがルートになります。各ノードは２つのポインタを持っており、赤色のノードは橙色のポインタと黄色のポインタを持っています。つまり、赤色のノードは橙色と黄色の２つの子ノードを持っています。</p>
+
+<p>　橙色のノードもまた子ノードを持っています。しかし、１つしか子ノードを持っていません。左側の矢印は灰色になっており、ポインタには子ノードがないことを表す特殊な値を入れることになります。一方黄色のノードは水色と青色の２つのノードを持っています。同様に水色のノードも紫色の子ノードを持っており、これで木は終わりです。葉は緑色、青色、紫色の３つになります。</p>
+
+<p>　では、この二分木を使って何かやってみましょう。<font color=red>ある数値と別の数値を関連付ける</font>プログラムでも作ってみます。</p>
+
+<p>　１つ目の数値のビットを元にどちらのノードを進むかどうかを決めます。例えば１２、つまり（１１００）<font size=-2>２</font>で考えてみます。０は特別な場所を示すことにすると、それ以外では一番上のビットは必ず１です。先ずはこの１を探します。次に、この一番上の桁から下の桁へたどっていきます。この例では１、０、０ですね。０を左、１を右と考えると、右、左、左と解釈できます。この通りに木をたどっていったところに２つ目の数値を関連付けます。図．２の紫色のノードにあたりますね。</p>
+
+<p>　同じように考えると、赤色のノードは１、橙色のノードは２、黄色のノードは３、緑色のノードは５、水色のノードは６、青色のノードは７になります。</p>
+
+<p>　では、実際にプログラムしてみましょう。</p>
+
+<center><table border=1>
+
+<tr><th>プログラム</th></tr>
+
+<tr><td><pre><font color=green>// Tree1.cpp</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iostream.h&gt;</font>
+<font color=blue>#include</font> <font color=darkcyan>&lt;iomanip.h&gt;</font>
+
+<font color=green>// 二分木のノード</font>
+<font color=blue>struct</font> SNode
+{
+    <font color=blue>int</font>    value;     <font color=green>// 値</font>
+    SNode* pNext[<font color=darkcyan>2</font>];  <font color=green>// 子ノード</font>
+};
+
+<font color=green>// 二分木</font>
+<font color=blue>struct</font> STree
+{
+    <font color=blue>int</font>    value;  <font color=green>// 値</font>
+    SNode* pRoot;  <font color=green>// ルート</font>
+};
+
+<font color=green>// 初期化処理</font>
+<font color=blue>void</font> InitTree(STree* pTree);
+<font color=blue>void</font> InitNode(SNode* pNode);
+
+<font color=green>// キーのビット数</font>
+<font color=blue>const unsigned</font> KEY_BITS = <font color=blue>sizeof</font> (<font color=blue>unsigned</font>) * <font color=darkcyan>8</font>;
+<font color=green>// 最上位ビット</font>
+<font color=blue>const unsigned</font> TOP_BIT  = <font color=darkcyan>1</font> &lt;&lt; (KEY_BITS - <font color=darkcyan>1</font>);
+
+<font color=green>// ノードを追加</font>
+<font color=blue>void</font> AddNode(STree* pTree, <font color=blue>unsigned</font> key, <font color=blue>int</font> value);
+<font color=green>// ノードを追加（再帰サブルーチン）</font>
+SNode* Rec_AddNode(SNode** ppParent, <font color=blue>unsigned</font> key, <font color=blue>int</font> nBit);
+
+<font color=green>// 木を削除</font>
+<font color=blue>void</font> FreeNode(STree* pTree);
+<font color=green>// 木を削除（再帰サブルーチン）</font>
+<font color=blue>void</font> Rec_FreeNode(SNode* pParent);
+
+<font color=green>// 木全体を表示</font>
+<font color=blue>void</font> DispTree(STree* pTree);
+<font color=green>// 木全体を表示（再帰サブルーチン）</font>
+<font color=blue>void</font> Rec_DispTree(SNode* pParent, <font color=blue>int</font> nDepth);
+
+<font color=green>// データ入力</font>
+<font color=blue>bool</font> Input(STree* pTree);
+
+<font color=blue>int</font> main()
+{
+    STree tree;
+
+    InitTree(&amp;tree);
+    <font color=blue>while</font>(Input(&amp;tree));
+    DispTree(&amp;tree);
+
+    <font color=blue>return</font> <font color=darkcyan>0</font>;
+}
+
+<font color=green>// 木の初期化</font>
+<font color=blue>void</font> InitTree(STree* pTree)
+{
+    pTree-&gt;value = <font color=darkcyan>0</font>;
+    pTree-&gt;pRoot = NULL;
+}
+
+<font color=green>// ノードの初期化</font>
+<font color=blue>void</font> InitNode(SNode* pNode)
+{
+    pNode-&gt;value = <font color=darkcyan>0</font>;
+    pNode-&gt;pNext[<font color=darkcyan>0</font>] = NULL;
+    pNode-&gt;pNext[<font color=darkcyan>1</font>] = NULL;
+}
+
+<font color=green>// ノードを追加</font>
+<font color=blue>void</font> AddNode(STree* pRoot, <font color=blue>unsigned</font> key, <font color=blue>int</font> value)
+{
+    <font color=green>// ０の場合</font>
+    <font color=blue>if</font>(key == <font color=darkcyan>0</font>)
+    {
+        pRoot-&gt;value = value;
+        <font color=blue>return</font>;
+    }
+
+    <font color=blue>int</font> nBit;  <font color=green>// ビット番号</font>
+
+    <font color=green>// 最上位ビットに「１」を持ってきます</font>
+    <font color=blue>for</font>(nBit = KEY_BITS - <font color=darkcyan>1</font>; (key &amp; TOP_BIT) == <font color=darkcyan>0</font>; nBit--)
+        key &lt;&lt;= <font color=darkcyan>1</font>;
+
+    <font color=green>// </font>
+    SNode* pAdd = Rec_AddNode(&amp;pRoot-&gt;pRoot, key, nBit);
+    <font color=blue>if</font>(pAdd != NULL)
+        pAdd-&gt;value = value;
+}
+
+<font color=green>// ノードを追加（再帰サブルーチン）
+// 戻り値は追加された要素のアドレスです</font>
+SNode* Rec_AddNode(SNode** ppParent, <font color=blue>unsigned</font> key, <font color=blue>int</font> nBit)
+{
+    <font color=green>// 要素の確保</font>
+    <font color=blue>if</font>(*ppParent == NULL)
+    {
+        *ppParent = <font color=blue>new</font> SNode;
+        <font color=blue>if</font>(*ppParent == NULL)
+            <font color=blue>return</font> NULL;
+        InitNode(*ppParent);
+    }
+
+    <font color=green>// 追加した要素のアドレスを返します</font>
+    <font color=blue>if</font>(nBit == <font color=darkcyan>0</font>)
+        <font color=blue>return</font> *ppParent;
+
+    key &lt;&lt;= <font color=darkcyan>1</font>;
+    SNode** ppNext = &amp;(*ppParent)-&gt;pNext[(key &amp; TOP_BIT) != <font color=darkcyan>0</font>];
+
+    <font color=green>// 次のノードへ</font>
+    <font color=blue>return</font> Rec_AddNode(ppNext, key, nBit - <font color=darkcyan>1</font>);
+}
+
+<font color=green>// 木を削除</font>
+<font color=blue>void</font> FreeNode(STree* pTree)
+{
+    <font color=blue>if</font>(pTree-&gt;pRoot != NULL)
+        Rec_FreeNode(pTree-&gt;pRoot);
+}
+
+<font color=green>// 木を削除（再帰サブルーチン）</font>
+<font color=blue>void</font> Rec_FreeNode(SNode* pParent)
+{
+    <font color=blue>int</font> i;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>2</font>; i++)
+    {
+        SNode* pNext = pParent-&gt;pNext[i];
+        <font color=blue>if</font>(pNext != NULL)
+            Rec_FreeNode(pNext);  <font color=green>// 子以降を削除します</font>
+    }
+    <font color=blue>delete</font> pParent;  <font color=green>// 最後に自分を削除します</font>
+}
+
+<font color=green>// 木全体を表示</font>
+<font color=blue>void</font> DispTree(STree* pTree)
+{
+    cout &lt;&lt; pTree-&gt;value &lt;&lt; endl;
+    Rec_DispTree(pTree-&gt;pRoot, <font color=darkcyan>0</font>);
+}
+
+<font color=green>// 木全体を表示（再帰サブルーチン）</font>
+<font color=blue>void</font> Rec_DispTree(SNode* pParent, <font color=blue>int</font> nDepth)
+{
+    <font color=blue>if</font>(pParent == NULL)
+        <font color=blue>return</font>;
+
+    <font color=blue>int</font> i;
+
+    <font color=green>// setw で表示幅を指定できます
+    // iomanip.h をインクルードしてから使います</font>
+    cout &lt;&lt; setw(nDepth * <font color=darkcyan>2</font>) &lt;&lt; <font color=darkcyan>""</font> &lt;&lt; pParent-&gt;value &lt;&lt; endl;
+    <font color=blue>for</font>(i = <font color=darkcyan>0</font>; i &lt; <font color=darkcyan>2</font>; i++)
+        Rec_DispTree(pParent-&gt;pNext[i], nDepth + <font color=darkcyan>1</font>);
+}
+
+<font color=green>// データ入力</font>
+<font color=blue>bool</font> Input(STree* pTree)
+{
+    <font color=blue>unsigned</font> key;
+    <font color=blue>int</font>      value;
+
+    cout &lt;&lt; <font color=darkcyan>"数値を２つ入力して下さい &gt; "</font> &lt;&lt; flush;
+    cin &gt;&gt; key &gt;&gt; value;
+
+    <font color=blue>if</font>(value == <font color=darkcyan>-1</font>)
+        <font color=blue>return false</font>;
+
+    AddNode(pTree, key, value);
+    <font color=blue>return true</font>;
+}</pre></td></tr>
+
+<tr><th>実行結果例</th></tr>
+
+<tr><td><pre>数値を２つ入力して下さい > 1 1
+数値を２つ入力して下さい > 2 2
+数値を２つ入力して下さい > 3 3
+数値を２つ入力して下さい > 5 4
+数値を２つ入力して下さい > 6 5
+数値を２つ入力して下さい > 7 6
+数値を２つ入力して下さい > 12 7
+数値を２つ入力して下さい > 0 -1
+0:0
+  2
+    4
+1
+      7
+    5
+  3
+    6</pre></td></tr>
+
+</table></center>
+
+<p>　図．２と同じ配置で表示されるように入力してみました。上が左に、下が右にくるように反転して見ます。１〜７が赤〜紫に対応していると考えて下さい。</p>
+
+<p>　このように、木を使えばデータを階層的に扱うことができるようになります。</p>
+
+<hr>
+
+<p>　では、今回の要点をもう一度見てみましょう。</p>
+
+<font size=+2 color=red>
+<ul>
+<li>リストを二次元的にしたものを木と呼ぶ。</li>
+<li>木の要素を節、ノード、頂点と、節を繋ぐ線を枝、辺と呼ぶ。</li>
+<li>木はデータを階層的に扱うことができる。</li>
+<li>次の節を最高２つしか持たないような木を二分木と呼ぶ。</li>
+<li>木は再帰関数で扱いやすい。</li>
+</ul>
+</font>
+<p><br></p>
+
+<p>　次は上で予告通りの内容になります。それでは。</p>
+
+<hr>
+
+<p align=right><a href="cpp03033.html" target="main">第３３章　数珠繋ぎ２</a> | <a href="cpp03035.html" target="main">第３５章　大樹の如く２</a></p>
+<p align=right><font size=-1><i>Last update was done on 2001.2.6</i></font></p>
+
+<p align=right><font size=-1><i>この講座の著作権は<a href="http://www1.kcn.ne.jp/~robe/">ロベール</a>が保有しています</i></font></p>
+
+</body>
+</html>
